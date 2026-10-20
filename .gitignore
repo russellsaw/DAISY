@@ -1,0 +1,16 @@
+.env
+__pycache__/
+*.pyc
+.pytest_cache/
+data/kb.json
+# Knowledge repository: commit manifest.json, history.jsonl and text/ (the audit trail);
+# raw/ holds the fetched HTML/PDF bytes (~18MB) and is rebuilt by `python scripts/ingest.py`.
+data/sources/raw/
+.venv/
+data/raw/*
+!data/raw/.gitkeep
+!data/raw/sources.json
+evals/results/*
+!evals/results/.gitkeep
+.streamlit/secrets.toml
+
