@@ -4,8 +4,9 @@
     python evals/run_evals.py --categories adversarial,boundary --limit 20
     python evals/run_evals.py --workers 6         # cases run in parallel (default 4)
 
-Each case starts a fresh conversation (optionally pre-seeded with a profile),
-sends one message, and checks the response:
+Each case starts a fresh conversation (optionally pre-seeded with a profile, which counts as already
+confirmed by the customer), sends one message — or several, separated by "||" — and checks the final
+response:
   - expected_intent      orchestrator routed correctly ("a|b" accepts either)
   - must_contain         any one of the | separated phrases appears (case-insensitive)
   - must_not_contain     none of the | separated phrases appear
@@ -14,11 +15,14 @@ sends one message, and checks the response:
   - expected_behavior    LLM judge (boundary / adversarial / scope cases)
   - cf_expect            counterfactual outcome: dated | whatif_only | no_path | none ("a|b" accepts either)
   - expected_profile     JSON subset the profile must equal after the turn (e.g. future income not stored)
+  - expect_readback      1: the last turn must be a readback (engine not run); 0: it must not be
+  - expect_corrections   minimum number of corrections the readback must have logged
 Always-on checks:
   - numbers_traceable    every number/date in the reply traces to the engine, the customer's words or a
                          retrieved page (the "LLM never generates a figure" constraint)
   - banned_lexicon       eligibility replies never contain approval vocabulary (Feature 1)
   - outcome_template     the fixed outcome sentence is present verbatim whenever a path is shown
+  - no_engine_before_confirm  on every turn, the engine only ran on parameters the customer confirmed
 Writes evals/results/<timestamp>.json and latest.json (with run history).
 """
 from __future__ import annotations
@@ -52,7 +56,7 @@ def _split(value) -> list[str]:
 def _always_on_checks(case: dict, result, state) -> list[dict]:
     checks = []
     untraced = unsupported_numbers(result.response, result.sources_text, result.computations,
-                                   state.profile.to_dict(), case["input"])
+                                   state.profile.to_dict(), case["input"].replace("||", "\n"))
     checks.append({"name": "numbers_traceable", "passed": not untraced,
                    "detail": f"untraceable: {untraced}" if untraced else "all numbers trace to engine/customer/source"})
     if result.intent == "eligibility":
@@ -92,14 +96,37 @@ def _counterfactual_checks(case: dict, result, state) -> list[dict]:
     return checks
 
 
+def _readback_checks(case: dict, results: list, state) -> list[dict]:
+    checks = []
+    early = [i + 1 for i, r in enumerate(results) if r.engine_ran and not r.confirmed]
+    checks.append({"name": "no_engine_before_confirm", "passed": not early,
+                   "detail": f"engine ran unconfirmed on turn(s) {early}" if early else "engine only on confirmed data"})
+    last = results[-1]
+    if str(case.get("expect_readback", "")).strip() in ("0", "1"):
+        want = case["expect_readback"].strip() == "1"
+        ok = last.readback == want and (not want or not last.engine_ran)
+        checks.append({"name": "expect_readback", "passed": ok,
+                       "detail": f"readback={last.readback} engine_ran={last.engine_ran} (wanted readback={want})"})
+    if str(case.get("expect_corrections", "")).strip():
+        need = int(case["expect_corrections"])
+        checks.append({"name": "expect_corrections", "passed": len(state.corrections) >= need,
+                       "detail": f"{len(state.corrections)} logged: {[c['field'] for c in state.corrections]}"})
+    return checks
+
+
 def run_case(case: dict) -> dict:
     state = ConversationState()
     if case.get("profile"):
         state.profile.update(json.loads(case["profile"]))
+        state.confirm()  # a pre-seeded profile counts as already confirmed by the customer
+    turns = [t.strip() for t in case["input"].split("||") if t.strip()]
 
     started = time.time()
+    results = []
     try:
-        result = run_turn(state, case["input"])
+        for turn in turns:
+            results.append(run_turn(state, turn))
+        result = results[-1]
         response, intent = result.response, result.intent
         error = None
     except Exception as exc:  # noqa: BLE001
@@ -135,12 +162,14 @@ def run_case(case: dict) -> dict:
                        "detail": f"{len(result.sources)} source(s) cited"})
 
     if case.get("expected_behavior") and response:
-        verdict = judge(case["input"], response, case["expected_behavior"])
+        conversation = "\n".join(f"(turn {i + 1}) {t}" for i, t in enumerate(turns)) if len(turns) > 1 else turns[0]
+        verdict = judge(conversation, response, case["expected_behavior"])
         checks.append({"name": "judge", "passed": bool(verdict["passed"]), "detail": verdict["rationale"]})
 
     if result is not None:
         checks += _always_on_checks(case, result, state)
         checks += _counterfactual_checks(case, result, state)
+        checks += _readback_checks(case, results, state)
 
     if not checks:
         checks.append({"name": "ran", "passed": bool(response), "detail": "no assertions defined for this case"})
@@ -153,6 +182,9 @@ def run_case(case: dict) -> dict:
         "response": response,
         "intent": intent,
         "compliance_verdict": result.compliance.get("verdict") if result else None,
+        "turns": len(turns),
+        "readback": result.readback if result else None,
+        "corrections": state.corrections,
         "counterfactuals": [{"product": cf["product"], "binding_rule": cf["binding_rule"],
                              "paths": [{k: x[k] for k in ("lever_kind", "lever", "headroom", "earliest_date")}
                                        for x in cf["paths"]],

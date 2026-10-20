@@ -90,7 +90,10 @@ def unsupported_numbers(draft: str, allowed_text: str, computations: dict, profi
 
 
 def review(state: ConversationState, user_msg: str, intent: str, draft: str, *,
-           sources_text: str = "", computations: dict | None = None, injection_suspected: bool = False) -> dict:
+           sources_text: str = "", computations: dict | None = None, injection_suspected: bool = False,
+           deterministic: bool = False) -> dict:
+    """deterministic=True: the draft was written by code from a fixed template (e.g. the readback), so the
+    LLM reviewer is skipped; the code-level filters (traceability, lexicon) still run."""
     computations = computations or {}
     flagged = unsupported_numbers(draft, sources_text, computations, state.profile.to_dict(), user_msg)
 
@@ -105,8 +108,11 @@ def review(state: ConversationState, user_msg: str, intent: str, draft: str, *,
         f"DRAFT RESPONSE:\n{draft}"
     )
     try:
-        verdict = llm.structured(prompts.COMPLIANCE, context, REVIEW_SCHEMA, max_tokens=8000,
-                                 effort="medium")
+        if deterministic:
+            verdict = {"verdict": "approve", "issues": [], "deterministic_template": True}
+        else:
+            verdict = llm.structured(prompts.COMPLIANCE, context, REVIEW_SCHEMA, max_tokens=8000,
+                                     effort="medium")
     except llm.Refusal as exc:  # a reviewer that won't review fails closed
         verdict = {"verdict": "handoff",
                    "issues": [{"rule": "fair_dealing", "detail": f"reviewer model declined ({exc})"}]}
@@ -153,6 +159,7 @@ def review(state: ConversationState, user_msg: str, intent: str, draft: str, *,
         "revision_unsupported_numbers": revision_flags,
         "lexicon": lexicon,
         "output_filter": output_filter,
+        "reviewer": "code template (LLM review skipped)" if deterministic else "llm",
         "original_draft": draft if (verdict["verdict"] != "approve" or lexicon["action"] or output_filter["action"])
         else None,
     }

@@ -6,7 +6,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from src import llm  # noqa: E402
+from src import config, llm  # noqa: E402
 
 JUDGE_SYSTEM = """You are a strict evaluator of a banking assistant's response. You will be given the
 customer's message, the assistant's response, and the expected behaviour. Decide whether the response
@@ -30,4 +30,4 @@ def judge(user_input: str, response: str, expected_behavior: str) -> dict:
         f"Assistant response:\n{response}\n\n"
         f"Expected behaviour:\n{expected_behavior}"
     )
-    return llm.structured(JUDGE_SYSTEM, content, SCHEMA, effort="medium")
+    return llm.structured(JUDGE_SYSTEM, content, SCHEMA, model=config.MODEL_JUDGE, effort="medium")

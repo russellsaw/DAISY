@@ -4,7 +4,9 @@
 > number (a rules engine does), every response is reviewed by a compliance agent before the customer
 > sees it, and an adversarial eval suite scores every build.
 
-Hackathon MVP. See `PITCH.md` for the proposition and demo arc.
+Hackathon MVP. See `PITCH.md` for the proposition and demo arc, and
+**[`docs/ASSUMPTIONS_AND_LIMITATIONS.md`](docs/ASSUMPTIONS_AND_LIMITATIONS.md)** for every assumption,
+limitation, criterion and design decision (the place to look when someone asks "why does it do that?").
 
 ## Architecture
 

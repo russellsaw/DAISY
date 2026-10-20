@@ -40,6 +40,20 @@ class EligibilityResult:
         return asdict(self)
 
 
+# Fields each check needs before it can run. Shared with the eligibility agent, which uses it to ask for
+# missing details and to build the readback WITHOUT calling the engine (Feature 2: no engine call
+# until the customer has confirmed the parameters).
+# home_loan needs property_price: without it the LTV cap can't be checked, and "eligible" without an
+# LTV check would overstate the result.
+REQUIRED_FIELDS = {
+    "home_loan": ["age", "residency", "monthly_income", "property_type", "property_price", "home_loan_amount",
+                  "tenure_years"],
+    "personal_loan": ["age", "residency", "monthly_income"],
+    "cashline": ["age", "residency", "monthly_income"],
+    "credit_card": ["age", "residency", "monthly_income"],
+}
+
+
 def _mas(key):
     return MAS[key]["value"]
 
@@ -143,8 +157,7 @@ def _unsecured_cap_check(p: CustomerProfile, result: EligibilityResult, requeste
 def _simple_unsecured(p: CustomerProfile, product_key: str, requested: float | None = None) -> EligibilityResult:
     prod = PRODUCTS[product_key]
     result = EligibilityResult(product_key, prod["name"], "need_more_info", sources=[prod["source"]])
-    required = ["age", "residency", "monthly_income"]
-    missing = p.missing(required)
+    missing = p.missing(REQUIRED_FIELDS[product_key])
     if missing:
         result.missing_fields = missing
         return result
@@ -166,7 +179,7 @@ def check_cashline(p: CustomerProfile) -> EligibilityResult:
 def check_credit_card(p: CustomerProfile) -> EligibilityResult:
     prod = PRODUCTS["credit_card"]
     result = EligibilityResult("credit_card", prod["name"], "need_more_info", sources=[prod["source"]])
-    missing = p.missing(["age", "residency", "monthly_income"])
+    missing = p.missing(REQUIRED_FIELDS["credit_card"])
     if missing:
         result.missing_fields = missing
         return result
@@ -179,11 +192,7 @@ def check_credit_card(p: CustomerProfile) -> EligibilityResult:
 def check_home_loan(p: CustomerProfile) -> EligibilityResult:
     prod = PRODUCTS["home_loan"]
     result = EligibilityResult("home_loan", prod["name"], "need_more_info", sources=[prod["source"]])
-    # property_price is required: without it the LTV cap can't be checked, and "eligible"
-    # without an LTV check would overstate the result.
-    required = ["age", "residency", "monthly_income", "property_type", "property_price",
-                "home_loan_amount", "tenure_years"]
-    missing = p.missing(required)
+    missing = p.missing(REQUIRED_FIELDS["home_loan"])
     if missing:
         result.missing_fields = missing
         return result

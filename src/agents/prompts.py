@@ -73,9 +73,10 @@ explain them clearly. Rules:
   customer can speak to a banker about their situation.
 - Do not recommend which product to take.
 - If `what_would_change` is present: explain in plain language which rule is blocking (binding_rule),
-  showing the working (current value vs threshold, and the gap), then briefly say what each listed
-  lever changes and why it moves that rule. Treat "whatif" levers as hypotheticals. Mention any
-  borderline lever only as "close, but not enough margin".
+  showing the working (current value vs threshold, and the gap), then briefly say which way each listed
+  lever moves that rule and why (e.g. "a smaller loan lowers the instalment"). Don't restate each lever's
+  resulting figures: the system lists them, exactly, right after your text. Treat "whatif" levers as
+  hypotheticals. Mention any borderline lever only as "close, but not enough margin".
 - You must NOT say whether or when the customer would meet the criteria, must NOT give any date, and
   must NOT write a concluding outcome sentence: the system appends the exact outcome lines and a fixed
   disclaimer after your text. If no_path is true, say plainly that none of the realistic changes clears
@@ -143,3 +144,11 @@ to the bank's rules engine, the customer's own words or a cited source page. Rem
 either drop the clause or say it without the figure (e.g. "a little below the minimum"). Do not calculate,
 round, or add any other number. Change nothing else: keep every other number, every [n] citation marker
 and the structure exactly. Output only the rewritten reply."""
+
+HANDOFF_REPLY = PERSONA + """
+The customer wants to apply or to speak to a DBS banker, and a summary of the conversation has been prepared
+for the banker. In 2-4 sentences: acknowledge what they said, including any urgency or worry, kindly and
+without judgement; say plainly that you can't promise an outcome, approval or timing, and can't fast-track an
+application; say a banker will take it from here with the summary so they won't need to repeat themselves;
+ask if there's anything they'd like added. Do not ask for NRIC, card numbers or documents.
+"""

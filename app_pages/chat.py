@@ -83,20 +83,33 @@ with st.sidebar:
 
     st.subheader("Customer profile", anchor=False)
     profile = state.profile.to_dict()
+    if profile:
+        if state.is_confirmed():
+            st.badge("Checked with the customer", icon=":material/verified:", color="green")
+        elif state.pending_readback:
+            st.badge("Read back, waiting for a yes", icon=":material/pending:", color="orange")
+        else:
+            st.badge("Not yet checked with the customer", icon=":material/help:", color="gray")
     with st.container(border=True):
         if profile:
             for key, value in profile.items():
+                tick = " :green[:material/check_circle:]" if state.field_confirmed(key) else ""
                 if key == "commitments":
                     for c in value:
                         ends = f"ends {fmt_date(c['end_date'])}" if c.get("end_date") else "no end date given"
                         amount = md_safe(f"S${c['monthly']:,.0f}/month")
-                        st.markdown(f":gray[{c['kind'].capitalize()}]  \n**{amount}** · {ends}")
+                        st.markdown(f":gray[{c['kind'].capitalize()}]{tick}  \n**{amount}** · {ends}")
                     continue
                 if isinstance(value, float):
                     value = f"{value:,.0f}"
-                st.markdown(f":gray[{PROFILE_FIELDS[key][0]}]  \n**{md_safe(str(value))}**")
+                st.markdown(f":gray[{PROFILE_FIELDS[key][0]}]{tick}  \n**{md_safe(str(value))}**")
         else:
             st.caption("Fills in as the customer shares details.")
+
+    if state.corrections:
+        with st.expander(f"Readback caught {len(state.corrections)} correction(s)", icon=":material/rule:"):
+            for c in state.corrections:
+                st.markdown(md_safe(f"- **{c['field']}**: {c['from']} → {c['to']}"))
 
     if state.last_eligibility:
         st.subheader("Indicative eligibility", anchor=False)
@@ -144,6 +157,9 @@ for turn in st.session_state.turns:
         render_assistant(turn["result"], turn.get("seconds"))
 
 prompt = st.chat_input("Ask about home loans, cards or personal loans…", submit_mode="disable")
+if st.session_state.turns and state.pending_readback:
+    if st.button("Yes, that's right", icon=":material/check:", type="primary"):
+        prompt = "Yes, that's right."
 if not st.session_state.turns:
     suggestions = st.empty()
     picked = suggestions.pills("Try asking", list(SUGGESTIONS), label_visibility="collapsed")

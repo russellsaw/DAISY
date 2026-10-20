@@ -13,6 +13,9 @@ ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 # classification, compliance review and eval judging (cheaper, quicker).
 MODEL_MAIN = os.getenv("MODEL_MAIN", "claude-sonnet-5-5")
 MODEL_FAST = os.getenv("MODEL_FAST", "claude-haiku-5-5")
+# The eval judge decides pass/fail on behaviour; Haiku produced verdicts that contradicted its own
+# rationale, so the judge uses the main model.
+MODEL_JUDGE = os.getenv("MODEL_JUDGE", MODEL_MAIN)
 
 DATA_DIR = ROOT / "data"
 KB_PATH = DATA_DIR / "kb.json"

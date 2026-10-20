@@ -203,6 +203,7 @@ def _stub_pipeline(monkeypatch, profile: dict, draft: str):
 
     st = ConversationState()
     st.profile.update(profile)
+    st.confirm()  # seeded profiles count as confirmed (Feature 2 readback is tested separately)
     monkeypatch.setattr(orchestrator, "route", lambda state, msg: {"intent": "eligibility", "products": ["home_loan"],
                                                                  "injection_suspected": False})
     monkeypatch.setattr(eligibility.llm, "chat", lambda *a, **k: draft)

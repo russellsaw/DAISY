@@ -39,6 +39,8 @@ def build_card(state: ConversationState, trigger: str) -> dict:
     )
     card = llm.structured(prompts.HANDOFF, context, CARD_SCHEMA)
     card["profile"] = state.profile.to_dict()
+    card["parameters_confirmed_by_customer"] = state.is_confirmed()
+    card["readback_corrections"] = state.corrections
     # "Not now, but when" — copied from the engine, never written by the model.
     cfs = state.last_counterfactuals
     if cfs:

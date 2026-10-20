@@ -7,6 +7,7 @@ Everything the UI and the eval runner need comes back in TurnResult.
 """
 from __future__ import annotations
 
+import re
 from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import dataclass, field
 
@@ -25,6 +26,13 @@ HANDOFF_REQUEST_REPLY = (
 )
 
 
+# A bare "yes" to a readback. Anything longer is left to the orchestrator's readback_reply.
+_AFFIRM = r"(yes|yep|yeah|yup|correct|right|ok|okay|sure|that'?s (all )?(right|correct)|all (good|correct|right)|looks (good|right))"
+_YES = re.compile(rf"^\s*{_AFFIRM}([\s.!,]+({_AFFIRM}|thanks?|thank you|please))*[\s.!]*$", re.IGNORECASE)
+WHAT_TO_CHANGE_REPLY = ("No problem. Tell me which detail is wrong and the right value, and I'll read everything "
+                        "back again before running the check.")
+
+
 @dataclass
 class TurnResult:
     response: str
@@ -38,6 +46,10 @@ class TurnResult:
     counterfactuals: list = field(default_factory=list)  # "not now, but when" results, one per failing product
     sources_text: str = ""  # what the drafting agent was grounded on (for the traceability eval)
     computations: dict = field(default_factory=dict)  # engine numbers the reply may use
+    readback: bool = False      # this turn read the parameters back (no engine call)
+    engine_ran: bool = False    # the rules engine ran this turn
+    confirmed: bool = False     # the profile equals what the customer said yes to (after this turn)
+    corrections: list = field(default_factory=list)  # values the customer corrected this turn
 
 
 def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
@@ -52,6 +64,7 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
     sources_text = ""
     computations: dict = {}
     cfs: list[dict] = []
+    out: dict = {}
     card_job: Future | None = None
 
     def start_card(trigger: str) -> Future:
@@ -59,6 +72,8 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
         # reviewed instead of before it (saves one model round-trip of latency).
         return _POOL.submit(handoff.build_card, state, trigger)
 
+    was_pending = state.pending_readback
+    reference = state.readback_profile if was_pending else state.confirmed_profile
     try:
         decision = orchestrator.route(state, user_msg)
     except llm.Refusal as exc:
@@ -68,11 +83,35 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
     products = decision.get("products") or []
     injection = bool(decision.get("injection_suspected"))
 
+    # ---- Readback before clearance (Feature 2) ----
+    changed = decision.get("profile_changed") or []
+    corrections = state.log_corrections(reference) if changed else []
+    if corrections:
+        state.add_trace("Readback", "customer corrected " + ", ".join(c["field"] for c in corrections), corrections)
+    deterministic_reply = None
+    if was_pending:
+        if changed:  # a correction: read everything back again before anything runs
+            intent, products = "eligibility", state.pending_products
+        elif decision.get("readback_reply") == "confirm" or _YES.match(user_msg):
+            state.confirm()
+            state.add_trace("Readback", "customer said yes: parameters confirmed, engine may run",
+                            state.confirmed_profile)
+            intent, products = "eligibility", state.pending_products
+        elif decision.get("readback_reply") == "correct":
+            intent, deterministic_reply = "eligibility", WHAT_TO_CHANGE_REPLY
+    elif changed and state.confirmed_profile is not None and not state.is_confirmed():
+        # A confirmed fact changed later (e.g. a contradicted end date): re-confirm before any result.
+        intent, products = "eligibility", products or state.pending_products
+
     try:
         if intent in ("product_qa", "comparison"):
             out = product_knowledge.answer(state, user_msg, products)
             draft, sources = out["draft"], out["sources"]
             sources_text = "\n\n".join(c["text"] for c in out["chunks"])
+
+        elif intent == "eligibility" and deterministic_reply:
+            draft = deterministic_reply
+            out = {"engine_ran": False}
 
         elif intent == "eligibility":
             out = eligibility.assess(state, user_msg, products)
@@ -90,7 +129,10 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
 
         elif intent == "handoff_request":
             card_job = start_card("customer asked to apply / speak to a banker")
-            draft = HANDOFF_REQUEST_REPLY
+            # Drafted (not templated) so it can acknowledge what the customer actually said — urgency,
+            # worry — while promising nothing; compliance reviews it like any other reply.
+            draft = llm.chat(prompts.HANDOFF_REPLY, [{"role": "user", "content": user_msg}],
+                             model=config.MODEL_MAIN, max_tokens=1200) or HANDOFF_REQUEST_REPLY
 
         elif intent == "out_of_scope":
             draft = llm.chat(prompts.OUT_OF_SCOPE, [{"role": "user", "content": user_msg}],
@@ -105,8 +147,10 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
         draft = compliance.HANDOFF_FALLBACK
         state.add_trace("Drafting", f"model declined to draft a reply ({exc}); using the banker handoff")
 
+    is_readback = intent == "eligibility" and bool(out.get("readback"))
     reviewed = compliance.review(state, user_msg, intent, draft, sources_text=sources_text,
-                                 computations=computations, injection_suspected=injection)
+                                 computations=computations, injection_suspected=injection,
+                                 deterministic=is_readback or draft == WHAT_TO_CHANGE_REPLY)
     final = reviewed["final"]
 
     # "Not now, but when": the outcome lines and the fixed outcome sentence are written by code and
@@ -134,4 +178,8 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
         counterfactuals=cfs,
         sources_text=sources_text,
         computations=computations,
+        readback=is_readback,
+        engine_ran=bool(intent == "eligibility" and out.get("engine_ran")),
+        confirmed=state.is_confirmed(),
+        corrections=corrections,
     )

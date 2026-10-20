@@ -5,7 +5,9 @@ engine reads from it; the UI side panel displays it.
 """
 from __future__ import annotations
 
+import copy
 from dataclasses import asdict, dataclass, field
+from datetime import datetime
 from typing import Any, Callable, Optional
 
 # field -> (friendly label, description shown to the model for extraction)
@@ -154,6 +156,15 @@ class ConversationState:
     last_sources: list[dict] = field(default_factory=list)
     last_eligibility: list[dict] = field(default_factory=list)
     last_counterfactuals: list[dict] = field(default_factory=list)
+    # ---- Readback before clearance (Feature 2) ----
+    # readback_profile: what was last read back to the customer, awaiting a yes or a correction.
+    # confirmed_profile: the snapshot the customer said yes to. The profile counts as confirmed only
+    # while it still equals that snapshot, so any later change (a correction, a contradiction, new
+    # facts) needs a fresh readback before the engine may run again.
+    readback_profile: Optional[dict] = None
+    confirmed_profile: Optional[dict] = None
+    pending_products: list[str] = field(default_factory=list)
+    corrections: list[dict] = field(default_factory=list)  # evidence the readback caught an error
     # Optional UI hook: called with each TraceEvent as it happens (the chat page uses it to
     # draw the live agent timeline). Never required for correctness.
     listener: Optional[Callable[[TraceEvent], None]] = field(default=None, repr=False, compare=False)
@@ -166,6 +177,48 @@ class ConversationState:
                 self.listener(event)
             except Exception:  # noqa: BLE001 — a UI hook must never break a turn
                 pass
+
+    # ---- readback helpers ----
+    @property
+    def pending_readback(self) -> bool:
+        return self.readback_profile is not None
+
+    def is_confirmed(self) -> bool:
+        return self.confirmed_profile is not None and self.confirmed_profile == self.profile.to_dict()
+
+    def field_confirmed(self, key: str) -> bool:
+        return bool(self.confirmed_profile) and self.confirmed_profile.get(key) == self.profile.to_dict().get(key)
+
+    def start_readback(self, products: list[str]) -> None:
+        self.readback_profile = copy.deepcopy(self.profile.to_dict())
+        self.pending_products = list(products)
+
+    def confirm(self) -> None:
+        self.confirmed_profile = copy.deepcopy(self.profile.to_dict())
+        self.readback_profile = None
+
+    def log_corrections(self, reference: dict | None) -> list[dict]:
+        """Values the customer had seen read back (or confirmed) and has now changed or withdrawn."""
+        if not reference:
+            return []
+        now = self.profile.to_dict()
+        found = []
+        for key, before in reference.items():
+            after = now.get(key)
+            if key == "commitments":
+                after_by_kind = {c["kind"]: c for c in after or []}
+                for c in before:
+                    a = after_by_kind.get(c["kind"], {})
+                    for sub in ("monthly", "end_date"):
+                        if c.get(sub) != a.get(sub):
+                            found.append({"field": f"{c['kind']}.{sub}", "from": c.get(sub), "to": a.get(sub)})
+            elif before != after:
+                found.append({"field": key, "from": before, "to": after})
+        stamp = datetime.now().isoformat(timespec="seconds")
+        for f in found:
+            f["at"] = stamp
+        self.corrections.extend(found)
+        return found
 
     def recent_history(self, max_turns: int) -> list[dict]:
         """Last N exchanges, always starting on a user turn (the API requires it)."""
