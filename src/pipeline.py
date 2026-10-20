@@ -11,7 +11,7 @@ import re
 from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import dataclass, field
 
-from . import config, llm, pii
+from . import config, defence, llm, pii
 from .agents import compliance, eligibility, handoff, orchestrator, product_knowledge, prompts
 from .rules import counterfactual
 from .state import ConversationState
@@ -50,6 +50,7 @@ class TurnResult:
     engine_ran: bool = False    # the rules engine ran this turn
     confirmed: bool = False     # the profile equals what the customer said yes to (after this turn)
     corrections: list = field(default_factory=list)  # values the customer corrected this turn
+    defence: dict = field(default_factory=dict)  # which defence layer acted (src/defence.py)
 
 
 def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
@@ -65,6 +66,7 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
     computations: dict = {}
     cfs: list[dict] = []
     out: dict = {}
+    draft = ""
     card_job: Future | None = None
 
     def start_card(trigger: str) -> Future:
@@ -107,7 +109,9 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
         if intent in ("product_qa", "comparison"):
             out = product_knowledge.answer(state, user_msg, products)
             draft, sources = out["draft"], out["sources"]
-            sources_text = "\n\n".join(c["text"] for c in out["chunks"])
+            # Exactly the excerpts the drafting agent saw ([n], title, as-of date, URL), so the reviewer can
+            # check citations and a quoted "as of" date or link traces to its source like any other fact.
+            sources_text = out.get("excerpts") or "\n\n".join(c["text"] for c in out["chunks"])
 
         elif intent == "eligibility" and deterministic_reply:
             draft = deterministic_reply
@@ -164,6 +168,14 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
         card_job = start_card("compliance reviewer escalated")
     card = card_job.result() if card_job else None
 
+    layers = defence.assess(
+        intent=intent, draft=draft, sources=sources, sources_text=sources_text,
+        chunks_retrieved=len(out.get("chunks", [])) if intent in ("product_qa", "comparison") else 0,
+        engine_ran=bool(intent == "eligibility" and out.get("engine_ran")), readback=is_readback,
+        computations=computations, compliance_record=reviewed["record"], pii_found=pii_found,
+        profile=state.profile.to_dict(), user_msg=user_msg)
+    state.add_trace("Defence layers", " · ".join(f"{k}={v['status']}" for k, v in layers.items()), layers)
+
     state.messages.append({"role": "assistant", "content": final})
     state.last_sources = sources
     return TurnResult(
@@ -182,4 +194,5 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
         engine_ran=bool(intent == "eligibility" and out.get("engine_ran")),
         confirmed=state.is_confirmed(),
         corrections=corrections,
+        defence=layers,
     )

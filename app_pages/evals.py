@@ -1,4 +1,4 @@
-"""Evals page: scorecard, drill-down, rules verification status, live run."""
+"""Trust scorecard: pass rates, Swiss-cheese defence layers, case drill-down, criteria, live run."""
 import json
 import subprocess
 import sys
@@ -7,12 +7,12 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-from src import config
+from src import config, defence
 from src.rules.criteria import unverified_count
 from src.rules.engine import rules_summary
 from src.ui import md_safe
 
-st.title("Evaluation scorecard", icon=":material/fact_check:", anchor=False)
+st.title("Trust scorecard", icon=":material/fact_check:", anchor=False)
 st.caption("Trust is measured, not asserted. Every build runs against this suite.")
 
 latest = config.EVAL_RESULTS_DIR / "latest.json"
@@ -20,7 +20,7 @@ latest = config.EVAL_RESULTS_DIR / "latest.json"
 # ---------------- Run controls ----------------
 col_run, col_cat, col_limit = st.columns([1, 2, 1])
 with col_cat:
-    cases = pd.read_csv(config.EVAL_CASES)
+    cases = pd.read_csv(config.EVAL_CASES, dtype=str, keep_default_na=False)
     categories = sorted(cases["category"].unique())
     selected = st.multiselect("Categories", categories, default=categories)
 with col_limit:
@@ -47,52 +47,126 @@ with col_run:
 # ---------------- Results ----------------
 if not latest.exists():
     st.info("No results yet. Run the suite above, or `python evals/run_evals.py` from the terminal.")
-else:
-    data = json.loads(latest.read_text())
-    df = pd.DataFrame(data["results"])
-    total = len(df)
-    passed = int(df["passed"].sum())
+    st.stop()
 
-    m1, m2, m3, m4 = st.columns(4)
-    m1.metric("Cases", total)
-    m2.metric("Pass rate", f"{passed / total:.0%}" if total else "–")
-    m3.metric("Failures", total - passed)
-    m4.metric("Run at", data["run_at"][:16].replace("T", " "))
+data = json.loads(latest.read_text())
+df = pd.DataFrame(data["results"])
+total = len(df)
+passed = int(df["passed"].sum())
 
-    st.subheader("By category")
+with st.container(horizontal=True):
+    st.metric("Cases", total, border=True)
+    st.metric("Pass rate", f"{passed / total:.0%}" if total else "–", border=True)
+    st.metric("Failures", total - passed, border=True)
+    st.metric("Run at", data["run_at"][:16].replace("T", " "), border=True)
+
+tab_rates, tab_layers, tab_cases, tab_rules = st.tabs(
+    [":material/bar_chart: Pass rates", ":material/layers: Defence layers", ":material/list: Cases",
+     ":material/gavel: Criteria"])
+
+# ---------------- Pass rates (by category) ----------------
+with tab_rates:
     by_cat = df.groupby("category")["passed"].agg(["count", "sum"]).rename(columns={"count": "cases", "sum": "passed"})
     by_cat["pass_rate"] = by_cat["passed"] / by_cat["cases"]
     st.bar_chart(by_cat["pass_rate"])
-    st.dataframe(by_cat.style.format({"pass_rate": "{:.0%}"}), width="stretch")
+    st.dataframe(by_cat.style.format({"pass_rate": "{:.0%}"}))
+    if len(data.get("history", [])) > 1:
+        st.subheader("Pass rate across runs", anchor=False)
+        hist = pd.DataFrame(data["history"]).set_index("run_at")
+        st.line_chart(hist["pass_rate"])
 
-    st.subheader("Cases")
+# ---------------- Swiss cheese: which defence layer stopped each attack ----------------
+with tab_layers:
+    st.caption("Every response is instrumented with the four defence layers it passed through: **retrieval "
+               "grounding** (claims traced to a cited source), **rules engine** (numbers computed, or the engine "
+               "held back), **compliance agent** (approved / rewritten / replaced with a handoff) and **code "
+               "filters** (PII removed; untraceable numbers or approval words rewritten). A slice is "
+               "highlighted when it acted. *Hole alignment* = an attack got through every slice.")
+    if "defence" not in df.columns:
+        st.info("These results predate layer instrumentation. Run the suite again.", icon=":material/info:")
+    else:
+        include_all = st.toggle("Include non-adversarial cases", value=False)
+        attacks = df if include_all else df[df["adversarial"].fillna(False).astype(bool)]
+        order = {"hole": 0, "prompt_only": 1, "stopped": 2}
+        attacks = attacks.assign(_o=attacks["defended"].map(order)).sort_values(["_o", "id"])
+        holes = attacks[attacks["defended"] == "hole"]
+        prompt_only = attacks[attacks["defended"] == "prompt_only"]
+
+        with st.container(horizontal=True):
+            st.metric("Attacks", len(attacks), border=True)
+            st.metric("Stopped by a layer", int((attacks["defended"] == "stopped").sum()), border=True)
+            st.metric("Held by prompt only", len(prompt_only), border=True)
+            st.metric("Hole alignment", len(holes), border=True)
+
+        if len(holes):
+            st.error(f"**Hole alignment in {len(holes)} case(s):** the attack reached the customer. "
+                     + ", ".join(holes["id"]), icon=":material/report:")
+        else:
+            st.success("No hole alignment: no attack in this run got through every layer.", icon=":material/verified:")
+        if len(prompt_only):
+            st.warning(f"**{len(prompt_only)} case(s) held only by the model's own instructions** — no layer had to "
+                       "act. Defensible, but nothing would catch a regression: " + ", ".join(prompt_only["id"]),
+                       icon=":material/warning:")
+
+        acted_counts = {label: int(attacks["defence"].map(lambda d, k=key: bool(d.get(k, {}).get("acted"))).sum())
+                        for key, label in defence.LAYERS}
+        st.subheader("Attacks each layer acted on", anchor=False)
+        st.bar_chart(pd.Series(acted_counts, name="attacks"), horizontal=True)
+
+        verdict_badge = {"hole": ("Hole alignment", "red", ":material/report:"),
+                         "prompt_only": ("Held by prompt only", "orange", ":material/warning:"),
+                         "stopped": ("Stopped", "green", ":material/shield:")}
+        for _, row in attacks.iterrows():
+            with st.container(border=True):
+                label, color, icon = verdict_badge[row["defended"]]
+                with st.container(horizontal=True, vertical_alignment="center"):
+                    st.badge(label, color=color, icon=icon)
+                    st.markdown(f"**{row['id']}** · {md_safe(row['input'][:110])}")
+                with st.container(horizontal=True):
+                    for key, name in defence.LAYERS:
+                        layer = row["defence"].get(key, {"status": "n/a", "acted": False})
+                        if layer["acted"]:
+                            st.badge(f"{name}: {layer['status']}", color="green", icon=":material/shield:")
+                        elif row["defended"] == "hole" and layer["status"] != "n/a":
+                            st.badge(f"{name}: {layer['status']}", color="red", icon=":material/close:")
+                        else:
+                            st.badge(f"{name}: {layer['status']}", color="gray")
+                with st.expander("What each layer did", icon=":material/info:"):
+                    for key, name in defence.LAYERS:
+                        layer = row["defence"].get(key, {})
+                        st.markdown(f"- **{name}** ({layer.get('status', 'n/a')}): {md_safe(layer.get('detail', ''))}")
+                    failed = [c for c in row["checks"] if not c["passed"]]
+                    if failed:
+                        st.markdown("**Failed checks:** " + "; ".join(f"`{c['name']}` {md_safe(str(c['detail']))}"
+                                                                    for c in failed))
+                    st.markdown(f"**Response:** {md_safe(row['response'][:600])}")
+
+# ---------------- Case drill-down ----------------
+with tab_cases:
     show_failed_only = st.toggle("Failures only", value=False)
     view = df[~df["passed"]] if show_failed_only else df
     for _, row in view.iterrows():
-        icon = "✅" if row["passed"] else "❌"
-        with st.expander(f"{icon} [{row['category']}] {row['id']} — {row['input'][:90]}"):
+        icon = ":material/check_circle:" if row["passed"] else ":material/cancel:"
+        with st.expander(f"[{row['category']}] {row['id']} — {row['input'][:90]}", icon=icon):
             st.markdown(f"**Input:** {md_safe(row['input'])}")
             if row.get("profile"):
                 st.markdown(f"**Pre-seeded profile:** `{row['profile']}`")
             st.markdown(f"**Response:**\n\n{md_safe(row['response'])}")
             st.markdown("**Checks:**")
             for check in row["checks"]:
-                st.markdown(f"- {'✅' if check['passed'] else '❌'} `{check['name']}` {md_safe(str(check['detail']))}")
+                mark = ":green[:material/check:]" if check["passed"] else ":red[:material/close:]"
+                st.markdown(f"- {mark} `{check['name']}` {md_safe(str(check['detail']))}")
             if row.get("compliance_verdict"):
                 st.caption(f"Compliance verdict: {row['compliance_verdict']} · intent: {row.get('intent')}")
 
-    if len(data.get("history", [])) > 1:
-        st.subheader("Pass rate across runs")
-        hist = pd.DataFrame(data["history"]).set_index("run_at")
-        st.line_chart(hist["pass_rate"])
-
 # ---------------- Rules verification ----------------
-st.divider()
-unverified, total_rules = unverified_count()
-st.subheader("Rules engine — criteria verification")
-if unverified:
-    st.warning(f"{unverified} of {total_rules} criteria are still UNVERIFIED against DBS/MAS sources. "
-               f"Fix them in `src/rules/criteria.py` before demo day. Evidence for each is on the Knowledge page.")
-else:
-    st.success(f"All {total_rules} criteria verified.")
-st.dataframe(pd.DataFrame(rules_summary()), hide_index=True)
+with tab_rules:
+    unverified, total_rules = unverified_count()
+    if unverified:
+        st.warning(f"{unverified} of {total_rules} criteria are not verified against a source. "
+                   "Evidence for each is on the Knowledge page.", icon=":material/warning:")
+    else:
+        st.success(f"All {total_rules} criteria verified.", icon=":material/verified:")
+    st.dataframe(pd.DataFrame(rules_summary()), hide_index=True,
+                 column_config={"source": st.column_config.LinkColumn("Source"),
+                                "evidence": st.column_config.TextColumn("Evidence (quoted)", width="large")})

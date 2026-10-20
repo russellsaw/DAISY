@@ -4,7 +4,7 @@ import time
 
 import streamlit as st
 
-from src import config
+from src import config, defence
 from src.knowledge import retriever
 from src.pipeline import run_turn
 from src.state import PROFILE_FIELDS, ConversationState
@@ -63,6 +63,15 @@ def render_trace(result, label: str) -> None:
 def render_assistant(result, seconds: float | None) -> None:
     st.markdown(md_safe(result.response))
     st.markdown(VERDICT_BADGE.get(result.compliance.get("verdict"), ""))
+    if result.defence:  # Swiss cheese: which layer acted on this reply
+        badges = []
+        for key, name in defence.LAYERS:
+            layer = result.defence.get(key, {})
+            if layer.get("status", "n/a") == "n/a":
+                continue
+            color = "green" if layer.get("acted") else "gray"
+            badges.append(f":{color}-badge[{name}: {layer['status']}]")
+        st.caption(":material/layers: " + " ".join(badges))
     if result.sources:
         st.caption(":material/link: Sources · " + " · ".join(f"[{s['title']}]({s['url']})" for s in result.sources))
     took = f" in {seconds:.0f}s" if seconds else ""

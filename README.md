@@ -14,19 +14,29 @@ limitation, criterion and design decision (the place to look when someone asks "
 customer message
    │
    ▼
-Orchestrator ─── classifies intent, extracts profile facts (age, income, residency…)
-   │
-   ├─ product_qa / comparison ──▶ Product Knowledge agent (BM25 RAG over DBS pages, cites [n])
-   ├─ eligibility ──────────────▶ Eligibility agent ──▶ rules engine (deterministic, shows working)
-   ├─ advice_seeking ───────────▶ Boundary response + Handoff agent (lead card)
-   ├─ handoff_request ──────────▶ Handoff agent
-   └─ out_of_scope / chit_chat ─▶ templated / short replies
+PII guard ─── strips NRIC/FIN and card numbers before any model sees the message
    │
    ▼
-Compliance agent ─── reviews the draft: advice boundary, grounding, approval language,
-   │                 scope, fair dealing, prompt injection. Verdict: approve / revise / handoff.
+Orchestrator ─── intent, profile facts, commitments (+ customer's words for end dates), readback replies
+   │
+   ├─ product_qa / comparison ──▶ Product Knowledge agent (BM25 over 66 DBS/POSB/MAS/HDB sources, cites [n])
+   ├─ eligibility ──────────────▶ Eligibility agent:
+   │                                1. details missing  → ask (no engine)
+   │                                2. not confirmed    → code-written readback (no engine)
+   │                                3. confirmed        → rules engine → counterfactual search ("not now, but when")
+   ├─ advice_seeking ───────────▶ Boundary response + Handoff agent (lead card, built in parallel)
+   ├─ handoff_request ──────────▶ Handoff reply + lead card
+   └─ out_of_scope / chit_chat ─▶ short replies
+   │
    ▼
-response + sources + agent trace  →  Streamlit chat
+Compliance agent (LLM) ─── approve / revise / handoff on advice boundary, grounding, approval language,
+   │                        scope, fair dealing, prompt injection
+Code filters ─── every number must trace to engine / customer / cited page; approval words banned on
+   │             eligibility replies (one rewrite, else handoff)
+Code-written outcome lines ─── "not now, but when" paths + the fixed outcome sentence, appended after review
+   │
+   ▼
+response + sources + agent trace + defence-layer record  →  Streamlit chat
 ```
 
 ```
@@ -41,10 +51,13 @@ src/
                            server-side refusal fallbacks on Sonnet; a final refusal becomes a banker handoff
   state.py                 CustomerProfile + ConversationState
   pii.py                   strips NRIC/FIN and card numbers from every message before any agent sees it
+  defence.py               Swiss-cheese record: which defence layer acted on each response
+  commitments.py           turns a customer's stated end date into a date — in code, from their own words
   pipeline.py              run_turn(): orchestrator → agent → compliance
   agents/                  orchestrator, product_knowledge, eligibility, compliance, handoff, prompts
   rules/criteria.py        every eligibility number, each with verified flag, source URL and quoted evidence
   rules/engine.py          deterministic checks: age, income, TDSR, MSR, LTV, tenure, unsecured cap
+  rules/counterfactual.py  "not now, but when": counterfactual search over the same engine
   knowledge/sources.py     allow-list: ~65 DBS/POSB/MAS/HDB pages and PDFs (+ explicit out-of-scope list)
   knowledge/ingest.py      fetch → snapshot (data/sources/) → strip boilerplate → chunk → data/kb.json
   knowledge/retriever.py   BM25 retrieval (no embeddings API needed)
@@ -52,7 +65,7 @@ evals/
   cases.csv                the suite: golden_qa, eligibility, boundary, adversarial, scope, handoff
   run_evals.py             runs cases through the live pipeline, writes results/latest.json
   judge.py                 LLM-as-judge for behavioural checks
-tests/test_engine.py       unit tests for the rules engine (no API calls)
+tests/                     86 offline unit tests: engine, guards, counterfactual, readback, defence layers
 scripts/ingest.py          build the knowledge base
 scripts/write_starter_cases.py   regenerates the starter cases.csv
 ```
@@ -146,6 +159,16 @@ the profile (no inverse logic anywhere).
 Scenario 2 note: for an HDB flat the binding rule is MSR, which counts only property loans, so a S$600
 car loan can't block the demo persona's HDB loan (TDSR 37.2%). The dated-path demo therefore uses the same
 person buying a S$1M condo with S$700k over 30 years: TDSR 56.3% today, 47.7% once the car loan ends.
+
+## Swiss-cheese defence view
+
+Every response records which of four defence layers acted on it (`src/defence.py`): **retrieval
+grounding**, **rules engine**, **compliance agent**, **code filters** (PII in; numbers and wording out). The
+chat shows the slices under each reply; the Trust scorecard's *Defence layers* tab shows, for every
+adversarial eval case, the four slices with the ones that acted highlighted, and surfaces any **hole
+alignment** (an attack that got through every layer) at the top, followed by attacks held only by the
+model's own instructions. Definitions and the first run's findings are in
+[`docs/ASSUMPTIONS_AND_LIMITATIONS.md`](docs/ASSUMPTIONS_AND_LIMITATIONS.md) §8.
 
 ## Demo persona
 

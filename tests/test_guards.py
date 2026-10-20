@@ -118,3 +118,14 @@ def test_schemas_stay_within_structured_output_limits():
 
     for schema in (ROUTE_SCHEMA, REVIEW_SCHEMA, CARD_SCHEMA, JUDGE):
         assert unions(strict_schema(schema)) <= 8
+
+
+def test_eval_cases_are_read_as_text():
+    """Regression: pandas turned "1" into 1.0 in sparse columns and silently skipped expect_readback."""
+    import pandas as pd
+
+    from src import config
+
+    df = pd.read_csv(config.EVAL_CASES, dtype=str, keep_default_na=False)
+    flags = set(df["expect_readback"]) | set(df["adversarial"]) | set(df["expect_corrections"])
+    assert flags <= {"", "0", "1"}

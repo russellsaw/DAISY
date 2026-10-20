@@ -49,4 +49,6 @@ def answer(state: ConversationState, user_msg: str, products: list[str]) -> dict
         f"retrieved {len(chunks)} chunks, cited {len(cited)}",
         [{"title": c["title"], "score": c["score"]} for c in chunks],
     )
-    return {"draft": draft, "sources": sources, "chunks": chunks}
+    # `excerpts` is exactly what the drafting model saw ([n] numbering, title, as-of date, URL): the compliance
+    # reviewer and the traceability checks get the same text, so citations and URLs can be verified.
+    return {"draft": draft, "sources": sources, "chunks": chunks, "excerpts": excerpts}

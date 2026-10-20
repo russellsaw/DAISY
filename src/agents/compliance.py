@@ -103,7 +103,7 @@ def review(state: ConversationState, user_msg: str, intent: str, draft: str, *,
         f"Numbers in draft NOT found in sources/computations/customer input: {flagged or 'none'}\n\n"
         f"Customer profile:\n{state.profile.describe()}\n\n"
         f"Customer's latest message:\n{user_msg}\n\n"
-        f"Sources available to the drafting agent:\n{sources_text[:6000] or '(none)'}\n\n"
+        f"Sources available to the drafting agent:\n{sources_text[:12000] or '(none)'}\n\n"
         f"Engine computations available:\n{computations or '(none)'}\n\n"
         f"DRAFT RESPONSE:\n{draft}"
     )
