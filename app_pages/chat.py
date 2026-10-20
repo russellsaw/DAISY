@@ -8,6 +8,7 @@ from src import config
 from src.knowledge import retriever
 from src.pipeline import run_turn
 from src.state import PROFILE_FIELDS, ConversationState
+from src.rules.counterfactual import fmt_date
 from src.ui import md_safe
 
 AVATAR = "static/daisy-mark.svg"
@@ -85,6 +86,12 @@ with st.sidebar:
     with st.container(border=True):
         if profile:
             for key, value in profile.items():
+                if key == "commitments":
+                    for c in value:
+                        ends = f"ends {fmt_date(c['end_date'])}" if c.get("end_date") else "no end date given"
+                        amount = md_safe(f"S${c['monthly']:,.0f}/month")
+                        st.markdown(f":gray[{c['kind'].capitalize()}]  \n**{amount}** · {ends}")
+                    continue
                 if isinstance(value, float):
                     value = f"{value:,.0f}"
                 st.markdown(f":gray[{PROFILE_FIELDS[key][0]}]  \n**{md_safe(str(value))}**")
@@ -105,6 +112,15 @@ with st.sidebar:
             st.markdown(md_safe(card["customer_summary"]))
             st.markdown(f":gray[Next step]  \n{md_safe(card['suggested_next_step'])}")
             st.badge(f"Urgency: {card['urgency']}", color={"high": "red", "medium": "orange"}.get(card["urgency"], "gray"))
+            if card.get("paths") or card.get("no_clear_path_for"):
+                st.markdown(":gray[Not now, but when]")
+                for path in card.get("paths", []):
+                    when = f"from {fmt_date(path['earliest_date'])}" if path["earliest_date"] else "what-if, no date"
+                    st.markdown(f"- {md_safe(path['description'])} · *{when}*")
+                for name in card.get("no_clear_path_for", []):
+                    st.markdown(f"- {name}: no clear path on today's criteria")
+                st.caption(f":material/history: Assessed {fmt_date(card['assessed_on'])} · criteria "
+                           f"{card['criteria_version']} · {card['banker_note']}")
             with st.expander("Full card", icon=":material/badge:"):
                 st.json(card)
 

@@ -204,3 +204,16 @@ def unverified_count() -> tuple[int, int]:
                 total += 1
                 unverified += 0 if item["verified"] else 1
     return unverified, total
+
+
+def criteria_version() -> str:
+    """Short hash of every criterion value. Stored with each engine result and counterfactual, so a
+    change to the criteria visibly invalidates paths computed under the old ones."""
+    import hashlib
+    import json
+
+    values = {"mas": {k: v["value"] for k, v in MAS.items()},
+              "products": {p: {k: v["value"] for k, v in prod.items() if isinstance(v, dict) and "value" in v}
+                           for p, prod in PRODUCTS.items()}}
+    digest = hashlib.sha256(json.dumps(values, sort_keys=True, default=str).encode()).hexdigest()[:10]
+    return f"{CHECKED_ON}.{digest}"

@@ -12,6 +12,7 @@ from dataclasses import dataclass, field
 
 from . import config, llm, pii
 from .agents import compliance, eligibility, handoff, orchestrator, product_knowledge, prompts
+from .rules import counterfactual
 from .state import ConversationState
 
 
@@ -34,6 +35,9 @@ class TurnResult:
     compliance: dict = field(default_factory=dict)
     trace: list = field(default_factory=list)
     user_msg: str = ""  # the customer message after PII redaction — what the UI should display
+    counterfactuals: list = field(default_factory=list)  # "not now, but when" results, one per failing product
+    sources_text: str = ""  # what the drafting agent was grounded on (for the traceability eval)
+    computations: dict = field(default_factory=dict)  # engine numbers the reply may use
 
 
 def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
@@ -47,6 +51,7 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
     sources: list[dict] = []
     sources_text = ""
     computations: dict = {}
+    cfs: list[dict] = []
     card_job: Future | None = None
 
     def start_card(trigger: str) -> Future:
@@ -73,6 +78,7 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
             out = eligibility.assess(state, user_msg, products)
             draft, computations = out["draft"], out["computations"]
             sources = out.get("sources", [])
+            cfs = out.get("counterfactuals", [])
             sources_text = "\n".join(str(r) for r in out["results"])
 
         elif intent == "advice_seeking":
@@ -103,6 +109,13 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
                                  computations=computations, injection_suspected=injection)
     final = reviewed["final"]
 
+    # "Not now, but when": the outcome lines and the fixed outcome sentence are written by code and
+    # appended after review, so no model can alter or omit them. Not shown if review replaced the reply.
+    if cfs and final != compliance.HANDOFF_FALLBACK:
+        final = final.rstrip() + "\n\n" + counterfactual.outcome_block(cfs)
+    if any(not cf["paths"] for cf in cfs) and card_job is None:
+        card_job = start_card(counterfactual.NO_PATH_TRIGGER)
+
     if card_job is None and (reviewed["record"]["verdict"] == "handoff" or intent == "refused"):
         card_job = start_card("compliance reviewer escalated")
     card = card_job.result() if card_job else None
@@ -118,4 +131,7 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
         compliance=reviewed["record"],
         trace=list(state.trace),
         user_msg=user_msg,
+        counterfactuals=cfs,
+        sources_text=sources_text,
+        computations=computations,
     )

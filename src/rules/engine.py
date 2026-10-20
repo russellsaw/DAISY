@@ -14,7 +14,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 
 from ..state import CustomerProfile
-from .criteria import CHECKED_ON, MAS, PRODUCTS
+from .criteria import CHECKED_ON, MAS, PRODUCTS, criteria_version
 
 
 @dataclass
@@ -26,6 +26,11 @@ class EligibilityResult:
     computations: dict = field(default_factory=dict)
     missing_fields: list[str] = field(default_factory=list)
     sources: list[str] = field(default_factory=list)
+    # One entry per rule evaluated: {rule, value, threshold, kind, passed}. kind is "ratio"
+    # (value <= threshold, a fraction), "max" (value <= threshold), "min" (value >= threshold) or
+    # "rule" (yes/no). The counterfactual search reads these; it never re-implements a rule.
+    checks: list[dict] = field(default_factory=list)
+    criteria_version: str = field(default_factory=criteria_version)
     caveat: str = (
         "Indicative only, based on the information you have shared. "
         "Final approval is subject to the bank's credit assessment."
@@ -37,6 +42,11 @@ class EligibilityResult:
 
 def _mas(key):
     return MAS[key]["value"]
+
+
+def _check(result: "EligibilityResult", rule: str, value, threshold, kind: str, passed: bool) -> bool:
+    result.checks.append({"rule": rule, "value": value, "threshold": threshold, "kind": kind, "passed": bool(passed)})
+    return bool(passed)
 
 
 def monthly_instalment(principal: float, annual_rate: float, years: int) -> float:
@@ -69,7 +79,10 @@ def _income_check(p: CustomerProfile, product_key: str, result: EligibilityResul
     annual = (p.monthly_income or 0) * 12
     result.computations["annual_income"] = round(annual, 2)
     result.computations["min_annual_income_for_residency"] = threshold
-    if annual >= threshold:
+    if annual < threshold:
+        result.computations["income_shortfall_annual"] = round(threshold - annual, 2)
+        result.computations["income_shortfall_monthly"] = round((threshold - annual) / 12, 2)
+    if _check(result, "min_annual_income", round(annual, 2), threshold, "min", annual >= threshold):
         result.reasons.append(
             f"Annual income S${annual:,.0f} meets the minimum of S${threshold:,.0f} for {p.residency}."
         )
@@ -85,10 +98,10 @@ def _age_check(p: CustomerProfile, product_key: str, result: EligibilityResult) 
     min_age = prod["min_age"]["value"]
     max_age = prod.get("max_age", {}).get("value")
     result.computations["min_age"] = min_age
-    if p.age < min_age:
+    if not _check(result, "min_age", p.age, min_age, "min", p.age >= min_age):
         result.reasons.append(f"Age {p.age} is below the minimum age of {min_age}.")
         return False
-    if max_age and p.age > max_age:
+    if max_age and not _check(result, "max_age", p.age, max_age, "max", p.age <= max_age):
         result.computations["max_age"] = max_age
         result.reasons.append(f"Age {p.age} is above the maximum age of {max_age}.")
         return False
@@ -109,6 +122,9 @@ def _unsecured_cap_check(p: CustomerProfile, result: EligibilityResult, requeste
         return True
     headroom = cap - p.existing_unsecured_balance
     result.computations["unsecured_headroom"] = round(headroom, 2)
+    utilisation = (p.existing_unsecured_balance + (requested or 0)) / cap if cap > 0 else float("inf")
+    _check(result, "unsecured_utilisation", round(utilisation, 4), 1.0, "ratio",
+           headroom > 0 and not (requested and requested > headroom))
     if headroom <= 0:
         result.reasons.append(
             f"Existing unsecured balance S${p.existing_unsecured_balance:,.0f} already meets or exceeds "
@@ -175,12 +191,13 @@ def check_home_loan(p: CustomerProfile) -> EligibilityResult:
     ok = _age_check(p, "home_loan", result)
     ptype = p.property_type if p.property_type in ("hdb", "ec", "private") else "private"
     n_loans = min(p.existing_housing_loans or 0, 2)
-    existing_debt = p.existing_monthly_debt or 0.0
+    existing_debt = p.total_monthly_debt()
     loan = p.home_loan_amount
 
     # --- HDB buyer residency ---
     allowed = _mas("hdb_buyer_residency")
-    if ptype == "hdb" and p.residency not in allowed:
+    if not _check(result, "hdb_buyer_residency", p.residency, allowed, "rule",
+                  ptype != "hdb" or p.residency in allowed):
         result.reasons.append(
             "HDB flats can only be bought by a Singapore Citizen or PR household; a foreigner cannot buy one on "
             "their own (a Singapore Citizen buying with a non-resident spouse is a separate case for a banker)."
@@ -190,7 +207,7 @@ def check_home_loan(p: CustomerProfile) -> EligibilityResult:
     # --- Tenure ---
     max_tenure = _mas("max_tenure")[ptype]
     result.computations["max_tenure_years"] = max_tenure
-    if p.tenure_years > max_tenure:
+    if not _check(result, "max_tenure", p.tenure_years, max_tenure, "max", p.tenure_years <= max_tenure):
         result.reasons.append(f"Tenure {p.tenure_years}y exceeds the maximum of {max_tenure}y for {ptype.upper()}.")
         ok = False
 
@@ -214,7 +231,9 @@ def check_home_loan(p: CustomerProfile) -> EligibilityResult:
         result.reasons.append(f"LTV limit of {ltv_limit:.0%} applies with {n_loans} existing housing loan(s).")
     max_loan = p.property_price * ltv_limit
     result.computations["max_loan_by_ltv"] = round(max_loan, 2)
-    if loan > max_loan:
+    ltv_ratio = loan / p.property_price if p.property_price else float("inf")
+    result.computations["ltv_requested"] = round(ltv_ratio, 4)
+    if not _check(result, "ltv", round(ltv_ratio, 4), ltv_limit, "ratio", loan <= max_loan):
         result.reasons.append(
             f"Requested S${loan:,.0f} exceeds the LTV cap of S${max_loan:,.0f} "
             f"({ltv_limit:.0%} of S${p.property_price:,.0f})."
@@ -233,7 +252,7 @@ def check_home_loan(p: CustomerProfile) -> EligibilityResult:
         "assessable_monthly_income": round(income, 2),
         "assessable_income_working": income_note,
     })
-    if income <= 0:
+    if not _check(result, "assessable_income", income, 0, "rule", income > 0):
         result.reasons.append("No assessable income.")
         result.status = "not_eligible"
         return result
@@ -243,7 +262,7 @@ def check_home_loan(p: CustomerProfile) -> EligibilityResult:
         msr = instalment / income
         cap = _mas("msr_cap")
         result.computations.update({"msr": round(msr, 4), "msr_cap": cap})
-        if msr > cap:
+        if not _check(result, "msr", round(msr, 4), cap, "ratio", msr <= cap):
             result.reasons.append(f"MSR {msr:.1%} exceeds the {cap:.0%} cap (S${instalment:,.0f} / S${income:,.0f}).")
             ok = False
         else:
@@ -253,7 +272,7 @@ def check_home_loan(p: CustomerProfile) -> EligibilityResult:
     tdsr = (instalment + existing_debt) / income
     cap = _mas("tdsr_cap")
     result.computations.update({"existing_monthly_debt": existing_debt, "tdsr": round(tdsr, 4), "tdsr_cap": cap})
-    if tdsr > cap:
+    if not _check(result, "tdsr", round(tdsr, 4), cap, "ratio", tdsr <= cap):
         result.reasons.append(
             f"TDSR {tdsr:.1%} exceeds the {cap:.0%} cap ((S${instalment:,.0f} + S${existing_debt:,.0f}) / S${income:,.0f})."
         )

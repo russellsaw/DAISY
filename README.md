@@ -123,6 +123,28 @@ Trust scorecard page.
 - **Trust is measured.** The eval suite has adversarial cases (hallucination bait, approval pressure,
   prompt injection, PII fishing, competitor disparagement). The scorecard shows failures, not just wins.
 
+## "Not now, but when" — counterfactual eligibility
+
+When the engine says *not eligible*, `src/rules/counterfactual.py` searches for the smallest realistic
+change that would clear today's criteria — by running the **same forward engine** on modified copies of
+the profile (no inverse logic anywhere).
+
+- **Dated levers** remove a commitment the customer stated *with* an end date. Only these carry a date,
+  and it is exactly the stated end date. Dates are computed by code (`src/commitments.py`) and only from
+  a verbatim quote of the customer that contains a time expression; "assume it's paid off" never dates.
+- **What-if levers** (income higher, smaller loan, other tenure, undated debt cleared) are never dated.
+- A lever is a **path** only if every ratio failing today clears by `CF_MARGIN` (3 points, `src/config.py`);
+  otherwise it is **borderline**. Single levers first, pairs only if none works, never three. No path →
+  banker handoff ("no clear path on today's criteria").
+- The outcome lines and the fixed sentence are written by code and appended **after** compliance review;
+  the LLM only explains the binding rule and the levers. Approval vocabulary is hard-banned in code, and
+  every number in every reply must trace to the engine, the customer or a cited page (output filter).
+- Every result carries `criteria_version`, so a criteria change visibly invalidates stored paths.
+
+Scenario 2 note: for an HDB flat the binding rule is MSR, which counts only property loans, so a S$600
+car loan can't block the demo persona's HDB loan (TDSR 37.2%). The dated-path demo therefore uses the same
+person buying a S$1M condo with S$700k over 30 years: TDSR 56.3% today, 47.7% once the car loan ends.
+
 ## Demo persona
 
 32-year-old PR, S$7,000/month, first HDB purchase at S$550k, S$380k home loan over 25 years.

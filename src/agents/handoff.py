@@ -39,6 +39,19 @@ def build_card(state: ConversationState, trigger: str) -> dict:
     )
     card = llm.structured(prompts.HANDOFF, context, CARD_SCHEMA)
     card["profile"] = state.profile.to_dict()
+    # "Not now, but when" — copied from the engine, never written by the model.
+    cfs = state.last_counterfactuals
+    if cfs:
+        dated = [x["earliest_date"] for cf in cfs for x in cf["paths"] if x["earliest_date"]]
+        card["paths"] = [{"product": cf["product_name"], "binding_rule": cf["binding_rule"],
+                          "lever_kind": x["lever_kind"], "description": x["description"],
+                          "headroom": x["headroom"], "earliest_date": x["earliest_date"]}
+                         for cf in cfs for x in cf["paths"]]
+        card["no_clear_path_for"] = [cf["product_name"] for cf in cfs if not cf["paths"]]
+        card["earliest_date"] = min(dated) if dated else None
+        card["assessed_on"] = cfs[0]["assessed_on"]
+        card["criteria_version"] = cfs[0]["criteria_version"]
+        card["banker_note"] = "re-run criteria before contacting"
     card["created_at"] = datetime.now().isoformat(timespec="minutes")
     card["trigger"] = trigger
     state.handoff_card = card

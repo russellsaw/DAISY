@@ -12,6 +12,13 @@ sends one message, and checks the response:
   - expected_status      engine status for expected_product (eligibility cases)
   - requires_citation    product_qa answers must cite at least one source
   - expected_behavior    LLM judge (boundary / adversarial / scope cases)
+  - cf_expect            counterfactual outcome: dated | whatif_only | no_path | none ("a|b" accepts either)
+  - expected_profile     JSON subset the profile must equal after the turn (e.g. future income not stored)
+Always-on checks:
+  - numbers_traceable    every number/date in the reply traces to the engine, the customer's words or a
+                         retrieved page (the "LLM never generates a figure" constraint)
+  - banned_lexicon       eligibility replies never contain approval vocabulary (Feature 1)
+  - outcome_template     the fixed outcome sentence is present verbatim whenever a path is shown
 Writes evals/results/<timestamp>.json and latest.json (with run history).
 """
 from __future__ import annotations
@@ -30,6 +37,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from evals.judge import judge  # noqa: E402
 from src import config  # noqa: E402
+from src.agents.compliance import HANDOFF_FALLBACK, banned_phrases, unsupported_numbers  # noqa: E402
+from src.rules.counterfactual import OUTCOME_TEMPLATE, fmt_date  # noqa: E402
 from src.pipeline import run_turn  # noqa: E402
 from src.state import ConversationState  # noqa: E402
 
@@ -38,6 +47,49 @@ def _split(value) -> list[str]:
     if value is None or (isinstance(value, float) and pd.isna(value)) or str(value).strip() == "":
         return []
     return [v.strip() for v in str(value).split("|") if v.strip()]
+
+
+def _always_on_checks(case: dict, result, state) -> list[dict]:
+    checks = []
+    untraced = unsupported_numbers(result.response, result.sources_text, result.computations,
+                                   state.profile.to_dict(), case["input"])
+    checks.append({"name": "numbers_traceable", "passed": not untraced,
+                   "detail": f"untraceable: {untraced}" if untraced else "all numbers trace to engine/customer/source"})
+    if result.intent == "eligibility":
+        found = banned_phrases(result.response)
+        checks.append({"name": "banned_lexicon", "passed": not found, "detail": f"found {found}" if found else "clean"})
+    return checks
+
+
+def _counterfactual_checks(case: dict, result, state) -> list[dict]:
+    checks = []
+    cfs = result.counterfactuals
+    replaced = result.response == HANDOFF_FALLBACK  # review replaced the whole reply: no path is shown
+    for cf in cfs:
+        if cf["paths"] and not replaced:
+            sentence = OUTCOME_TEMPLATE.format(assessed_on=fmt_date(cf["assessed_on"]))
+            checks.append({"name": "outcome_template", "passed": sentence in result.response,
+                           "detail": "fixed sentence present verbatim" if sentence in result.response else "MISSING"})
+    if case.get("cf_expect"):
+        if not cfs:
+            got = "none"
+        elif any(x["lever_kind"] == "dated" for cf in cfs for x in cf["paths"]):
+            got = "dated"
+        elif any(cf["paths"] for cf in cfs):
+            got = "whatif_only"
+        else:
+            got = "no_path"
+        checks.append({"name": "cf_expect", "passed": got in _split(case["cf_expect"]),
+                       "detail": f"expected {case['cf_expect']}, got {got}"})
+        if got in ("whatif_only", "no_path", "none"):
+            dated = [x["earliest_date"] for cf in cfs for x in cf["paths"] if x["earliest_date"]]
+            checks.append({"name": "no_date_given", "passed": not dated, "detail": f"dates: {dated}" if dated else "none"})
+    if case.get("expected_profile"):
+        want = json.loads(case["expected_profile"])
+        have = state.profile.to_dict()
+        diff = {k: (v, have.get(k)) for k, v in want.items() if have.get(k) != v}
+        checks.append({"name": "expected_profile", "passed": not diff, "detail": f"mismatch {diff}" if diff else "ok"})
+    return checks
 
 
 def run_case(case: dict) -> dict:
@@ -86,6 +138,10 @@ def run_case(case: dict) -> dict:
         verdict = judge(case["input"], response, case["expected_behavior"])
         checks.append({"name": "judge", "passed": bool(verdict["passed"]), "detail": verdict["rationale"]})
 
+    if result is not None:
+        checks += _always_on_checks(case, result, state)
+        checks += _counterfactual_checks(case, result, state)
+
     if not checks:
         checks.append({"name": "ran", "passed": bool(response), "detail": "no assertions defined for this case"})
 
@@ -97,6 +153,11 @@ def run_case(case: dict) -> dict:
         "response": response,
         "intent": intent,
         "compliance_verdict": result.compliance.get("verdict") if result else None,
+        "counterfactuals": [{"product": cf["product"], "binding_rule": cf["binding_rule"],
+                             "paths": [{k: x[k] for k in ("lever_kind", "lever", "headroom", "earliest_date")}
+                                       for x in cf["paths"]],
+                             "borderline": [x["lever"] for x in cf["borderline"]]}
+                            for cf in (result.counterfactuals if result else [])],
         "checks": checks,
         "passed": all(c["passed"] for c in checks),
         "seconds": round(time.time() - started, 1),

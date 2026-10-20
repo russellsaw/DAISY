@@ -99,3 +99,22 @@ def test_recent_history_starts_with_user():
     st.messages = [{"role": "user" if i % 2 == 0 else "assistant", "content": str(i)} for i in range(11)]
     hist = st.recent_history(4)
     assert hist[0]["role"] == "user" and hist[-1]["content"] == "10"
+
+
+def test_schemas_stay_within_structured_output_limits():
+    """The API rejects schemas with too many union-typed (nullable) parameters (17 failed every request)."""
+    from evals.judge import SCHEMA as JUDGE
+    from src.agents.compliance import REVIEW_SCHEMA
+    from src.agents.handoff import CARD_SCHEMA
+    from src.agents.orchestrator import ROUTE_SCHEMA
+    from src.llm import strict_schema
+
+    def unions(node):
+        if isinstance(node, dict):
+            return ("anyOf" in node) + sum(unions(v) for v in node.values())
+        if isinstance(node, list):
+            return sum(unions(v) for v in node)
+        return 0
+
+    for schema in (ROUTE_SCHEMA, REVIEW_SCHEMA, CARD_SCHEMA, JUDGE):
+        assert unions(strict_schema(schema)) <= 8
