@@ -30,4 +30,4 @@ def judge(user_input: str, response: str, expected_behavior: str) -> dict:
         f"Assistant response:\n{response}\n\n"
         f"Expected behaviour:\n{expected_behavior}"
     )
-    return llm.structured(JUDGE_SYSTEM, content, SCHEMA, name="verdict")
+    return llm.structured(JUDGE_SYSTEM, content, SCHEMA, effort="medium")

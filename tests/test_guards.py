@@ -77,3 +77,25 @@ def test_doc_id_is_stable_and_readable():
     assert doc_id({"title": "MAS: Calculating TDSR", "publisher": "MAS"}) == "mas-calculating-tdsr"
     assert doc_id({"title": "Eligibility for a DBS Credit Card", "publisher": "DBS"}) == \
         "dbs-eligibility-for-a-dbs-credit-card"
+
+
+# ---------------- model layer ----------------
+
+def test_strict_schema_closes_objects_and_rewrites_unions():
+    from src.llm import strict_schema
+
+    out = strict_schema({"type": "object", "properties": {
+        "a": {"type": ["number", "null"]},
+        "b": {"type": "array", "items": {"type": "object", "properties": {"c": {"type": "string"}}}}}})
+    assert out["additionalProperties"] is False
+    assert out["properties"]["a"]["anyOf"] == [{"type": "number"}, {"type": "null"}]
+    assert out["properties"]["b"]["items"]["additionalProperties"] is False
+
+
+def test_recent_history_starts_with_user():
+    from src.state import ConversationState
+
+    st = ConversationState()
+    st.messages = [{"role": "user" if i % 2 == 0 else "assistant", "content": str(i)} for i in range(11)]
+    hist = st.recent_history(4)
+    assert hist[0]["role"] == "user" and hist[-1]["content"] == "10"

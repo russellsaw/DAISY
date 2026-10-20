@@ -11,9 +11,7 @@ from src.knowledge import ingest, retriever
 from src.rules.criteria import unverified_count
 from src.rules.engine import rules_summary
 
-st.set_page_config(page_title=f"{config.ASSISTANT_NAME} · Knowledge", page_icon=":material/library_books:",
-                   layout="wide")
-st.title("Knowledge repository")
+st.title("Knowledge repository", icon=":material/library_books:", anchor=False)
 st.caption("Everything the assistant is allowed to answer from — with where it came from and when it was fetched. "
            "Snapshots live in `data/sources/`; the chunked index the model searches is `data/kb.json`.")
 

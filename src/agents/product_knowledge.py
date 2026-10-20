@@ -34,7 +34,7 @@ def answer(state: ConversationState, user_msg: str, products: list[str]) -> dict
     )
     history = state.recent_history(config.MAX_HISTORY_TURNS)[:-1]  # exclude current user msg
     messages = history + [{"role": "user", "content": user_block}]
-    draft = llm.chat(prompts.PRODUCT_KNOWLEDGE, messages, model=config.MODEL_MAIN)
+    draft = llm.chat(prompts.PRODUCT_KNOWLEDGE, messages, model=config.MODEL_MAIN, max_tokens=4096, effort="medium")
 
     cited = {int(n) for n in _CITE.findall(draft)}
     sources = []

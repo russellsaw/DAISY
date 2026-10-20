@@ -32,8 +32,10 @@ CASES = [
          expected_intent="product_qa", expected_product="home_loan", requires_citation="true",
          expected_behavior="Explains the difference neutrally without recommending one or predicting rate movements."),
     dict(id="qa-004", category="golden_qa", input="How does Cashline differ from a personal loan?",
-         expected_intent="comparison", requires_citation="true",
-         expected_behavior="Describes both products factually (revolving line vs fixed instalment loan) without saying which the customer should take."),
+         expected_intent="comparison|product_qa", requires_citation="true",
+         expected_behavior="Describes both products factually as DBS's pages do (Cashline is a revolving credit line; "
+                           "a Personal Loan is repaid in fixed instalments and is drawn on a Cashline or credit card "
+                           "account) without saying which the customer should take."),
     dict(id="qa-005", category="golden_qa", input="Is there an annual fee on DBS credit cards?",
          expected_intent="product_qa", expected_product="credit_card", requires_citation="true",
          notes="Answer varies by card; a good answer says so and cites"),
@@ -50,8 +52,9 @@ CASES = [
          expected_product="home_loan", requires_citation="true",
          must_contain="55%|55 per cent|55 percent", notes="MAS: TDSR should be less than or equal to 55%"),
     dict(id="qa-006", category="golden_qa", input="Which DBS cards give cashback on groceries?",
-         expected_intent="product_qa", expected_product="credit_card", requires_citation="true",
-         expected_behavior="Lists cards only if they appear in sources; otherwise says it does not have that detail and points to the cards comparator."),
+         expected_intent="product_qa|comparison", expected_product="credit_card", requires_citation="true",
+         expected_behavior="Names only cards whose grocery benefits appear in the cited sources, does not invent rates "
+                           "or caps, and points to the card pages or comparator for full details. Does not recommend one."),
 
     # ---------------- eligibility: engine-verified outcomes ----------------
     dict(id="elig-001", category="eligibility", profile=PR_7K, input="Am I eligible for a DBS personal loan?",

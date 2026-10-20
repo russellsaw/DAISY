@@ -37,7 +37,7 @@ def build_card(state: ConversationState, trigger: str) -> dict:
         f"Latest eligibility engine results (JSON):\n{json.dumps(state.last_eligibility, indent=1) if state.last_eligibility else '(none run)'}\n\n"
         f"Transcript:\n{state.transcript(20)}"
     )
-    card = llm.structured(prompts.HANDOFF, context, CARD_SCHEMA, name="lead_card", max_tokens=1200)
+    card = llm.structured(prompts.HANDOFF, context, CARD_SCHEMA)
     card["profile"] = state.profile.to_dict()
     card["created_at"] = datetime.now().isoformat(timespec="minutes")
     card["trigger"] = trigger

@@ -42,7 +42,7 @@ def route(state: ConversationState, user_msg: str) -> dict:
         f"Recent conversation:\n{state.transcript(6)}\n\n"
         f"Latest customer message:\n{user_msg}"
     )
-    decision = llm.structured(prompts.ORCHESTRATOR, context, ROUTE_SCHEMA, name="route")
+    decision = llm.structured(prompts.ORCHESTRATOR, context, ROUTE_SCHEMA)
     changed = state.profile.update(decision.get("profile_updates") or {})
     decision["profile_changed"] = changed
     state.add_trace(

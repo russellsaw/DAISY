@@ -90,7 +90,12 @@ def review(state: ConversationState, user_msg: str, intent: str, draft: str, *,
         f"Engine computations available:\n{computations or '(none)'}\n\n"
         f"DRAFT RESPONSE:\n{draft}"
     )
-    verdict = llm.structured(prompts.COMPLIANCE, context, REVIEW_SCHEMA, name="review", max_tokens=1500)
+    try:
+        verdict = llm.structured(prompts.COMPLIANCE, context, REVIEW_SCHEMA, max_tokens=8000,
+                                 effort="medium")
+    except llm.Refusal as exc:  # a reviewer that won't review fails closed
+        verdict = {"verdict": "handoff",
+                   "issues": [{"rule": "fair_dealing", "detail": f"reviewer model declined ({exc})"}]}
 
     revision_flags: list[str] = []
     if verdict["verdict"] == "approve":

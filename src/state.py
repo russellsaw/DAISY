@@ -6,7 +6,7 @@ engine reads from it; the UI side panel displays it.
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
 # field -> (friendly label, description shown to the model for extraction)
 PROFILE_FIELDS: dict[str, tuple[str, str]] = {
@@ -102,12 +102,25 @@ class ConversationState:
     handoff_card: Optional[dict] = None
     last_sources: list[dict] = field(default_factory=list)
     last_eligibility: list[dict] = field(default_factory=list)
+    # Optional UI hook: called with each TraceEvent as it happens (the chat page uses it to
+    # draw the live agent timeline). Never required for correctness.
+    listener: Optional[Callable[[TraceEvent], None]] = field(default=None, repr=False, compare=False)
 
     def add_trace(self, agent: str, summary: str, detail: Any = None) -> None:
-        self.trace.append(TraceEvent(agent, summary, detail))
+        event = TraceEvent(agent, summary, detail)
+        self.trace.append(event)
+        if self.listener is not None:
+            try:
+                self.listener(event)
+            except Exception:  # noqa: BLE001 — a UI hook must never break a turn
+                pass
 
     def recent_history(self, max_turns: int) -> list[dict]:
-        return self.messages[-max_turns * 2:]
+        """Last N exchanges, always starting on a user turn (the API requires it)."""
+        msgs = self.messages[-max_turns * 2:]
+        while msgs and msgs[0]["role"] != "user":
+            msgs = msgs[1:]
+        return msgs
 
     def transcript(self, max_turns: int = 20) -> str:
         return "\n".join(

@@ -1,4 +1,4 @@
-# LendWise (working name) — a trust-first sales assistant for DBS retail lending
+# Level — a trust-first sales assistant for DBS retail lending
 
 > Multi-agent chatbot for DBS home loans, credit cards and personal loans. The model never produces a
 > number (a rules engine does), every response is reviewed by a compliance agent before the customer
@@ -28,12 +28,15 @@ response + sources + agent trace  →  Streamlit chat
 ```
 
 ```
-app.py                     Streamlit chat page (profile side panel, sources, agent trace)
-pages/1_Evals.py           Scorecard, drill-down, run button, rules-verification status
-pages/2_Knowledge.py       Knowledge repository: documents, "search as the assistant", rule evidence, change history
+app.py                     entry point: page config, logo, top navigation (st.navigation)
+app_pages/chat.py          Assistant: chat, live agent timeline, profile side panel, lead card
+app_pages/evals.py         Trust scorecard: pass rates, drill-down, run button, rules-verification status
+app_pages/knowledge.py     Knowledge repository: documents, "search as the assistant", rule evidence, change history
+.streamlit/config.toml     "DBS 2030" theme (light + dark), static/ holds the Level logo
 src/
   config.py                models, paths, settings (.env)
-  llm.py                   Claude API wrapper; structured() forces JSON via tool use
+  llm.py                   Claude API wrapper; structured() uses structured outputs, effort per call,
+                           server-side refusal fallbacks on Sonnet; a final refusal becomes a banker handoff
   state.py                 CustomerProfile + ConversationState
   pii.py                   strips NRIC/FIN and card numbers from every message before any agent sees it
   pipeline.py              run_turn(): orchestrator → agent → compliance
@@ -92,7 +95,8 @@ Things learned from the source audit (details in `src/knowledge/sources.py`):
   means under 800 characters.
 - The brief's combined Personal Loan / Card / Cashline T&Cs PDF link is dead (returns HTML).
 
-Run the evals from the terminal (`python evals/run_evals.py`) or from the Evals page.
+Run the evals from the terminal (`python evals/run_evals.py`, parallel with `--workers`) or from the
+Trust scorecard page.
 
 ## Before demo day — the checklist that matters
 

@@ -2,10 +2,11 @@
 
     python evals/run_evals.py                      # everything
     python evals/run_evals.py --categories adversarial,boundary --limit 20
+    python evals/run_evals.py --workers 6         # cases run in parallel (default 4)
 
 Each case starts a fresh conversation (optionally pre-seeded with a profile),
 sends one message, and checks the response:
-  - expected_intent      orchestrator routed correctly
+  - expected_intent      orchestrator routed correctly ("a|b" accepts either)
   - must_contain         any one of the | separated phrases appears (case-insensitive)
   - must_not_contain     none of the | separated phrases appear
   - expected_status      engine status for expected_product (eligibility cases)
@@ -19,6 +20,7 @@ import argparse
 import json
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from pathlib import Path
 
@@ -56,7 +58,7 @@ def run_case(case: dict) -> dict:
         checks.append({"name": "no_error", "passed": False, "detail": error})
 
     if case.get("expected_intent"):
-        ok = intent == case["expected_intent"]
+        ok = intent in _split(case["expected_intent"])
         checks.append({"name": "intent", "passed": ok, "detail": f"expected {case['expected_intent']}, got {intent}"})
 
     musts = _split(case.get("must_contain"))
@@ -105,6 +107,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--categories", default="")
     parser.add_argument("--limit", type=int, default=0)
+    parser.add_argument("--workers", type=int, default=4)
     args = parser.parse_args()
 
     df = pd.read_csv(config.EVAL_CASES).fillna("")
@@ -113,11 +116,14 @@ def main() -> int:
     if args.limit:
         df = df.head(args.limit)
 
-    results = []
-    for i, case in enumerate(df.to_dict("records"), 1):
-        res = run_case(case)
-        results.append(res)
-        print(f"[{i}/{len(df)}] {'PASS' if res['passed'] else 'FAIL'}  {res['id']}  ({res['seconds']}s)", flush=True)
+    cases = df.to_dict("records")
+    results: list[dict | None] = [None] * len(cases)
+    with ThreadPoolExecutor(max_workers=max(1, args.workers)) as pool:
+        futures = {pool.submit(run_case, case): i for i, case in enumerate(cases)}
+        for done, fut in enumerate(as_completed(futures), 1):
+            res = fut.result()
+            results[futures[fut]] = res  # keep CSV order in the results file
+            print(f"[{done}/{len(cases)}] {'PASS' if res['passed'] else 'FAIL'}  {res['id']}  ({res['seconds']}s)", flush=True)
 
     config.EVAL_RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     run_at = datetime.now().isoformat(timespec="seconds")

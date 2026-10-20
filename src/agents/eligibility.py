@@ -56,7 +56,7 @@ def assess(state: ConversationState, user_msg: str, products: list[str]) -> dict
         f"\n\nCustomer's latest message:\n{user_msg}"
     )
     draft = llm.chat(prompts.ELIGIBILITY_NARRATE, [{"role": "user", "content": prompt}],
-                     model=config.MODEL_MAIN, max_tokens=1200)
+                     model=config.MODEL_MAIN, max_tokens=4096, effort="medium")
 
     # Collect every number the engine produced so compliance can whitelist them.
     computations = {}

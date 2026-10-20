@@ -12,8 +12,7 @@ from src.rules.criteria import unverified_count
 from src.rules.engine import rules_summary
 from src.ui import md_safe
 
-st.set_page_config(page_title=f"{config.ASSISTANT_NAME} · Evals", page_icon="🧪", layout="wide")
-st.title("Evaluation scorecard")
+st.title("Evaluation scorecard", icon=":material/fact_check:", anchor=False)
 st.caption("Trust is measured, not asserted. Every build runs against this suite.")
 
 latest = config.EVAL_RESULTS_DIR / "latest.json"
@@ -29,7 +28,7 @@ with col_limit:
 with col_run:
     st.write("")
     st.write("")
-    if st.button("▶ Run suite", type="primary", width="stretch"):
+    if st.button("Run suite", icon=":material/play_arrow:", type="primary", width="stretch"):
         cmd = [sys.executable, str(config.ROOT / "evals" / "run_evals.py"), "--limit", str(int(limit))]
         if selected and len(selected) < len(categories):
             cmd += ["--categories", ",".join(selected)]
