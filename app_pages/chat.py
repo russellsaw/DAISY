@@ -10,7 +10,7 @@ from src.pipeline import run_turn
 from src.state import PROFILE_FIELDS, ConversationState
 from src.ui import md_safe
 
-AVATAR = "static/level-mark.svg"
+AVATAR = "static/daisy-mark.svg"
 AGENT_ICONS = {
     "PII guard": ":material/shield_lock:",
     "Orchestrator": ":material/alt_route:",
@@ -70,7 +70,7 @@ def render_assistant(result, seconds: float | None) -> None:
 
 # ---------------- Sidebar: live customer profile, eligibility, lead card ----------------
 with st.sidebar:
-    st.caption(f"{config.ASSISTANT_NAME} {config.ASSISTANT_TAGLINE} · home loans, cards and personal loans · "
+    st.caption(f"{config.ASSISTANT_NAME} · {config.ASSISTANT_TAGLINE} · home loans, cards and personal loans · "
                "product information only")
 
     kb = retriever.load()
@@ -116,7 +116,8 @@ with st.sidebar:
 # ---------------- Main: conversation ----------------
 if not st.session_state.turns:
     st.title(f"{config.ASSISTANT_NAME}", anchor=False)
-    st.markdown("##### Home loans, cards and personal loans: clear answers, checked before you see them.")
+    st.markdown(f"##### {config.ASSISTANT_TAGLINE}")
+    st.markdown("Home loans, cards and personal loans: clear answers, checked before you see them.")
     st.caption("Product information and indicative eligibility from DBS's published criteria. "
                "Not financial advice and not a loan approval. Every reply is reviewed by a compliance agent.")
 

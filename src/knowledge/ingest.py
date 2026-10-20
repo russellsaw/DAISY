@@ -42,7 +42,7 @@ from bs4 import BeautifulSoup, NavigableString
 from .. import config
 from .sources import SOURCES
 
-HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; Level-kb-builder/0.2; hackathon prototype)"}
+HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; DAISY-kb-builder/0.2; hackathon prototype)"}
 CHUNK_CHARS = 900
 OVERLAP_CHARS = 150
 THIN_DOC_CHARS = 800  # below this a page is probably JS-rendered or a soft 404

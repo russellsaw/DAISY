@@ -1,4 +1,4 @@
-# Level — a trust-first sales assistant for DBS retail lending
+# DAISY — DBS AI, Straight with You
 
 > Multi-agent chatbot for DBS home loans, credit cards and personal loans. The model never produces a
 > number (a rules engine does), every response is reviewed by a compliance agent before the customer
@@ -32,7 +32,7 @@ app.py                     entry point: page config, logo, top navigation (st.na
 app_pages/chat.py          Assistant: chat, live agent timeline, profile side panel, lead card
 app_pages/evals.py         Trust scorecard: pass rates, drill-down, run button, rules-verification status
 app_pages/knowledge.py     Knowledge repository: documents, "search as the assistant", rule evidence, change history
-.streamlit/config.toml     "DBS 2030" theme (light + dark), static/ holds the Level logo
+.streamlit/config.toml     "DBS 2030" theme (light + dark), static/ holds the DAISY logo
 src/
   config.py                models, paths, settings (.env)
   llm.py                   Claude API wrapper; structured() uses structured outputs, effort per call,

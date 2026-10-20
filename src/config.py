@@ -24,6 +24,6 @@ EVAL_RESULTS_DIR = ROOT / "evals" / "results"
 RETRIEVAL_TOP_K = int(os.getenv("RETRIEVAL_TOP_K", "5"))
 MAX_HISTORY_TURNS = int(os.getenv("MAX_HISTORY_TURNS", "12"))
 
-ASSISTANT_NAME = os.getenv("ASSISTANT_NAME", "Level")
-ASSISTANT_TAGLINE = "by DBS"
+ASSISTANT_NAME = os.getenv("ASSISTANT_NAME", "DAISY")
+ASSISTANT_TAGLINE = "DBS AI, Straight with You"
 BANK_NAME = "DBS"
