@@ -4,7 +4,7 @@ title: DBS Balance Transfer
 publisher: DBS
 url: https://www.dbs.com.sg/personal/loans/personal-loans/balance-transfer
 products: personal_loan, cashline
-fetched_at: 2026-10-20T17:51:17
+fetched_at: 2026-10-21T19:17:13
 sha256: 3bd182f390ad87b046f1dedb4a3d0128b02a77e2155da61bdd26d66e88c583ce
 ---
 

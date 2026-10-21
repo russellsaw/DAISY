@@ -4,7 +4,7 @@ title: Credit Card Eligibility for Customers 65 and Above
 publisher: DBS
 url: https://www.dbs.com.sg/personal/support/cards-application-56yo.html
 products: credit_card
-fetched_at: 2026-10-20T17:51:17
+fetched_at: 2026-10-21T19:17:13
 sha256: b7d2f74fcb33df7b5962d4f86b89a3e3c8f64dc955738b2b491687a210e7873c
 ---
 

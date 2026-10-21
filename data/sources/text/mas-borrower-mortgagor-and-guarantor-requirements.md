@@ -4,7 +4,7 @@ title: MAS: Borrower, Mortgagor and Guarantor Requirements
 publisher: MAS
 url: https://www.mas.gov.sg/regulation/explainers/new-housing-loans/borrower-mortgagor-guarantor-borrower-requirements
 products: home_loan
-fetched_at: 2026-10-20T17:51:17
+fetched_at: 2026-10-21T19:17:13
 sha256: 28bf522b69f5c3f86f69fbe89b886bf1472a0f0da56e47d4256aefff1581212f
 ---
 

@@ -8,10 +8,11 @@ Everything the UI and the eval runner need comes back in TurnResult.
 from __future__ import annotations
 
 import re
+import time
 from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import dataclass, field
 
-from . import config, defence, llm, pii
+from . import config, defence, llm, pii, recorder
 from .agents import compliance, eligibility, handoff, orchestrator, product_knowledge, prompts
 from .rules import counterfactual
 from .state import ConversationState
@@ -51,9 +52,18 @@ class TurnResult:
     confirmed: bool = False     # the profile equals what the customer said yes to (after this turn)
     corrections: list = field(default_factory=list)  # values the customer corrected this turn
     defence: dict = field(default_factory=dict)  # which defence layer acted (src/defence.py)
+    draft: str = ""             # the reply as drafted, before review (flight recorder)
+    log_path: str = ""          # where this conversation's flight-recorder log is
+
+
+_DRAFT_AGENT = {"product_qa": "Product Knowledge", "comparison": "Product Knowledge", "eligibility": "Eligibility",
+                "advice_seeking": "Boundary", "handoff_request": "Handoff", "out_of_scope": "Out of scope",
+                "chit_chat": "Chit-chat", "refused": "Fallback"}
 
 
 def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
+    started_at = time.time()
+    state.turn_count += 1
     state.trace = []
     state.last_sources = []
     user_msg, pii_found = pii.redact(user_msg)
@@ -178,7 +188,7 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
 
     state.messages.append({"role": "assistant", "content": final})
     state.last_sources = sources
-    return TurnResult(
+    result = TurnResult(
         response=final,
         intent=intent,
         sources=sources,
@@ -195,4 +205,13 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
         confirmed=state.is_confirmed(),
         corrections=corrections,
         defence=layers,
+        draft=draft,
     )
+    if state.record:
+        try:
+            result.log_path = str(recorder.record_turn(
+                state, started_at=started_at, user_msg=user_msg, pii_found=pii_found, draft=draft,
+                draft_agent=_DRAFT_AGENT.get(intent, intent), result=result, finished_at=time.time()))
+        except Exception as exc:  # noqa: BLE001 — the recorder must never break a customer's turn
+            state.add_trace("Flight recorder", f"could not write the log ({exc})")
+    return result

@@ -129,11 +129,13 @@ def assess(state: ConversationState, user_msg: str, products: list[str], today: 
     state.add_trace(
         "Eligibility",
         "engine ran on confirmed parameters: " + ", ".join(f"{r.product}={r.status}" for r in results),
-        state.last_eligibility,
+        {"input_profile": state.profile.to_dict(), "products": keys,
+         "criteria_version": results[0].criteria_version if results else None, "results": state.last_eligibility},
     )
 
     # "Not now, but when": counterfactual search for each product that fails today.
-    cfs = [cf for cf in (counterfactual.search(state.profile, r.product, today=today)
+    runs: list[dict] = []  # every counterfactual evaluation, for the flight recorder
+    cfs = [cf for cf in (counterfactual.search(state.profile, r.product, today=today, log=runs)
                          for r in runnable if r.status == "not_eligible") if cf]
     state.last_counterfactuals = cfs
     if cfs:
@@ -141,8 +143,9 @@ def assess(state: ConversationState, user_msg: str, products: list[str], today: 
             "Counterfactual",
             "; ".join(f"{cf['product']}: binding {cf['binding_rule']}, "
                       f"{len(cf['paths'])} path(s) ({', '.join(x['lever_kind'] for x in cf['paths']) or 'none'}), "
-                      f"{len(cf['borderline'])} borderline" for cf in cfs),
-            cfs,
+                      f"{len(cf['borderline'])} borderline" for cf in cfs)
+            + f" · {len(runs)} engine runs",
+            {"counterfactuals": cfs, "runs": runs},
         )
 
     payload = {

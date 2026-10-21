@@ -4,7 +4,7 @@ title: Partial Repayment of a DBS Home Loan
 publisher: DBS
 url: https://www.dbs.com.sg/personal/support/loans-homeloan-partial-repayment.html
 products: home_loan
-fetched_at: 2026-10-20T17:51:17
+fetched_at: 2026-10-21T19:17:13
 sha256: f4aa185bcf27f2637b7705314e957ab6c386d495e1845b732a011dea727b50af
 ---
 

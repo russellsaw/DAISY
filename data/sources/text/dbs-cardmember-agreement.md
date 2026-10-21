@@ -4,7 +4,7 @@ title: DBS Cardmember Agreement
 publisher: DBS
 url: https://www.dbs.com.sg/iwov-resources/pdf/cards/dbs-agreement-2019.pdf
 products: credit_card
-fetched_at: 2026-10-20T17:51:17
+fetched_at: 2026-10-21T19:17:13
 sha256: 3482e6509326e381ec9e86bc1334a465f07dc5e0061265fff4b71e9bd9d5f49f
 ---
 

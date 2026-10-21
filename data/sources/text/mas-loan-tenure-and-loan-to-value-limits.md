@@ -4,7 +4,7 @@ title: MAS: Loan Tenure and Loan-to-Value Limits
 publisher: MAS
 url: https://www.mas.gov.sg/regulation/explainers/new-housing-loans/loan-tenure-and-loan-to-value-limits
 products: home_loan
-fetched_at: 2026-10-20T17:51:17
+fetched_at: 2026-10-21T19:17:13
 sha256: 1fe533039212c3ae699ea2d27945451eecf4c51eddd8da892ea746034d8bd322
 ---
 

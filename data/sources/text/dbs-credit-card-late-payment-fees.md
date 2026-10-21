@@ -4,7 +4,7 @@ title: Credit Card Late Payment Fees
 publisher: DBS
 url: https://www.dbs.com.sg/personal/support/card-charges-and-fees-late-fee.html
 products: credit_card
-fetched_at: 2026-10-20T17:51:17
+fetched_at: 2026-10-21T19:17:13
 sha256: 4057f5f8f29dc739c11eaa40382f0ce29d8b45422a87eaed096d46e876557d3b
 ---
 

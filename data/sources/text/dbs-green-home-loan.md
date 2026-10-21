@@ -4,7 +4,7 @@ title: DBS Green Home Loan
 publisher: DBS
 url: https://www.dbs.com.sg/personal/loans/home-loans/dbs-green-home-loan
 products: home_loan
-fetched_at: 2026-10-20T17:51:17
+fetched_at: 2026-10-21T19:17:13
 sha256: 37b1cdd3a14903966d71ff971e2b1d0da8389f316ddbbfde721cb6ec2b0fff77
 ---
 

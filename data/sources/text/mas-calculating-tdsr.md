@@ -4,7 +4,7 @@ title: MAS: Calculating TDSR
 publisher: MAS
 url: https://www.mas.gov.sg/regulation/explainers/tdsr-for-property-loans/calculating-tdsr
 products: home_loan
-fetched_at: 2026-10-20T17:51:17
+fetched_at: 2026-10-21T19:17:13
 sha256: a8bfdde7935c2c19396f355c05d5fadfbf2a5bdf19d1522ee0775bba19799739
 ---
 

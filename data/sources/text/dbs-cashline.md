@@ -4,7 +4,7 @@ title: DBS Cashline
 publisher: DBS
 url: https://www.dbs.com.sg/personal/loans/instant-cash/cashline
 products: cashline
-fetched_at: 2026-10-20T17:51:17
+fetched_at: 2026-10-21T19:17:13
 sha256: 7ef56885b051aaefc297c24dd95df72d54a6c704be47ef4aa095a01f09283c6b
 ---
 

@@ -4,7 +4,7 @@ title: DBS yuu Card
 publisher: DBS
 url: https://www.dbs.com.sg/personal/cards/credit-cards/dbs-yuu-cards
 products: credit_card
-fetched_at: 2026-10-20T17:51:17
+fetched_at: 2026-10-21T19:17:13
 sha256: bf8d04bffe11b0742283bb15a242643cf6b9e3bf8b8a2a65a1d8fcef5d4c47ba
 ---
 

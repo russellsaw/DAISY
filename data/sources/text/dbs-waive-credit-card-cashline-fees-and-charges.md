@@ -4,7 +4,7 @@ title: Waive Credit Card / Cashline Fees & Charges
 publisher: DBS
 url: https://www.dbs.com.sg/personal/support/card-waive-credit-card-cashline-charges.html
 products: credit_card, cashline
-fetched_at: 2026-10-20T17:51:17
+fetched_at: 2026-10-21T19:17:13
 sha256: cbc1e9d76316ae80ec8b5bd8c5702090d8539bdf63700206697393244a95bce4
 ---
 

@@ -106,6 +106,7 @@ def route(state: ConversationState, user_msg: str, today: date | None = None) ->
     decision["commitments_resolved"] = resolved
     changed = state.profile.update(updates)
     decision["profile_changed"] = changed
+    decision["profile_after"] = state.profile.to_dict()
     state.add_trace(
         "Orchestrator",
         f"intent={decision['intent']}  products={decision.get('products') or '-'}  "

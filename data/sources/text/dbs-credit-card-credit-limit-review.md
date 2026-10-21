@@ -4,7 +4,7 @@ title: DBS Credit Card Credit Limit Review
 publisher: DBS
 url: https://www.dbs.com.sg/personal/cards/card-services/credit-limit-review
 products: credit_card
-fetched_at: 2026-10-20T17:51:17
+fetched_at: 2026-10-21T19:17:13
 sha256: 519a6ccf93ed8562c3a947306ca58457893df8c893910db2a4a21480a436ec7a
 ---
 

@@ -6,6 +6,8 @@ engine reads from it; the UI side panel displays it.
 from __future__ import annotations
 
 import copy
+import time
+import uuid
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from typing import Any, Callable, Optional
@@ -145,10 +147,17 @@ class TraceEvent:
     agent: str
     summary: str
     detail: Any = None
+    at: float = field(default_factory=time.time)  # when it happened (flight recorder timings)
 
 
 @dataclass
 class ConversationState:
+    # Flight recorder (Feature 4): one append-only log per conversation, in recording_dir
+    # (default data/conversations/). record=False turns it off.
+    conversation_id: str = field(default_factory=lambda: time.strftime("%Y%m%d-%H%M%S-") + uuid.uuid4().hex[:6])
+    record: bool = True
+    recording_dir: Optional[str] = None
+    turn_count: int = 0
     messages: list[dict] = field(default_factory=list)  # [{"role": "user"|"assistant", "content": str}]
     profile: CustomerProfile = field(default_factory=CustomerProfile)
     trace: list[TraceEvent] = field(default_factory=list)

@@ -4,7 +4,7 @@ title: MAS: MSR and TDSR Rules
 publisher: MAS
 url: https://www.mas.gov.sg/regulation/explainers/new-housing-loans/msr-and-tdsr-rules
 products: home_loan
-fetched_at: 2026-10-20T17:51:17
+fetched_at: 2026-10-21T19:17:13
 sha256: 1552217f813f4cf6d0110f1bcd35dfbf39ba48e756001cd57ef2e8178328e8ec
 ---
 

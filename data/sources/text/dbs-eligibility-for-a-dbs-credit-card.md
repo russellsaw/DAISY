@@ -4,7 +4,7 @@ title: Eligibility for a DBS Credit Card
 publisher: DBS
 url: https://www.dbs.com.sg/personal/support/card-application-eligibility.html
 products: credit_card
-fetched_at: 2026-10-20T17:51:17
+fetched_at: 2026-10-21T19:17:13
 sha256: 410a524479dc48daf23c40663c6c078f3d87523db209f3826725fb6d7b700ebd
 ---
 

@@ -4,7 +4,7 @@ title: DBS Vantage Card T&Cs
 publisher: DBS
 url: https://www.dbs.com.sg/iwov-resources/pdf/cards/vantage-card-T&Cs.pdf
 products: credit_card
-fetched_at: 2026-10-20T17:51:17
+fetched_at: 2026-10-21T19:17:13
 sha256: 3bffccb03d8b86a80860c86dcca89fd74ef19c01b2c93b9da9438d1b54d3cfcc
 ---
 

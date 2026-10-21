@@ -4,7 +4,7 @@ title: Full Repayment of a DBS Home Loan
 publisher: DBS
 url: https://www.dbs.com.sg/personal/support/loans-homeloan-full-repayment.html
 products: home_loan
-fetched_at: 2026-10-20T17:51:17
+fetched_at: 2026-10-21T19:17:13
 sha256: 5dd6b610841848a20091a6a0faeef891ba609af2d32619847329fc194b2e1de2
 ---
 

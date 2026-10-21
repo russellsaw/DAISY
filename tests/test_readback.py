@@ -31,10 +31,10 @@ def bot(monkeypatch):
         calls["engine"] += 1
         return real_assess_all(profile, keys)
 
-    def guarded_search(profile, product, today=None):
+    def guarded_search(profile, product, today=None, log=None):
         assert state.is_confirmed(), "counterfactual search before confirmation"
         calls["cf"] += 1
-        return real_search(profile, product, today=today)
+        return real_search(profile, product, today=today, log=log)
 
     monkeypatch.setattr(eligibility, "assess_all", guarded_assess_all)
     monkeypatch.setattr(eligibility.counterfactual, "search", guarded_search)

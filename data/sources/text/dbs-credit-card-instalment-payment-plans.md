@@ -4,7 +4,7 @@ title: DBS Credit Card Instalment Payment Plans
 publisher: DBS
 url: https://www.dbs.com.sg/personal/cards/card-services/instalment-payment-plan
 products: credit_card
-fetched_at: 2026-10-20T17:51:17
+fetched_at: 2026-10-21T19:17:13
 sha256: d408d5ed3271efae32c073fd5ed711ab41047ff20b60bec8c8172b45e88b2d63
 ---
 

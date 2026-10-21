@@ -4,7 +4,7 @@ title: MAS: TDSR Thresholds
 publisher: MAS
 url: https://www.mas.gov.sg/regulation/explainers/tdsr-for-property-loans/calculating-tdsr-thresholds
 products: home_loan
-fetched_at: 2026-10-20T17:51:17
+fetched_at: 2026-10-21T19:17:13
 sha256: b10ea374d34da1fbba3405720dab414c290115236dae8bea01c8de64ed1c1996
 ---
 

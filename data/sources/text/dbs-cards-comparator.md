@@ -4,7 +4,7 @@ title: DBS Cards Comparator
 publisher: DBS
 url: https://www.dbs.com.sg/personal/cards/cards-comparator.page
 products: credit_card
-fetched_at: 2026-10-20T17:51:17
+fetched_at: 2026-10-21T19:17:13
 sha256: ebcdd2ef1aeac289bf21788b215c0735c2a1b285914828e99d1ce3bad09508bf
 ---
 

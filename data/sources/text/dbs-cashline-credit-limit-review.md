@@ -4,7 +4,7 @@ title: DBS Cashline Credit Limit Review
 publisher: DBS
 url: https://www.dbs.com.sg/personal/loans/instant-cash/cashline/credit-limit-review
 products: cashline
-fetched_at: 2026-10-20T17:51:17
+fetched_at: 2026-10-21T19:17:13
 sha256: 8188e47680b33b43685c0b887024c1b1ad24e2d53933994547e5efbbf71a84a2
 ---
 

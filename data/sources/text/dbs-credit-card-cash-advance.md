@@ -4,7 +4,7 @@ title: DBS Credit Card Cash Advance
 publisher: DBS
 url: https://www.dbs.com.sg/personal/cards/card-services/cash-advance
 products: credit_card
-fetched_at: 2026-10-20T17:51:17
+fetched_at: 2026-10-21T19:17:13
 sha256: 0f4c1bdc73a3dc70c29d6a211ee80d1d9611bb422ad8077d8cac558e9d88e244
 ---
 

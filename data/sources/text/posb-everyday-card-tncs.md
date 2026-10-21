@@ -4,7 +4,7 @@ title: POSB Everyday Card T&Cs
 publisher: POSB
 url: https://www.posb.com.sg/iwov-resources/media/pdf/cards/posb-everyday-card-tncs.pdf
 products: credit_card
-fetched_at: 2026-10-20T17:51:17
+fetched_at: 2026-10-21T19:17:13
 sha256: aecac7dea9f35db9b5a47445172b920c7613460681d9cf9e6d0ed4614d4eda71
 ---
 

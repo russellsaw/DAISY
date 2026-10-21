@@ -4,7 +4,7 @@ title: DBS Green Home Loan T&Cs
 publisher: DBS
 url: https://www.dbs.com.sg/iwov-resources/media/pdf/loans/tnc-for-green-home-loan-package.pdf
 products: home_loan
-fetched_at: 2026-10-20T17:51:17
+fetched_at: 2026-10-21T19:17:13
 sha256: bf147597011bcc4c2bd9592ef300195eeaa35e68756a4ecdadbcebcf05100143
 ---
 

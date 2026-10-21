@@ -14,5 +14,6 @@ pages = [
     st.Page("app_pages/chat.py", title="Assistant", icon=":material/forum:", default=True),
     st.Page("app_pages/evals.py", title="Trust scorecard", icon=":material/fact_check:"),
     st.Page("app_pages/knowledge.py", title="Knowledge", icon=":material/library_books:"),
+    st.Page("app_pages/replay.py", title="Flight recorder", icon=":material/flight:"),
 ]
 st.navigation(pages, position="top").run()

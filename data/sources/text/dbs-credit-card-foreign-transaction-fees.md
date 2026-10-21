@@ -4,7 +4,7 @@ title: Credit Card Foreign Transaction Fees
 publisher: DBS
 url: https://www.dbs.com.sg/personal/support/card-charges-and-fees-overseas-transaction-fees.html
 products: credit_card
-fetched_at: 2026-10-20T17:51:17
+fetched_at: 2026-10-21T19:17:13
 sha256: e4d761351dee31ce5aff8470a0c566e120e4adbe9aad69e42b4a6e95623be376
 ---
 

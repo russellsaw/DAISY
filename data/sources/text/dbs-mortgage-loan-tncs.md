@@ -4,7 +4,7 @@ title: DBS Mortgage Loan T&Cs
 publisher: DBS
 url: https://www.dbs.com.sg/iwov-resources/pdf/loan/tnc_mortgageloan.pdf
 products: home_loan
-fetched_at: 2026-10-20T17:51:17
+fetched_at: 2026-10-21T19:17:13
 sha256: 36ace1e246fa309ec4b635a7e61f289dafb1233a71955d7947766356e7a4a08a
 ---
 

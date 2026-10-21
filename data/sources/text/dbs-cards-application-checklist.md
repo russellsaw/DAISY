@@ -4,7 +4,7 @@ title: DBS Cards Application Checklist
 publisher: DBS
 url: https://www.dbs.com.sg/personal/cards/cards-application-checklist.page
 products: credit_card
-fetched_at: 2026-10-20T17:51:17
+fetched_at: 2026-10-21T19:17:13
 sha256: f3e1e08690a304146aa298c44f3348efa43f3a43bccb9111a87fb49e54cb2e81
 ---
 

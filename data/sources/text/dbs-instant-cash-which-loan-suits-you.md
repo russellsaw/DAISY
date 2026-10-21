@@ -4,7 +4,7 @@ title: DBS Instant Cash: Which Loan Suits You
 publisher: DBS
 url: https://www.dbs.com.sg/personal/loans/instant-cash/how-to-pick-a-loan
 products: personal_loan, cashline
-fetched_at: 2026-10-20T17:51:17
+fetched_at: 2026-10-21T19:17:13
 sha256: d61ed538da1b231c845ca2b275846441436932b67cc326ff8eb46ad84f6ea158
 ---
 

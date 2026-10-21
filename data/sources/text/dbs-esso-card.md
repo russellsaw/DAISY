@@ -4,7 +4,7 @@ title: DBS Esso Card
 publisher: DBS
 url: https://www.dbs.com.sg/personal/cards/credit-cards/dbs-esso-platinum-card
 products: credit_card
-fetched_at: 2026-10-20T17:51:17
+fetched_at: 2026-10-21T19:17:13
 sha256: 72afd33d9d85db612adeaf20c7526a7c29ac1b96bf29cf2e969a98ba85760b6e
 ---
 

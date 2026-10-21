@@ -47,7 +47,10 @@ def answer(state: ConversationState, user_msg: str, products: list[str]) -> dict
     state.add_trace(
         "Product Knowledge",
         f"retrieved {len(chunks)} chunks, cited {len(cited)}",
-        [{"title": c["title"], "score": c["score"]} for c in chunks],
+        {"query": user_msg, "product_filter": product,
+         "hits": [{"n": i + 1, "title": c["title"], "url": c["url"], "publisher": c.get("publisher"),
+                   "as_of": (c.get("fetched_at") or "")[:10], "score": c["score"], "cited": (i + 1) in cited}
+                  for i, c in enumerate(chunks)]},
     )
     # `excerpts` is exactly what the drafting model saw ([n] numbering, title, as-of date, URL): the compliance
     # reviewer and the traceability checks get the same text, so citations and URLs can be verified.

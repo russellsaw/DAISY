@@ -19,6 +19,9 @@ response:
   - expect_corrections   minimum number of corrections the readback must have logged
   - expect_stopped_by    defence layer(s) that must have acted ("a|b" = any of): retrieval | engine |
                          compliance | output_filter
+  - expect_log_events    flight-recorder event types the log must contain ("a|b" = all of them)
+  - flight_recorded / log_has_no_pii (always on): every turn is logged with its key events, and the log
+    contains no NRIC/FIN or card number. Logs: data/conversations/evals/<run>/<case_id>.jsonl
 Every case also records which defence layers acted (src/defence.py) for the Swiss-cheese view; cases
 flagged `adversarial` are classified stopped / prompt_only / hole.
 Always-on checks:
@@ -45,7 +48,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from evals.judge import judge  # noqa: E402
 from src import config  # noqa: E402
-from src import defence  # noqa: E402
+from src import defence, pii, recorder  # noqa: E402
 from src.agents.compliance import HANDOFF_FALLBACK, banned_phrases, unsupported_numbers  # noqa: E402
 from src.rules.counterfactual import OUTCOME_TEMPLATE, fmt_date  # noqa: E402
 from src.pipeline import run_turn  # noqa: E402
@@ -119,8 +122,45 @@ def _readback_checks(case: dict, results: list, state) -> list[dict]:
     return checks
 
 
+def _recorder_checks(case: dict, results: list) -> list[dict]:
+    path = Path(results[-1].log_path) if results and results[-1].log_path else None
+    if not path or not path.exists():
+        return [{"name": "flight_recorded", "passed": False, "detail": "no log written"}]
+    events = recorder.load(path)
+    problems = []
+    for turn, r in enumerate(results, 1):
+        types = {e["type"] for e in events if e["turn"] == turn}
+        need = {"user_turn", "routing", "draft", "compliance", "defence", "final"}
+        if r.engine_ran:
+            need.add("engine")
+        if r.counterfactuals:
+            need.add("counterfactual")
+        if r.intent in ("product_qa", "comparison"):
+            need.add("retrieval")
+        if need - types:
+            problems.append(f"turn {turn} missing {sorted(need - types)}")
+    for e in events:
+        if e["type"] == "retrieval" and any(not h.get("url") for h in (e["data"] or {}).get("hits", [])):
+            problems.append("retrieval hit without URL")
+        if e["type"] == "counterfactual" and not (e["data"] or {}).get("runs"):
+            problems.append("counterfactual event without its engine runs")
+    checks = [{"name": "flight_recorded", "passed": not problems,
+               "detail": "; ".join(problems) if problems else f"{len(events)} events across {len(results)} turn(s)"}]
+    leaked = pii.redact(path.read_text(encoding="utf-8"))[1]
+    checks.append({"name": "log_has_no_pii", "passed": not leaked, "detail": f"found {leaked}" if leaked else "clean"})
+    if case.get("expect_log_events"):
+        want = set(_split(case["expect_log_events"]))
+        have = {e["type"] for e in events}
+        checks.append({"name": "expect_log_events", "passed": want <= have,
+                       "detail": f"missing {sorted(want - have)}" if want - have else f"has {sorted(want)}"})
+    return checks
+
+
+LOG_DIR: Path | None = None  # set per run in main(): data/conversations/evals/<run_at>/
+
+
 def run_case(case: dict) -> dict:
-    state = ConversationState()
+    state = ConversationState(conversation_id=case["id"], recording_dir=str(LOG_DIR) if LOG_DIR else None)
     if case.get("profile"):
         state.profile.update(json.loads(case["profile"]))
         state.confirm()  # a pre-seeded profile counts as already confirmed by the customer
@@ -175,6 +215,7 @@ def run_case(case: dict) -> dict:
         checks += _always_on_checks(case, result, state)
         checks += _counterfactual_checks(case, result, state)
         checks += _readback_checks(case, results, state)
+        checks += _recorder_checks(case, results)
     layers = defence.merge([r.defence for r in results]) if results else {}
     if case.get("expect_stopped_by") and layers:
         acted = defence.stopped_by(layers)
@@ -226,6 +267,8 @@ def main() -> int:
     if args.limit:
         df = df.head(args.limit)
 
+    global LOG_DIR
+    LOG_DIR = recorder.CONVERSATIONS_DIR / "evals" / datetime.now().strftime("%Y%m%d-%H%M%S")
     cases = df.to_dict("records")
     results: list[dict | None] = [None] * len(cases)
     with ThreadPoolExecutor(max_workers=max(1, args.workers)) as pool:

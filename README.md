@@ -37,6 +37,7 @@ Code-written outcome lines ─── "not now, but when" paths + the fixed outco
    │
    ▼
 response + sources + agent trace + defence-layer record  →  Streamlit chat
+every event of the turn  →  flight-recorder log (data/conversations/)
 ```
 
 ```
@@ -44,6 +45,7 @@ app.py                     entry point: page config, logo, top navigation (st.na
 app_pages/chat.py          Assistant: chat, live agent timeline, profile side panel, lead card
 app_pages/evals.py         Trust scorecard: pass rates, drill-down, run button, rules-verification status
 app_pages/knowledge.py     Knowledge repository: documents, "search as the assistant", rule evidence, change history
+app_pages/replay.py        Flight recorder: pick a conversation or eval case, step through every event
 .streamlit/config.toml     "DBS 2030" theme (light + dark), static/ holds the DAISY logo
 src/
   config.py                models, paths, settings (.env)
@@ -52,6 +54,7 @@ src/
   state.py                 CustomerProfile + ConversationState
   pii.py                   strips NRIC/FIN and card numbers from every message before any agent sees it
   defence.py               Swiss-cheese record: which defence layer acted on each response
+  recorder.py              flight recorder: per-conversation JSONL event log + readers
   commitments.py           turns a customer's stated end date into a date — in code, from their own words
   pipeline.py              run_turn(): orchestrator → agent → compliance
   agents/                  orchestrator, product_knowledge, eligibility, compliance, handoff, prompts
@@ -65,7 +68,7 @@ evals/
   cases.csv                the suite: golden_qa, eligibility, boundary, adversarial, scope, handoff
   run_evals.py             runs cases through the live pipeline, writes results/latest.json
   judge.py                 LLM-as-judge for behavioural checks
-tests/                     86 offline unit tests: engine, guards, counterfactual, readback, defence layers
+tests/                     91 offline unit tests: engine, guards, counterfactual, readback, defence, recorder
 scripts/ingest.py          build the knowledge base
 scripts/write_starter_cases.py   regenerates the starter cases.csv
 ```
@@ -169,6 +172,15 @@ adversarial eval case, the four slices with the ones that acted highlighted, and
 alignment** (an attack that got through every layer) at the top, followed by attacks held only by the
 model's own instructions. Definitions and the first run's findings are in
 [`docs/ASSUMPTIONS_AND_LIMITATIONS.md`](docs/ASSUMPTIONS_AND_LIMITATIONS.md) §8.
+
+## Flight recorder
+
+Every turn is appended to `data/conversations/<conversation_id>.jsonl` (git-ignored; eval runs write
+`data/conversations/evals/<run>/<case_id>.jsonl`): the customer's message, what the orchestrator extracted,
+retrieval hits with URLs, the rules-engine input and output, **every counterfactual engine run**, the draft,
+the compliance verdict and reasons, and the final reply, with timings. The **Flight recorder** page replays
+any conversation (or eval case) event by event. Identifiers are redacted before agents see the message and
+again on every log line. Details and limits: `docs/ASSUMPTIONS_AND_LIMITATIONS.md` §9.
 
 ## Demo persona
 

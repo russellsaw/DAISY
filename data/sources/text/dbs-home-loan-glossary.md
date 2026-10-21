@@ -4,7 +4,7 @@ title: DBS Home Loan Glossary
 publisher: DBS
 url: https://www.dbs.com.sg/personal/articles/nav/my-home/home-loan-glossary
 products: home_loan
-fetched_at: 2026-10-20T17:51:17
+fetched_at: 2026-10-21T19:17:13
 sha256: e9d20139f861982fa020170944750788ad88c74765ac9fb4576e76c48027da56
 ---
 

@@ -4,7 +4,7 @@ title: DBS Personal Loan
 publisher: DBS
 url: https://www.dbs.com.sg/personal/loans/instant-cash/personal-loan
 products: personal_loan
-fetched_at: 2026-10-20T17:51:17
+fetched_at: 2026-10-21T19:17:13
 sha256: 60db9cf720ec5fe7b6f45d50611166c7f303933f95d7f0922260452e01c29950
 ---
 

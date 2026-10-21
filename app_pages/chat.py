@@ -39,8 +39,11 @@ SUGGESTIONS = {
     ":material/event_busy: Early repayment fees": "Is there a fee if I repay my DBS personal loan early?",
 }
 
-if "state" not in st.session_state:
+# A session that predates a code change may hold an older ConversationState (e.g. without a conversation id
+# for the flight recorder): start that session afresh rather than crash.
+if not isinstance(st.session_state.get("state"), ConversationState):
     st.session_state.state = ConversationState()
+    st.session_state.turns = []
 if "turns" not in st.session_state:
     st.session_state.turns = []  # list of {"user": str, "result": TurnResult, "seconds": float}
 
@@ -146,6 +149,7 @@ with st.sidebar:
             with st.expander("Full card", icon=":material/badge:"):
                 st.json(card)
 
+    st.caption(f":material/flight: Recorded as `{state.conversation_id}` — replay it on the Flight recorder page.")
     if st.button("New conversation", icon=":material/restart_alt:", width="stretch"):
         st.session_state.state = ConversationState()
         st.session_state.turns = []

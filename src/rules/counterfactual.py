@@ -187,16 +187,21 @@ def _gap(c: dict):
     return None
 
 
-def _evaluate(product: str, q: CustomerProfile, watch: set[str], margin: float):
-    """Run the forward engine; classify as fail / borderline / path."""
+def _evaluate(product: str, q: CustomerProfile, watch: set[str], margin: float, log: list | None = None,
+              lever: str = "", candidate: str = ""):
+    """Run the forward engine; classify as fail / borderline / path. Optionally log the run."""
     res = CHECKS[product](q)
     if res.status != "eligible":
-        return res, "fail", None
-    ratios = [c for c in res.checks if c["rule"] in watch and c["kind"] == "ratio"]
-    headroom = round(min(c["threshold"] - c["value"] for c in ratios), 4) if ratios else None
-    if headroom is not None and headroom < margin - 1e-9:
-        return res, "borderline", headroom
-    return res, "path", headroom
+        verdict, headroom = "fail", None
+    else:
+        ratios = [c for c in res.checks if c["rule"] in watch and c["kind"] == "ratio"]
+        headroom = round(min(c["threshold"] - c["value"] for c in ratios), 4) if ratios else None
+        verdict = "borderline" if headroom is not None and headroom < margin - 1e-9 else "path"
+    if log is not None:
+        log.append({"product": product, "lever": lever, "candidate": candidate, "engine_status": res.status,
+                    "verdict": verdict, "headroom": headroom,
+                    "failed_rules": [c["rule"] for c in res.checks if not c["passed"]]})
+    return res, verdict, headroom
 
 
 def _entry(kind: str, name: str, description: str, q: CustomerProfile, res, headroom, when: date | None,
@@ -214,15 +219,16 @@ def _entry(kind: str, name: str, description: str, q: CustomerProfile, res, head
     }
 
 
-def _try(product, lever: Lever, base: CustomerProfile, watch, margin, prefix=None):
+def _try(product, lever: Lever, base: CustomerProfile, watch, margin, prefix=None, log=None):
     """Return (best_path_entry | None, borderline_entry | None) for one lever applied to `base`."""
     pre_desc, pre_kind, pre_when, pre_name = prefix or ("", None, None, "")
     if lever.steps is None:
         q = lever.apply(base)
-        res, verdict, headroom = _evaluate(product, q, watch, margin)
+        desc = (pre_desc + " and " if pre_desc else "") + lever.describe(base)
+        res, verdict, headroom = _evaluate(product, q, watch, margin, log, (pre_name + "+" if pre_name else "")
+                                           + lever.name, desc)
         kind = "dated" if lever.kind == "dated" and pre_kind in (None, "dated") else "whatif"
         when = max([d for d in (lever.when, pre_when) if d], default=None) if kind == "dated" else None
-        desc = (pre_desc + " and " if pre_desc else "") + lever.describe(base)
         name = (pre_name + "+" if pre_name else "") + lever.name
         if verdict == "path":
             return _entry(kind, name, desc, q, res, headroom, when), None
@@ -231,9 +237,9 @@ def _try(product, lever: Lever, base: CustomerProfile, watch, margin, prefix=Non
         return None, None
     borderline = None
     for q, step_desc in lever.steps(base):
-        res, verdict, headroom = _evaluate(product, q, watch, margin)
         desc = (pre_desc + " and " if pre_desc else "") + step_desc
         name = (pre_name + "+" if pre_name else "") + lever.name
+        res, verdict, headroom = _evaluate(product, q, watch, margin, log, name, desc)
         if verdict == "path":
             return _entry("whatif", name, desc, q, res, headroom, None), borderline
         if verdict == "borderline" and borderline is None:
@@ -242,7 +248,8 @@ def _try(product, lever: Lever, base: CustomerProfile, watch, margin, prefix=Non
 
 
 def search(p: CustomerProfile, product: str, *, today: date | None = None,
-           margin: float | None = None) -> dict | None:
+           margin: float | None = None, log: list | None = None) -> dict | None:
+    """`log`, if given, receives one entry per forward-engine evaluation (flight recorder)."""
     """Counterfactual search for one product. None if the product isn't failing today."""
     today = today or date.today()
     margin = config.CF_MARGIN if margin is None else margin
@@ -257,7 +264,7 @@ def search(p: CustomerProfile, product: str, *, today: date | None = None,
 
     paths, borderline = [], []
     for lever in levers:  # single levers
-        path, near = _try(product, lever, p, watch, margin)
+        path, near = _try(product, lever, p, watch, margin, log=log)
         if path:
             paths.append(path)
         elif near:
@@ -270,7 +277,7 @@ def search(p: CustomerProfile, product: str, *, today: date | None = None,
             if first.steps is not None:
                 continue  # never search two quantities at once
             prefix = (first.describe(p), first.kind, first.when, first.name)
-            path, near = _try(product, second, first.apply(p), watch, margin, prefix=prefix)
+            path, near = _try(product, second, first.apply(p), watch, margin, prefix=prefix, log=log)
             if path:
                 paths.append(path)
             elif near:

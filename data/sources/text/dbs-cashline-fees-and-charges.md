@@ -4,7 +4,7 @@ title: DBS Cashline Fees & Charges
 publisher: DBS
 url: https://www.dbs.com.sg/personal/support/loans-cashline-fees-and-charges.html
 products: cashline
-fetched_at: 2026-10-20T17:51:17
+fetched_at: 2026-10-21T19:17:13
 sha256: 2651586774524ae585f90c497ef17b66b455fb66713b56be5576325234115ad9
 ---
 

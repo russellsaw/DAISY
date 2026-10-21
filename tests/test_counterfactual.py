@@ -211,7 +211,7 @@ def _stub_pipeline(monkeypatch, profile: dict, draft: str):
     cards = []
     monkeypatch.setattr(handoff, "build_card", lambda state, trigger: cards.append(trigger) or {"trigger": trigger})
     monkeypatch.setattr(eligibility.counterfactual, "search",
-                        lambda p, product, today=None: search(p, product, today=TODAY))
+                        lambda p, product, today=None, log=None: search(p, product, today=TODAY, log=log))
     return run_turn(st, "Can I get the home loan?"), cards
 
 

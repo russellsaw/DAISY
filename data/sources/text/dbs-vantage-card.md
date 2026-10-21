@@ -4,7 +4,7 @@ title: DBS Vantage Card
 publisher: DBS
 url: https://www.dbs.com.sg/personal/cards/credit-cards/dbs-vantage-visa-infinite-card
 products: credit_card
-fetched_at: 2026-10-20T17:51:17
+fetched_at: 2026-10-21T19:17:13
 sha256: 1dee57dec729ffdaf9b2c3c9735e1b0e160ffcd08c218dfb179afab388d08b2b
 ---
 

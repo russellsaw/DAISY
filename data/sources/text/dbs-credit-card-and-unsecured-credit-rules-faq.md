@@ -4,7 +4,7 @@ title: Credit Card and Unsecured Credit Rules (FAQ)
 publisher: DBS
 url: https://www.dbs.com.sg/personal/cards/credit-cards/faq-revised-credit-card-and-unsecured-credit-rules.page
 products: personal_loan, cashline, credit_card
-fetched_at: 2026-10-20T17:51:17
+fetched_at: 2026-10-21T19:17:13
 sha256: f81c70a40e87e6de0233bb8d271debb516069b283f8b8a24298808f108f69222
 ---
 
