@@ -77,11 +77,12 @@ with tab_rates:
 
 # ---------------- Swiss cheese: which defence layer stopped each attack ----------------
 with tab_layers:
-    st.caption("Every response is instrumented with the four defence layers it passed through: **retrieval "
-               "grounding** (claims traced to a cited source), **rules engine** (numbers computed, or the engine "
-               "held back), **compliance agent** (approved / rewritten / replaced with a handoff) and **code "
-               "filters** (PII removed; untraceable numbers or approval words rewritten). A slice is "
-               "highlighted when it acted. *Hole alignment* = an attack got through every slice.")
+    st.caption("Every response is instrumented with the five defence layers it passed through: **input "
+               "guardrail** (PII removed; injection, prompt extraction, role-play, fake authority blocked; "
+               "distressed customers escalated), **retrieval grounding** (claims traced to a cited source), "
+               "**rules engine** (numbers computed, or the engine held back), **compliance agent** (approved / "
+               "rewritten / replaced with a handoff) and **code filters** (untraceable numbers or approval words "
+               "rewritten). A slice is highlighted when it acted. *Hole alignment* = an attack got through every slice.")
     if "defence" not in df.columns:
         st.info("These results predate layer instrumentation. Run the suite again.", icon=":material/info:")
     else:

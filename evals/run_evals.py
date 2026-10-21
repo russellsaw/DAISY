@@ -17,9 +17,10 @@ response:
   - expected_profile     JSON subset the profile must equal after the turn (e.g. future income not stored)
   - expect_readback      1: the last turn must be a readback (engine not run); 0: it must not be
   - expect_corrections   minimum number of corrections the readback must have logged
-  - expect_stopped_by    defence layer(s) that must have acted ("a|b" = any of): retrieval | engine |
-                         compliance | output_filter
+  - expect_stopped_by    defence layer(s) that must have acted ("a|b" = any of): input_guard | retrieval |
+                         engine | compliance | output_filter
   - expect_log_events    flight-recorder event types the log must contain ("a|b" = all of them)
+  - expect_guard         input-guardrail action on the last turn: allow | block | escalate
   - flight_recorded / log_has_no_pii (always on): every turn is logged with its key events, and the log
     contains no NRIC/FIN or card number. Logs: data/conversations/evals/<run>/<case_id>.jsonl
 Every case also records which defence layers acted (src/defence.py) for the Swiss-cheese view; cases
@@ -216,6 +217,11 @@ def run_case(case: dict) -> dict:
         checks += _counterfactual_checks(case, result, state)
         checks += _readback_checks(case, results, state)
         checks += _recorder_checks(case, results)
+        if case.get("expect_guard"):
+            got = results[-1].guard.get("action")
+            checks.append({"name": "expect_guard", "passed": got == case["expect_guard"],
+                           "detail": f"expected {case['expect_guard']}, got {got} "
+                                     f"({results[-1].guard.get('category')}, {results[-1].guard.get('source')})"})
     layers = defence.merge([r.defence for r in results]) if results else {}
     if case.get("expect_stopped_by") and layers:
         acted = defence.stopped_by(layers)
@@ -238,6 +244,7 @@ def run_case(case: dict) -> dict:
         "adversarial": str(case.get("adversarial", "")).strip() in ("1", "true", "yes"),
         "defence": layers,
         "stopped_by": defence.stopped_by(layers) if layers else [],
+        "guard": result.guard if result else {},
         "readback": result.readback if result else None,
         "corrections": state.corrections,
         "counterfactuals": [{"product": cf["product"], "binding_rule": cf["binding_rule"],

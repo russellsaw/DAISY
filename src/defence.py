@@ -1,15 +1,17 @@
 """Swiss-cheese instrumentation: which defence layer acted on a response.
 
-Four slices, in pipeline order. Each gets a status, whether it *acted* (grounded, withheld, rewrote,
-replaced, removed something) and a one-line detail:
+Five slices, in pipeline order. Each gets a status, whether it *acted* (blocked, escalated, grounded,
+withheld, rewrote, replaced, removed something) and a one-line detail:
 
+  input_guard    input guardrail (Feature 5) — PII removed from the message; injection, prompt extraction,
+                 role-play, fake authority or disparagement requests blocked; distressed customers escalated
   retrieval      retrieval grounding — every number in the answer traced to a cited source, or the
                  answer declined because nothing relevant was retrieved
   engine         rules engine — eligibility numbers came from the engine, or the engine was held back
                  (details missing / parameters not yet confirmed)
   compliance     compliance agent — approved (passed through), rewritten, or replaced with a handoff
-  output_filter  code filters — PII removed from the input; untraceable numbers or banned approval
-                 words rewritten/replaced on the way out
+  output_filter  code filters — untraceable numbers or banned approval words rewritten/replaced on the
+                 way out
 
 A layer that merely passed something through did not act. "n/a" means the layer had no role on this
 turn (e.g. retrieval on an eligibility question).
@@ -17,6 +19,7 @@ turn (e.g. retrieval on an eligibility question).
 from __future__ import annotations
 
 LAYERS = [
+    ("input_guard", "Input guardrail"),
     ("retrieval", "Retrieval grounding"),
     ("engine", "Rules engine"),
     ("compliance", "Compliance agent"),
@@ -30,10 +33,27 @@ def _slice(status: str, acted: bool, detail: str) -> dict:
 
 def assess(*, intent: str, draft: str, sources: list, sources_text: str, chunks_retrieved: int,
            engine_ran: bool, readback: bool, computations: dict, compliance_record: dict,
-           pii_found: list, profile: dict, user_msg: str) -> dict:
+           pii_found: list, profile: dict, user_msg: str, guard: dict | None = None) -> dict:
     from .agents.compliance import unsupported_numbers  # local import: compliance imports nothing from here
 
     out: dict = {}
+
+    # (0) input guardrail: PII removal + blocking / escalation
+    guard = guard or {}
+    did = []
+    if pii_found:
+        did.append(f"removed {', '.join(pii_found)}")
+    if guard.get("action") in ("block", "escalate"):
+        verb = {"block": "blocked", "escalate": "escalated"}[guard["action"]]
+        did.append(f"{verb} {guard['category']} ({guard['source']})")
+    if guard.get("action") == "block":
+        out["input_guard"] = _slice("blocked", True, "; ".join(did))
+    elif guard.get("action") == "escalate":
+        out["input_guard"] = _slice("escalated", True, "; ".join(did))
+    elif pii_found:
+        out["input_guard"] = _slice("pii removed", True, "; ".join(did))
+    else:
+        out["input_guard"] = _slice("clear", False, "nothing blocked, escalated or removed")
 
     # (a) retrieval grounding
     if intent in ("product_qa", "comparison"):
@@ -79,8 +99,6 @@ def assess(*, intent: str, draft: str, sources: list, sources_text: str, chunks_
 
     # (d) code filters
     actions = []
-    if pii_found:
-        actions.append(f"removed {', '.join(pii_found)} from the input")
     flt = compliance_record.get("output_filter") or {}
     if flt.get("action"):
         actions.append(f"untraceable numbers {flt['untraceable']} → {flt['action']}")

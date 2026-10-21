@@ -29,6 +29,7 @@ from . import config, pii
 
 TYPES = {
     "PII guard": "input_filter",
+    "Input guardrail": "input_guard",
     "Orchestrator": "routing",
     "Readback": "readback",
     "Product Knowledge": "retrieval",

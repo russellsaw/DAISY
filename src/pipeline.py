@@ -7,13 +7,14 @@ Everything the UI and the eval runner need comes back in TurnResult.
 """
 from __future__ import annotations
 
+import copy
 import re
 import time
 from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import dataclass, field
 
 from . import config, defence, llm, pii, recorder
-from .agents import compliance, eligibility, handoff, orchestrator, product_knowledge, prompts
+from .agents import compliance, eligibility, handoff, input_guard, orchestrator, product_knowledge, prompts
 from .rules import counterfactual
 from .state import ConversationState
 
@@ -53,12 +54,14 @@ class TurnResult:
     corrections: list = field(default_factory=list)  # values the customer corrected this turn
     defence: dict = field(default_factory=dict)  # which defence layer acted (src/defence.py)
     draft: str = ""             # the reply as drafted, before review (flight recorder)
+    guard: dict = field(default_factory=dict)  # input guardrail decision (Feature 5)
     log_path: str = ""          # where this conversation's flight-recorder log is
 
 
 _DRAFT_AGENT = {"product_qa": "Product Knowledge", "comparison": "Product Knowledge", "eligibility": "Eligibility",
                 "advice_seeking": "Boundary", "handoff_request": "Handoff", "out_of_scope": "Out of scope",
-                "chit_chat": "Chit-chat", "refused": "Fallback"}
+                "chit_chat": "Chit-chat", "refused": "Fallback",
+                "blocked": "Input guardrail"}
 
 
 def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
@@ -86,14 +89,30 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
 
     was_pending = state.pending_readback
     reference = state.readback_profile if was_pending else state.confirmed_profile
+    # Input guardrail (Feature 5) runs in parallel with the orchestrator, so it adds no latency. If it
+    # blocks, everything the orchestrator extracted from the message is thrown away.
+    profile_before = copy.deepcopy(state.profile)
+    guard_job = _POOL.submit(input_guard.check, user_msg)
     try:
         decision = orchestrator.route(state, user_msg)
     except llm.Refusal as exc:
         decision = {"intent": "refused", "products": [], "injection_suspected": True}
         state.add_trace("Orchestrator", f"model declined to route the message ({exc})")
+    guard = guard_job.result()
     intent = decision["intent"]
     products = decision.get("products") or []
     injection = bool(decision.get("injection_suspected"))
+    if guard["action"] == "block":
+        state.profile = profile_before
+        decision["profile_changed"] = []
+        intent, products = "blocked", []
+        state.add_trace("Input guardrail", f"BLOCKED {guard['category']} ({guard['source']}); "
+                                           "the orchestrator's extraction was discarded", guard)
+    elif guard["action"] == "escalate":
+        intent = "handoff_request"
+        state.add_trace("Input guardrail", f"ESCALATED {guard['category']}: routed to a banker, priority high", guard)
+    else:
+        state.add_trace("Input guardrail", f"allowed ({guard['source']})", guard)
 
     # ---- Readback before clearance (Feature 2) ----
     changed = decision.get("profile_changed") or []
@@ -101,7 +120,9 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
     if corrections:
         state.add_trace("Readback", "customer corrected " + ", ".join(c["field"] for c in corrections), corrections)
     deterministic_reply = None
-    if was_pending:
+    if intent == "blocked":
+        pass  # a blocked message can't confirm, correct or change anything
+    elif was_pending:
         if changed:  # a correction: read everything back again before anything runs
             intent, products = "eligibility", state.pending_products
         elif decision.get("readback_reply") == "confirm" or _YES.match(user_msg):
@@ -123,6 +144,9 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
             # check citations and a quoted "as of" date or link traces to its source like any other fact.
             sources_text = out.get("excerpts") or "\n\n".join(c["text"] for c in out["chunks"])
 
+        elif intent == "blocked":
+            draft = guard["reply"]
+
         elif intent == "eligibility" and deterministic_reply:
             draft = deterministic_reply
             out = {"engine_ran": False}
@@ -142,7 +166,8 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
             state.add_trace("Boundary", "advice-seeking: declined to advise, offered banker")
 
         elif intent == "handoff_request":
-            card_job = start_card("customer asked to apply / speak to a banker")
+            card_job = start_card("customer may be in financial distress: prioritise a call back"
+                                  if guard["action"] == "escalate" else "customer asked to apply / speak to a banker")
             # Drafted (not templated) so it can acknowledge what the customer actually said — urgency,
             # worry — while promising nothing; compliance reviews it like any other reply.
             draft = llm.chat(prompts.HANDOFF_REPLY, [{"role": "user", "content": user_msg}],
@@ -164,7 +189,7 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
     is_readback = intent == "eligibility" and bool(out.get("readback"))
     reviewed = compliance.review(state, user_msg, intent, draft, sources_text=sources_text,
                                  computations=computations, injection_suspected=injection,
-                                 deterministic=is_readback or draft == WHAT_TO_CHANGE_REPLY)
+                                 deterministic=is_readback or draft == WHAT_TO_CHANGE_REPLY or intent == "blocked")
     final = reviewed["final"]
 
     # "Not now, but when": the outcome lines and the fixed outcome sentence are written by code and
@@ -177,13 +202,15 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
     if card_job is None and (reviewed["record"]["verdict"] == "handoff" or intent == "refused"):
         card_job = start_card("compliance reviewer escalated")
     card = card_job.result() if card_job else None
+    if card is not None and guard["action"] == "escalate":
+        card["urgency"] = "high"  # vulnerable customer: fair dealing says a human, soon
 
     layers = defence.assess(
         intent=intent, draft=draft, sources=sources, sources_text=sources_text,
         chunks_retrieved=len(out.get("chunks", [])) if intent in ("product_qa", "comparison") else 0,
         engine_ran=bool(intent == "eligibility" and out.get("engine_ran")), readback=is_readback,
         computations=computations, compliance_record=reviewed["record"], pii_found=pii_found,
-        profile=state.profile.to_dict(), user_msg=user_msg)
+        profile=state.profile.to_dict(), user_msg=user_msg, guard=guard)
     state.add_trace("Defence layers", " · ".join(f"{k}={v['status']}" for k, v in layers.items()), layers)
 
     state.messages.append({"role": "assistant", "content": final})
@@ -206,6 +233,7 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
         corrections=corrections,
         defence=layers,
         draft=draft,
+        guard=guard,
     )
     if state.record:
         try:

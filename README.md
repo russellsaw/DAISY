@@ -17,6 +17,10 @@ customer message
 PII guard ─── strips NRIC/FIN and card numbers before any model sees the message
    │
    ▼
+Input guardrail ─── code patterns + LLM classifier (in parallel with the orchestrator):
+   │                block injection / prompt extraction / role-play / fake authority → code-written reply;
+   │                escalate a distressed customer to a banker; otherwise allow
+   ▼
 Orchestrator ─── intent, profile facts, commitments (+ customer's words for end dates), readback replies
    │
    ├─ product_qa / comparison ──▶ Product Knowledge agent (BM25 over 66 DBS/POSB/MAS/HDB sources, cites [n])
@@ -53,6 +57,7 @@ src/
                            server-side refusal fallbacks on Sonnet; a final refusal becomes a banker handoff
   state.py                 CustomerProfile + ConversationState
   pii.py                   strips NRIC/FIN and card numbers from every message before any agent sees it
+  agents/input_guard.py    input guardrail: blocks injection-type attacks, escalates distressed customers
   defence.py               Swiss-cheese record: which defence layer acted on each response
   recorder.py              flight recorder: per-conversation JSONL event log + readers
   commitments.py           turns a customer's stated end date into a date — in code, from their own words
@@ -68,7 +73,7 @@ evals/
   cases.csv                the suite: golden_qa, eligibility, boundary, adversarial, scope, handoff
   run_evals.py             runs cases through the live pipeline, writes results/latest.json
   judge.py                 LLM-as-judge for behavioural checks
-tests/                     91 offline unit tests: engine, guards, counterfactual, readback, defence, recorder
+tests/                     110 offline unit tests: engine, guards, counterfactual, readback, defence, recorder, input guard
 scripts/ingest.py          build the knowledge base
 scripts/write_starter_cases.py   regenerates the starter cases.csv
 ```
@@ -165,8 +170,9 @@ person buying a S$1M condo with S$700k over 30 years: TDSR 56.3% today, 47.7% on
 
 ## Swiss-cheese defence view
 
-Every response records which of four defence layers acted on it (`src/defence.py`): **retrieval
-grounding**, **rules engine**, **compliance agent**, **code filters** (PII in; numbers and wording out). The
+Every response records which of five defence layers acted on it (`src/defence.py`): **input guardrail**
+(PII, injection, escalation), **retrieval grounding**, **rules engine**, **compliance agent**, **code filters**
+(numbers and wording out). The
 chat shows the slices under each reply; the Trust scorecard's *Defence layers* tab shows, for every
 adversarial eval case, the four slices with the ones that acted highlighted, and surfaces any **hole
 alignment** (an attack that got through every layer) at the top, followed by attacks held only by the

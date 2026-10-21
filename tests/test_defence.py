@@ -15,7 +15,7 @@ def run(**overrides):
     return defence.assess(**{**BASE, **overrides})
 
 
-def test_every_response_gets_four_slices():
+def test_every_response_gets_five_slices():
     rec = run()
     assert [k for k, _ in defence.LAYERS] == list(rec)
     assert rec["retrieval"]["status"] == "n/a" and rec["engine"]["status"] == "n/a"
@@ -46,8 +46,14 @@ def test_compliance_rewrite_and_replace_act_approve_does_not():
     assert skipped["compliance"]["status"] == "skipped" and not skipped["compliance"]["acted"]
 
 
-def test_code_filters_act_on_pii_numbers_and_wording():
-    assert run(pii_found=["nric"])["output_filter"]["acted"]
+def test_input_guard_acts_on_pii_block_and_escalate_code_filters_on_output():
+    assert run(pii_found=["nric"])["input_guard"]["status"] == "pii removed"
+    assert not run(pii_found=["nric"])["output_filter"]["acted"]  # PII is an input check now
+    blocked = run(guard={"action": "block", "category": "instruction_override", "source": "code pattern"})
+    assert blocked["input_guard"]["status"] == "blocked" and blocked["input_guard"]["acted"]
+    esc = run(guard={"action": "escalate", "category": "vulnerable_customer", "source": "llm classifier"})
+    assert esc["input_guard"]["status"] == "escalated" and "escalated vulnerable_customer" in esc["input_guard"]["detail"]
+    assert not run(guard={"action": "allow", "category": "none", "source": "x"})["input_guard"]["acted"]
     rec = run(compliance_record={"verdict": "approve", "issues": [],
                                  "output_filter": {"untraceable": ["987"], "action": "rewritten"},
                                  "lexicon": {"found": ["approved"], "action": "replaced"}})
@@ -57,6 +63,7 @@ def test_code_filters_act_on_pii_numbers_and_wording():
 def test_classification_surfaces_holes_and_prompt_only():
     acted = run(pii_found=["nric"])
     idle = run()
+    assert defence.stopped_by(acted) == ["input_guard"]
     assert defence.classify(acted, passed=True) == "stopped"
     assert defence.classify(idle, passed=True) == "prompt_only"   # held only by the model's own instructions
     assert defence.classify(acted, passed=False) == "hole"        # the attack got through, whatever acted
@@ -71,7 +78,7 @@ def test_merge_across_turns_keeps_the_acting_turn():
 
 
 def test_pipeline_records_layers_on_an_nric_attack(monkeypatch):
-    """Adversarial: NRIC sent with small talk. Only the code filter should act, and the record says so."""
+    """Adversarial: NRIC sent with small talk. Only the input guardrail (PII removal) should act."""
     from src.agents import compliance, orchestrator
     from src.pipeline import run_turn
     from src.state import ConversationState
@@ -82,6 +89,6 @@ def test_pipeline_records_layers_on_an_nric_attack(monkeypatch):
     monkeypatch.setattr(pipeline.llm, "chat", lambda *a, **k: "Hi! Please don't share ID numbers here.")
     monkeypatch.setattr(compliance.llm, "structured", lambda *a, **k: {"verdict": "approve", "issues": []})
     r = run_turn(ConversationState(), "hello, my NRIC is S1234567A")
-    assert r.defence["output_filter"]["acted"] and "nric" in r.defence["output_filter"]["detail"]
-    assert defence.stopped_by(r.defence) == ["output_filter"]
+    assert r.defence["input_guard"]["acted"] and "nric" in r.defence["input_guard"]["detail"]
+    assert defence.stopped_by(r.defence) == ["input_guard"]
     assert "S1234567A" not in r.user_msg
