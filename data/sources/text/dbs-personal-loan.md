@@ -5,7 +5,7 @@ publisher: DBS
 url: https://www.dbs.com.sg/personal/loans/instant-cash/personal-loan
 products: personal_loan
 fetched_at: 2026-10-21T19:17:13
-sha256: 60db9cf720ec5fe7b6f45d50611166c7f303933f95d7f0922260452e01c29950
+sha256: c04d5e284508b0a28387494b7d80923293ec18071ea150cab0dfa6a4727148f4
 ---
 
 Home/Loans/DBS Personal Loan
@@ -47,20 +47,10 @@ Don’t have digibank? Refer to our guide to register for a digibank profile bel
 Register for digibank here
 ## Eligibility & Fees
 Personal loan can be applied on DBS/POSB Cashline and/or DBS/POSB Credit Cards. For customers without DBS/POSB Cashline and DBS/POSB Credit Cards, your Personal Loan will come with a Cashline account.
-## Age
-21 – 70 years old
-## Minimum income
-1) For customers with existing DBS/POSB Cashline and/or DBS/POSB Credit Cards: No income documents required.
-2) For customers without DBS/POSB Cashline and DBS/POSB Credit Cards:
-SG/PR: $20,000 p.a
-Foreigners: $60,000 p.a
-Skip income documents: Apply via Myinfo (Singpass) or salary crediting to DBS/POSB. For full listing of required documents, kindly refer to Frequently Asked Questions section.
-## Rates and fees
-Interest rate and fee: Personalised interest rates from as low as 1.48% p.a.+ 1% processing fee (EIR 3.22% p.a.)!
-Early Termination Fee: $250 for each Personal Loan
-1The interest rate & fee indicated is the lowest published rate and may differ from what is offered to you based on your personal credit and income profile, subject to the bank’s discretion. Log in to digibank to view your rates now.
-## To receive funds
-You’ll need a DBS/POSB deposit account (Joint-All, Trust, MSA, SAYE, or POSB current accounts are excluded). Click here to apply.
+Age | 21 – 70 years old
+Minimum income | 1) For customers with existing DBS/POSB Cashline and/or DBS/POSB Credit Cards: No income documents required. 2) For customers without DBS/POSB Cashline and DBS/POSB Credit Cards: SG/PR: $20,000 p.a Foreigners: $60,000 p.a Skip income documents: Apply via Myinfo (Singpass) or salary crediting to DBS/POSB. For full listing of required documents, kindly refer to Frequently Asked Questions section.
+Rates and fees | Interest rate and fee: Personalised interest rates from as low as 1.48% p.a.+ 1% processing fee (EIR 3.22% p.a.)! Early Termination Fee: $250 for each Personal Loan 1 The interest rate & fee indicated is the lowest published rate and may differ from what is offered to you based on your personal credit and income profile, subject to the bank’s discretion. Log in to digibank to view your rates now.
+To receive funds | You’ll need a DBS/POSB deposit account (Joint-All, Trust, MSA, SAYE, or POSB current accounts are excluded). Click here to apply.
 ## Frequently Asked Questions
 ## For new customers without DBS/POSB Cashline and DBS/POSB Credit Cards
 For Singaporeans and Permanent Residents
@@ -114,17 +104,10 @@ Cashline is a line-of-credit facility that stays active even after your Personal
 Click here to find out more.
 You can apply up to 95% of your available credit limit. You may apply for multiple Personal Loans as long as there is available credit limit.
 ## Items to Note
-## 1 Interest rate and fees
-The interest rate & fee indicated is the lowest published rate and may differ from what is offered to you based on your personal credit and income profile, subject to the bank’s discretion. Log in to digibank to view your rates now.
-## 2 EIR
-EIR – Effective Interest Rate is the rate that reflects the true cost of borrowing as expressed over a reducing balance basis (similar to home loans) and is useful in comparing different loans to get the best rate.
-For more information on applied and effective interest rates, please visit www.moneysense.gov.sg
-## 3 Terms & Conditions for promotions
-Terms & Conditions apply, please refer to the promotion page.
-## 4 To note for funds disbursement
-Please note that for loans approved after 11.45pm daily or 9pm during month end (e.g. 31 Mar), the funds will only be credited to the designated deposits account on the following day. If the following day falls on a Sunday or Public Holiday, the crediting will be on the next following day (e.g. Monday to Saturday).
-## 5 To note for loan tenure
-For loan amounts of S$3,000 and below, and for applicants who are non-Singapore citizens or non-permanent residents, you can only choose loan tenure of 6, 12 or 24 months.
-## Unsure of which DBS Instant Loan product to select?
-Cashline, Personal Loan, or Balance Transfer – confused about which loan to pick? Our easy-to-use calculator helps you find the perfect fit with the lowest interest and fees for your needs.
+1 Interest rate and fees | The interest rate & fee indicated is the lowest published rate and may differ from what is offered to you based on your personal credit and income profile, subject to the bank’s discretion. Log in to digibank to view your rates now.
+2 EIR | EIR – Effective Interest Rate is the rate that reflects the true cost of borrowing as expressed over a reducing balance basis (similar to home loans) and is useful in comparing different loans to get the best rate. For more information on applied and effective interest rates, please visit www.moneysense.gov.sg
+3 Terms & Conditions for promotions | Terms & Conditions apply, please refer to the promotion page .
+4 To note for funds disbursement | Please note that for loans approved after 11.45pm daily or 9pm during month end (e.g. 31 Mar), the funds will only be credited to the designated deposits account on the following day. If the following day falls on a Sunday or Public Holiday, the crediting will be on the next following day (e.g. Monday to Saturday).
+5 To note for loan tenure | For loan amounts of S$3,000 and below, and for applicants who are non-Singapore citizens or non-permanent residents, you can only choose loan tenure of 6, 12 or 24 months.
+Unsure of which DBS Instant Loan product to select? | Cashline, Personal Loan, or Balance Transfer – confused about which loan to pick? Our easy-to-use calculator helps you find the perfect fit with the lowest interest and fees for your needs.
 View Personal Loan Terms and Conditions (WEF 17 Sep 2025)

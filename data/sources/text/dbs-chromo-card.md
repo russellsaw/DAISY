@@ -5,7 +5,7 @@ publisher: DBS
 url: https://www.dbs.com.sg/personal/cards/credit-cards/dbs-chromo-card
 products: credit_card
 fetched_at: 2026-10-21T19:17:13
-sha256: 6f36e393f3d6026154b640f1d254ae3295ef4151e4a9f1a93b5f040923d6c74e
+sha256: af25e28451adfaf68a9f95c9298773df949a30bb8427c6adac217dc0d5a878ac
 ---
 
 Home/Cards/DBS Chromo Card
@@ -71,35 +71,15 @@ For those who want to make every dollar count without compromising on the things
 Lifestyle enthusiast
 For those who embrace their passions, whether it's wellness, fashion, food, or the latest trends.
 ## Eligibility & Fees
-## Age
-Must be between the ages of 21 to 29 years old at the time of application.
-## Minimum income
-Singaporeans/PR: S$30,000 p.a.
-Foreigners: S$45,000 p.a.
-Secured Card issuance is not available for DBS Chromo Card.
-Not in the 21-29 age group? Click here to explore other products.
-## Annual Fee
-Principal Card: S$196.20
-Supplementary Card is not issued for DBS Chromo Card.
-## Annual fee waiver
-5 years
-## Card Design Change Fee
-The first card design selected during application is free. A fee applies to each subsequent design change and will be charged to the Cardmember’s account once successfully processed.
-## Late fee
-S$100 will be levied if minimum payment is not received on the card account by payment due date.
-## Finance charges
-27.8% p.a. is chargeable daily (subject to compounding)
-## Converting DBS Points to miles
-Convert your DBS Points into air miles for your next trip with Asia Miles, Air Asia or KrisFlyer Miles.
-KrisFlyer Miles
-5,000 DBS Points = 10,000 Miles
-Asia Miles
-5,000 DBS Points = 10,000 Miles
-AirAsia Points
-500 DBS Points = 1,500 Miles
-An administrative fee of S$27.25 (inclusive of GST) applies to each miles conversion and will be charged to DBS Credit Card.
-## Full list of fees
-All fees shown here include GST. For full list, read our DBS Cards - Rates and Fees.
+Age | Must be between the ages of 21 to 29 years old at the time of application.
+Minimum income | Singaporeans/PR: S$30,000 p.a. Foreigners: S$45,000 p.a. Secured Card issuance is not available for DBS Chromo Card. Not in the 21-29 age group? Click here to explore other products.
+Annual Fee | Principal Card: S$196.20 Supplementary Card is not issued for DBS Chromo Card.
+Annual fee waiver | 5 years
+Card Design Change Fee | The first card design selected during application is free. A fee applies to each subsequent design change and will be charged to the Cardmember’s account once successfully processed.
+Late fee | S$100 will be levied if minimum payment is not received on the card account by payment due date.
+Finance charges | 27.8% p.a. is chargeable daily (subject to compounding)
+Converting DBS Points to miles | Convert your DBS Points into air miles for your next trip with Asia Miles, Air Asia or KrisFlyer Miles. KrisFlyer Miles 5,000 DBS Points = 10,000 Miles Asia Miles 5,000 DBS Points = 10,000 Miles AirAsia Points 500 DBS Points = 1,500 Miles An administrative fee of S$27.25 (inclusive of GST) applies to each miles conversion and will be charged to DBS Credit Card.
+Full list of fees | All fees shown here include GST. For full list, read our DBS Cards - Rates and Fees .
 ## Frequently Asked Questions
 The DBS Chromo Card is a cashback or miles credit card made exclusively for young adults aged 21 to 29.
 The DBS Chromo Card rewards you with up to 5% cashback on your top 2 local spend categories every month, 0 FX fees, a 5-year annual fee waiver and the ability to toggle between cashback or miles.

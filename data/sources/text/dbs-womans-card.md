@@ -5,7 +5,7 @@ publisher: DBS
 url: https://www.dbs.com.sg/personal/cards/credit-cards/dbs-woman-mastercard-card
 products: credit_card
 fetched_at: 2026-10-21T19:17:13
-sha256: 991290b485523b2b1c2d03f5347637f69ff414990b2de1b97d01abccf69f7b4e
+sha256: a5abff255e37639570db1da7b34755572f7aa75c18d9bdebd9111bb5935a045d
 ---
 
 Home/Cards/DBS Woman's Card
@@ -36,18 +36,10 @@ DBS Woman’s World Card rewards you with up to 10X DBS Points (4 miles per S$1)
 Please refer to DBS Woman’s Card Promotions and Programmes terms and conditions for full terms and conditions.
 ## Converting DBS Points to miles
 Convert your DBS Points into air miles for your next trip with Asia Miles, Air Asia or KrisFlyer Miles.
-## Conversion Rate
-## DBS Points
-## Miles
-KrisFlyer Miles | DBS Points
-5,000 | Miles
-10,000
-Asia Miles | DBS Points
-5,000 | Miles
-10,000
-Air Asia points | DBS Points
-500 | Miles
-1,500
+Conversion Rate | DBS Points | Miles
+KrisFlyer Miles | DBS Points 5,000 | Miles 10,000
+Asia Miles | DBS Points 5,000 | Miles 10,000
+Air Asia points | DBS Points 500 | Miles 1,500
 An administrative fee of S$27.25 (inclusive of GST) applies to each miles conversion and will be charged to DBS Credit Card.
 ## Deals
 ## Who is this for
@@ -60,25 +52,13 @@ Who want to earn extra DBS Points abroad
 Who value DBS Points redemption options
 Learn more
 ## Eligibility & Fees for DBS Woman’s Card
-## Age
-Must be 21 to 75 years old
-## Minimum income
-Singaporeans/PR: S$30,000 p.a. (≤55 years old) or S$15,000 p.a. (56 years and above)
-Foreigners: S$45,000 p.a.
-## Annual fee
-Principal Card:
-S$163.50
-Supplementary Card:
-S$81.75 per card
-## Annual fee waiver
-1 year
-Charge at least S$15,000 to your card each year to waive the annual fee for the following year.
-## Late fee
-S$100 will be levied if minimum payment is not received on the card account by payment due date.
-## Finance Charges
-27.8% p.a. is chargeable daily (subject to compounding)
-## Full list of fees
-All fees shown here include GST. For full list, read our DBS Card Rates & Fees.
+Age | Must be 21 to 75 years old
+Minimum income | Singaporeans/PR: S$30,000 p.a. (≤55 years old) or S$15,000 p.a. (56 years and above) Foreigners: S$45,000 p.a.
+Annual fee | Principal Card: S$163.50 Supplementary Card: S$81.75 per card
+Annual fee waiver | 1 year Charge at least S$15,000 to your card each year to waive the annual fee for the following year.
+Late fee | S$100 will be levied if minimum payment is not received on the card account by payment due date.
+Finance Charges | 27.8% p.a. is chargeable daily (subject to compounding)
+Full list of fees | All fees shown here include GST. For full list, read our DBS Card Rates & Fees .
 Refer to
 Terms and Conditions – DBS Cards on the use of DBS cards.
 DBS Woman’s Card Promotions and Programmes Terms and Conditions on the use of this card.

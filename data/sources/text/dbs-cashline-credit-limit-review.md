@@ -5,7 +5,7 @@ publisher: DBS
 url: https://www.dbs.com.sg/personal/loans/instant-cash/cashline/credit-limit-review
 products: cashline
 fetched_at: 2026-10-21T19:17:13
-sha256: 8188e47680b33b43685c0b887024c1b1ad24e2d53933994547e5efbbf71a84a2
+sha256: 0c1000c40954befcea82f609df7e2199c894d9309c3f6b7d9d08d40d7a395741
 ---
 
 Home/Loans/Cashline Credit Limit Review
@@ -52,48 +52,30 @@ You prefer to periodically review and adjust your credit limit to ensure it cont
 SINGAPORE CITIZENS & PRs
 ## Required documents for Salaried Employees
 For applications via Myinfo with Singpass, no documents are required. Otherwise, provide either Option A or Option B below.
-## Option A
-Salary Crediting into DBS/POSB Account1,2
-## Option B
-Latest Computerised Payslip¹
-Latest Income Tax Notice of Assessment
-## Note:
-1Income record / documents must not be dated more than 3 months prior to date of application.
-2Your salary must be credited via GIRO, to your own DBS/POSB Account for the last 3 consecutive months and your current annual income meets our minimum income criteria. Salary credited into joint account will not be considered.
+Option A | Salary Crediting into DBS/POSB Account 1,2
+Option B | Latest Computerised Payslip¹ Latest Income Tax Notice of Assessment
+Note: | 1 Income record / documents must not be dated more than 3 months prior to date of application. 2 Your salary must be credited via GIRO, to your own DBS/POSB Account for the last 3 consecutive months and your current annual income meets our minimum income criteria. Salary credited into joint account will not be considered.
 SINGAPORE CITIZENS & PRs
 ## Required documents for Variable Commission-based Employees/ Self-Employed
-## Latest Income Tax Notice of Assessment
-2 years
+Latest Income Tax Notice of Assessment | 2 years
 Singapore Citizens & PRs
 ## Optional income documents (Age 56 and above)
-## CPF Monthly payouts history statement or Personal bank statement in SGD showing CPF Life payout
-1 month
-## Annual personal bank statement in SGD showing dividend or interest income
-1 year
-## Personal Bank statement in SGD showing pension payout
-3 months
-## CPF Transaction History showing Retirement Sum Scheme (RSS) payout and RSS Balance
-1 year
+CPF Monthly payouts history statement or Personal bank statement in SGD showing CPF Life payout | 1 month
+Annual personal bank statement in SGD showing dividend or interest income | 1 year
+Personal Bank statement in SGD showing pension payout | 3 months
+CPF Transaction History showing Retirement Sum Scheme (RSS) payout and RSS Balance | 1 year
 Foreigners
 ## Required documents for Salaried Employees
-## Employment Pass
-Minimum 6 months validity remaining.
-## Company letter certifying Employment & Salary (in Singapore dollar currency)
-Issued within 3 months of the application date.
-## Computerised Payslip1
-Latest computerised payslip.
-## Income Tax Notice of Assessment
-Latest Income Tax Notice of Assessment.
-## Note:
-1Income documents must not be dated more than 3 months prior to the application date.
+Employment Pass | Minimum 6 months validity remaining.
+Company letter certifying Employment & Salary (in Singapore dollar currency) | Issued within 3 months of the application date.
+Computerised Payslip 1 | Latest computerised payslip.
+Income Tax Notice of Assessment | Latest Income Tax Notice of Assessment.
+Note: | 1 Income documents must not be dated more than 3 months prior to the application date.
 Foreigners
 ## Required documents for Variable Commission-based Employees/ Self-Employed
-## Employment Pass
-Minimum 6 months validity remaining.
-## Company letter certifying Employment & Salary (in Singapore dollar currency)
-Issued within 3 months from the application date.
-## Income Tax Notice of Assessment
-Latest 2 years’ Income Tax Notice of Assessment.
+Employment Pass | Minimum 6 months validity remaining.
+Company letter certifying Employment & Salary (in Singapore dollar currency) | Issued within 3 months from the application date.
+Income Tax Notice of Assessment | Latest 2 years’ Income Tax Notice of Assessment.
 ## Frequently asked questions
 The credit limit granted will be subjected to the income documents submitted. If your latest income documents submitted reflect an increase in income based on our record, credit limit increase will be subject to our review.
 Should your submitted income documents reflect a lower-earned income than what was previously declared, the existing Credit Card or Cashline limit will be reduced to reflect the prevailing earned income.

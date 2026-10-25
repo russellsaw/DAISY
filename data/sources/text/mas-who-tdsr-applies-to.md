@@ -5,7 +5,7 @@ publisher: MAS
 url: https://www.mas.gov.sg/regulation/explainers/tdsr-for-property-loans/who-tdsr-applies-to
 products: home_loan
 fetched_at: 2026-10-21T19:17:13
-sha256: 5240c35c569d9469e6c24b1aa9463827db52bbdbeedbf037353437c7503f1127
+sha256: 25d9218c8c7cafbdb39af2f9f16f7c2b1ec1c5d7747757a263875c447334be0a
 ---
 
 Explainers
@@ -39,14 +39,9 @@ Refinanced Loans for Properties
 In general, the TDSR rules apply to refinanced loans.
 However, an existing borrower looking to refinance his loan to purchase a property is exempted if he is an owner-occupier. This is a concession provided to borrowers who have purchased properties for their own stay.
 Borrowers are allowed to refinance their investment property loans above the TDSR threshold if they meet certain conditions.
-Type of property loan
-Does the TDSR threshold/MSR limit apply at the time of refinancing?
-Owner-occupied housing loans
-No
-Investment property loans
-Yes, provided the borrower meets both these conditions:
-Commits, at the point of refinancing, to a debt reduction plan with his FI, comprising a repayment of at least 3% of the outstanding balance over a period of not more than 3 years.
-Fulfils the FI’s credit assessment.
+Type of property loan | Does the TDSR threshold/MSR limit apply at the time of refinancing?
+Owner-occupied housing loans | No
+Investment property loans | Yes, provided the borrower meets both these conditions: Commits, at the point of refinancing, to a debt reduction plan with his FI, comprising a repayment of at least 3% of the outstanding balance over a period of not more than 3 years. Fulfils the FI’s credit assessment.
 Loans Secured By a Pool of Collateral (Including Property) and Bridging Loans
 The TDSR rules do not apply to the following:
 Loans secured by a pool of collateral where the market value of property in the collateral pool is less than 50% of the credit limit of the loan.

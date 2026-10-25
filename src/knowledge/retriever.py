@@ -1,9 +1,19 @@
 """BM25 retrieval over data/kb.json.
 
 Keyword retrieval is deliberately simple: no embeddings API, no vector DB,
-nothing to break at 3am. For a few dozen pages of banking product text it
-performs well because customers use the same vocabulary the pages do.
-Swap `retrieve()` for an embedding search later if recall is a problem.
+nothing to break at 3am. Tuned after the 50-question review (2026-10-25):
+  - light stemming, so "cards"/"card" and "application"/"apply" match;
+  - page titles count twice, so "Cashline" finds the Cashline page;
+  - the product the orchestrator names BOOSTS matching chunks instead of filtering
+    the rest out (a balance-transfer question tagged "credit card" lost the
+    Balance Transfer page to the filter);
+  - the orchestrator adds a search query in DBS/MAS terms ("outstanding housing
+    loans", "finance charge"), appended to the customer's words;
+  - soft diversity: each further passage from the same page has its score multiplied by
+    SAME_DOC_DECAY again. A page that is clearly the answer still fills several slots (the
+    yuu Card question needs its fees AND rewards), but a page with many similar passages
+    can't crowd out the one that answers the question (5 of 8 slots once went to one
+    page). A hard cap of 2 per page was tried and starved single-product questions.
 """
 from __future__ import annotations
 
@@ -21,8 +31,28 @@ _STOP = {"the", "a", "an", "and", "or", "of", "to", "for", "in", "on", "is", "ar
          "your", "s", "dbs"}
 
 
+# Word forms customers and pages use for the same idea.
+_NORMAL = {"application": "apply", "applications": "apply", "applying": "apply", "applied": "apply",
+           "repay": "repayment", "repaying": "repayment", "repaid": "repayment", "borrowing": "borrow",
+           "borrowed": "borrow", "charged": "charge", "charges": "charge", "documents": "document",
+           "eligible": "eligibility", "qualify": "eligibility", "mortgage": "home", "housing": "home"}
+_PRODUCT_BOOST = 1.25
+SAME_DOC_DECAY = 0.8
+
+
+def _stem(token: str) -> str:
+    if token in _NORMAL:
+        return _NORMAL[token]
+    if len(token) <= 3 or not token.isalpha():
+        return token
+    for suffix, keep in (("ies", "y"), ("sses", "ss"), ("ing", ""), ("ed", ""), ("es", ""), ("s", "")):
+        if token.endswith(suffix) and len(token) - len(suffix) >= 3 and not token.endswith(("ss", "us", "is")):
+            return _NORMAL.get(token[: -len(suffix)] + keep, token[: -len(suffix)] + keep)
+    return token
+
+
 def tokenize(text: str) -> list[str]:
-    return [t for t in _TOKEN.findall(text.lower()) if t not in _STOP]
+    return [_stem(t) for t in _TOKEN.findall(text.lower()) if t not in _STOP]
 
 
 def _chunk_products(c: dict) -> list[str]:
@@ -33,8 +63,8 @@ class KnowledgeBase:
     def __init__(self, chunks: list[dict], meta: dict):
         self.chunks = chunks
         self.meta = meta
-        # The title is indexed with the text so "Cashline fees" finds the Cashline fees page.
-        corpus = [tokenize(f"{c.get('title', '')}\n{c['text']}") for c in chunks]
+        # The title is indexed twice with the text so "Cashline fees" finds the Cashline fees page.
+        corpus = [tokenize(f"{c.get('title', '')}\n{c.get('title', '')}\n{c['text']}") for c in chunks]
         self._bm25 = BM25Okapi(corpus) if chunks else None
 
     @property
@@ -45,19 +75,24 @@ class KnowledgeBase:
         if not self._bm25:
             return []
         k = k or config.RETRIEVAL_TOP_K
-        scores = self._bm25.get_scores(tokenize(query))
-        ranked = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)
-        out = []
-        for i in ranked:
-            if scores[i] <= 0:
-                break
-            c = self.chunks[i]
-            products = _chunk_products(c)
-            if product and product not in products and "general" not in products:
-                continue
-            out.append({**c, "score": round(float(scores[i]), 3)})
-            if len(out) >= k:
-                break
+        scores = list(self._bm25.get_scores(tokenize(query)))
+        if product:  # boost, don't filter: a page tagged for a sibling product may be the right one
+            for i, c in enumerate(self.chunks):
+                products = _chunk_products(c)
+                if product in products or "general" in products:
+                    scores[i] *= _PRODUCT_BOOST
+        pool = sorted((i for i in range(len(scores)) if scores[i] > 0), key=lambda i: scores[i], reverse=True)[:200]
+        out, per_doc = [], {}
+        while pool and len(out) < k:  # greedy: best score after decaying for passages already taken
+            def adjusted(i):
+                doc = self.chunks[i].get("doc_id") or self.chunks[i].get("url")
+                return scores[i] * SAME_DOC_DECAY ** per_doc.get(doc, 0)
+            best = max(pool, key=adjusted)
+            pool.remove(best)
+            c = self.chunks[best]
+            doc = c.get("doc_id") or c.get("url")
+            per_doc[doc] = per_doc.get(doc, 0) + 1
+            out.append({**c, "score": round(float(scores[best]), 3)})
         return out
 
 

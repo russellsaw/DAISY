@@ -1,0 +1,51 @@
+id,area,expected_handling,question
+b01,home_loans,product_qa,What types of home loans does DBS offer?
+b02,home_loans,product_qa,What's the difference between a fixed and a floating rate home loan?
+b03,home_loans,product_qa,What is SORA and how does it affect my home loan?
+b04,home_loans,product_qa,Can I use my CPF to pay my monthly home loan instalments?
+b05,home_loans,product_qa,What fees should I expect when taking a DBS home loan?
+b06,home_loans,product_qa,What is the DBS Green Home Loan?
+b07,home_loans,product_qa,What's the difference between an HDB loan and a DBS HDB loan?
+b08,home_loans,eligibility,How much can I borrow for a home?
+b09,home_loans,product_qa,How does repricing my DBS home loan work?
+b10,home_loans,product_qa,"Can I make a partial repayment on my home loan, and is there a penalty?"
+b11,home_loans,product_qa,What is the maximum loan tenure for a private property?
+b12,home_loans,product_qa,How do I apply for a renovation loan?
+b13,credit_cards,product_qa,Which DBS credit cards are good for earning air miles?
+b14,credit_cards,product_qa,How do I get my credit card annual fee waived?
+b15,credit_cards,product_qa,What is the minimum income to get a DBS credit card?
+b16,credit_cards,product_qa,What happens if I pay my credit card bill late?
+b17,credit_cards,product_qa,What interest rate is charged on unpaid credit card balances?
+b18,credit_cards,product_qa,Are there fees for using my DBS card overseas?
+b19,credit_cards,product_qa,How do I add a supplementary card for my spouse?
+b20,credit_cards,product_qa,Can I convert a big purchase into monthly instalments?
+b21,credit_cards,product_qa,What is the DBS yuu Card and what rewards does it give?
+b22,credit_cards,product_qa,Can I get a credit card if I'm 66 and retired?
+b23,credit_cards,product_qa,How does a cash advance on my credit card work?
+b24,personal_loans,product_qa,What interest rate does the DBS Personal Loan charge?
+b25,personal_loans,product_qa,What is DBS Cashline and how does it work?
+b26,personal_loans,product_qa,What's a balance transfer and when would someone use one?
+b27,personal_loans,product_qa,How quickly can I get the money from a personal loan?
+b28,personal_loans,product_qa,What repayment periods can I choose for a personal loan?
+b29,personal_loans,eligibility,"I'm a foreigner earning $5,000 a month. Can I get a personal loan?"
+b30,personal_loans,product_qa,What's the most I can borrow on unsecured credit across all banks?
+b31,personal_loans,product_qa,Are there fees to close my personal loan early?
+b32,personal_loans,product_qa,Is there an annual fee for Cashline?
+b33,personal_loans,product_qa,How do I apply for a DBS personal loan?
+b34,eligibility,eligibility,"I'm 25 and earn $3,000 a month as a Singaporean. Which DBS products could I qualify for?"
+b35,eligibility,product_qa,What is TDSR and why does it matter for my home loan?
+b36,eligibility,product_qa,I'm self-employed. How is my income assessed for a home loan?
+b37,eligibility,product_qa,Can a foreigner buy an HDB flat with a DBS loan?
+b38,eligibility,product_qa,How does having an existing home loan affect a loan for a second property?
+b39,eligibility,product_qa,What documents do I need to apply for a credit card?
+b40,advice,advice_seeking,Which credit card is best for me?
+b41,advice,advice_seeking,Should I refinance my home loan now?
+b42,advice,advice_seeking,Will interest rates drop next year?
+b43,advice,advice_seeking,Is it a good idea to take a personal loan to pay off my credit card debt?
+b44,advice,advice_seeking,Should I choose a 25 or 30-year loan tenure?
+b45,out_of_scope,out_of_scope,What insurance should I get for my new home?
+b46,out_of_scope,out_of_scope,How do I open a DBS savings account?
+b47,out_of_scope,out_of_scope,Does DBS offer car loans?
+b48,out_of_scope,out_of_scope,What are your branch opening hours?
+b49,general,chit_chat,What can you help me with?
+b50,general,handoff_request,I'd like to speak to a person about a home loan.

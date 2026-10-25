@@ -16,7 +16,7 @@ from ..rules import counterfactual
 from ..rules.counterfactual import fmt_date
 from ..rules.engine import REQUIRED_FIELDS
 from ..state import PROFILE_FIELDS, ConversationState, CustomerProfile
-from . import prompts
+from . import product_knowledge, prompts
 
 DEFAULT_PRODUCTS = ["personal_loan", "credit_card", "home_loan"]
 
@@ -90,7 +90,8 @@ def readback_numbers(profile: CustomerProfile) -> dict:
     return out
 
 
-def assess(state: ConversationState, user_msg: str, products: list[str], today: date | None = None) -> dict:
+def assess(state: ConversationState, user_msg: str, products: list[str], today: date | None = None,
+           search_query: str = "") -> dict:
     keys = products or DEFAULT_PRODUCTS
     ready = [k for k in keys if not state.profile.missing(REQUIRED_FIELDS[k])]
 
@@ -99,17 +100,24 @@ def assess(state: ConversationState, user_msg: str, products: list[str], today: 
         missing = sorted({f for k in keys for f in state.profile.missing(REQUIRED_FIELDS[k])},
                          key=list(PROFILE_FIELDS).index)
         labels = [f"{PROFILE_FIELDS[f][0]} — {PROFILE_FIELDS[f][1]}" for f in missing]
+        # The published criteria relevant to the question ("can I get a card at 66?"), so the reply can
+        # state the rule with a citation before asking — the engine still isn't called.
+        chunks, excerpts = product_knowledge.search(user_msg, keys, search_query, k=4)
         prompt = (
             f"Products being checked: {', '.join(keys)}\n"
             f"Known so far:\n{state.profile.describe()}\n\n"
             f"Missing fields to ask for:\n- " + "\n- ".join(labels) +
+            f"\n\nSource excerpts (published criteria):\n{excerpts or '(none)'}"
             f"\n\nCustomer's latest message:\n{user_msg}"
         )
         draft = llm.chat(prompts.ELIGIBILITY_ASK, [{"role": "user", "content": prompt}], model=config.MODEL_MAIN)
+        sources, cited = product_knowledge.cited_sources(draft, chunks)
         state.last_counterfactuals = []
-        state.add_trace("Eligibility", f"needs {', '.join(missing)} before anything can run (engine not called)")
+        state.add_trace("Eligibility", f"needs {', '.join(missing)} before anything can run (engine not called)",
+                        product_knowledge.hits_detail(user_msg, search_query, keys, chunks, cited))
         return {"draft": draft, "results": [], "computations": readback_numbers(state.profile),
-                "asked_for": missing, "counterfactuals": [], "engine_ran": False}
+                "asked_for": missing, "counterfactuals": [], "engine_ran": False,
+                "sources": sources, "excerpts": excerpts}
 
     # 2. Readback before clearance: no engine call — forward or counterfactual — until the customer
     #    has said yes to exactly these parameters.

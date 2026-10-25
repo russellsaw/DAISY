@@ -3,9 +3,9 @@ id: dbs-balance-transfer
 title: DBS Balance Transfer
 publisher: DBS
 url: https://www.dbs.com.sg/personal/loans/personal-loans/balance-transfer
-products: personal_loan, cashline
-fetched_at: 2026-10-21T19:17:13
-sha256: 3bd182f390ad87b046f1dedb4a3d0128b02a77e2155da61bdd26d66e88c583ce
+products: personal_loan, cashline, credit_card
+fetched_at: 2026-10-25T16:12:15
+sha256: 87efc498b5f53fae99b16a9eb0702465a59ef3c92a1e9ff562b0204d55c8acd6
 ---
 
 Home/Loans/DBS Balance Transfer
@@ -47,27 +47,10 @@ Don’t have digibank?Refer to our guide to register for a digibank profile belo
 Click here for guide
 ## Eligibility & Fees
 You must hold a DBS/POSB Cashline and/or DBS/POSB Credit Card.
-## Age
-21 – 70 years old
-## Rates and fees
-Tenure: 3 months
-Applied interest rate p.a.1 : 0%
-Administration fee1 : 1.8%
-Effective interest rate4 : 7.34% (Cashline) / 7.38% (Credit Card)
-Tenure: 6 months
-Applied interest rate p.a.1 : 0%
-Administration fee1 : 2.5%
-Effective interest rate4 : 5.27% (Cashline) / 5.34% (Credit Card)
-Tenure: 12 months
-Applied interest rate p.a.1 : 0%
-Administration fee1 : 4.5%
-Effective interest rate4 : 5.06% (Cashline) / 5.20% (Credit Card)
-1 The one-time administration fee will be charged to your Cashline/Credit Card. The 0% interest rate will revert to the prevailing interest rate after the loan expires.
-For full list of fees and interest charges, please visit List of Fees and Charges.
-## Income documents
-No income documents required
-## To receive funds
-You’ll need a DBS/POSB deposit account (Joint-All, Trust, MSA, SAYE, or POSB current accounts are excluded). Click here to apply.
+Age | 21 – 70 years old
+Rates and fees | Tenure: 3 months Applied interest rate p.a. 1 : 0% Administration fee 1 : 1.8% Effective interest rate 4 : 7.34% (Cashline) / 7.38% (Credit Card) Tenure: 6 months Applied interest rate p.a. 1 : 0% Administration fee 1 : 2.5% Effective interest rate 4 : 5.27% (Cashline) / 5.34% (Credit Card) Tenure: 12 months Applied interest rate p.a. 1 : 0% Administration fee 1 : 4.5% Effective interest rate 4 : 5.06% (Cashline) / 5.20% (Credit Card) 1 The one-time administration fee will be charged to your Cashline/Credit Card. The 0% interest rate will revert to the prevailing interest rate after the loan expires. For full list of fees and interest charges, please visit List of Fees and Charges .
+Income documents | No income documents required
+To receive funds | You’ll need a DBS/POSB deposit account (Joint-All, Trust, MSA, SAYE, or POSB current accounts are excluded). Click here to apply.
 ## Frequently Asked Questions
 ## Two easy ways to relax your finances with DBS Balance Transfer
 1. Tap into your unused credit limit for cash
@@ -79,7 +62,7 @@ Bank XYZ | DBS
 Outstanding amount: | S$10,000
 Tenure | 12 months
 Interest | 24% | 0%
-One-time administration fee1 | - | 4.5%
+One-time administration fee 1 | - | 4.5%
 One-time administration fee amount | - | S$450
 Interest | S$2,400 | $0
 You could save S$1,950!
@@ -90,16 +73,9 @@ There must not be any credit balance (excess payment – i.e. your available cre
 Learn how to transfer your credit balance from Cashline to your own DBS/POSB Savings account here.
 You may refer to your Cashline or Credit Card monthly statements or log in to Mobile banking to view your loan details. You may refer to the guide here.
 ## Items to Note
-## Apply for Cashline
-Tips: Apply on your Cashline to keep your loan repayments separate from your regular spending. Don’t have a Cashline yet?
-Apply now
-## 2 To note for funds disbursement
-Please note that for loans approved after 11.45pm daily or 9pm during month end (e.g. 31 Mar), the funds will only be credited to the designated deposits account on the following day. If the following day falls on a Sunday or Public Holiday, the crediting will be on the next following day (e.g. Monday to Saturday).
-## 3 Terms & Conditions for promotions
-Terms & Conditions apply, please refer to the promotion page.
-## 4 EIR
-The effective interest rate, which includes the administration fee, is determined by the reducing outstanding balance throughout the loan tenure. This calculation presumes a monthly minimum payment of 2.5% for Cashline and 3% for DBS/POSB Credit Cards, along with any interest and fees charges, and a final full payment in the loan's last month. Interest and fees charges are subject to compounding if it is not paid in full.
-For more information on applied and effective interest rates, please visit www.moneysense.gov.sg
-## Unsure of which DBS Instant Loan product to select?
-Cashline, Personal Loan, or Balance Transfer – confused about which loan to pick? Our easy-to-use calculator helps you find the perfect fit with the lowest interest and fees for your needs.
+Apply for Cashline | Tips: Apply on your Cashline to keep your loan repayments separate from your regular spending. Don’t have a Cashline yet? Apply now
+2 To note for funds disbursement | Please note that for loans approved after 11.45pm daily or 9pm during month end (e.g. 31 Mar), the funds will only be credited to the designated deposits account on the following day. If the following day falls on a Sunday or Public Holiday, the crediting will be on the next following day (e.g. Monday to Saturday).
+3 Terms & Conditions for promotions | Terms & Conditions apply, please refer to the promotion page.
+4 EIR | The effective interest rate, which includes the administration fee, is determined by the reducing outstanding balance throughout the loan tenure. This calculation presumes a monthly minimum payment of 2.5% for Cashline and 3% for DBS/POSB Credit Cards, along with any interest and fees charges, and a final full payment in the loan's last month. Interest and fees charges are subject to compounding if it is not paid in full. For more information on applied and effective interest rates, please visit www.moneysense.gov.sg
+Unsure of which DBS Instant Loan product to select? | Cashline, Personal Loan, or Balance Transfer – confused about which loan to pick? Our easy-to-use calculator helps you find the perfect fit with the lowest interest and fees for your needs.
 View Balance Transfer Terms and Conditions (WEF 1 Sep 2023)

@@ -103,7 +103,7 @@ def review(state: ConversationState, user_msg: str, intent: str, draft: str, *,
         f"Numbers in draft NOT found in sources/computations/customer input: {flagged or 'none'}\n\n"
         f"Customer profile:\n{state.profile.describe()}\n\n"
         f"Customer's latest message:\n{user_msg}\n\n"
-        f"Sources available to the drafting agent:\n{sources_text[:12000] or '(none)'}\n\n"
+        f"Sources available to the drafting agent:\n{sources_text[:16000] or '(none)'}\n\n"
         f"Engine computations available:\n{computations or '(none)'}\n\n"
         f"DRAFT RESPONSE:\n{draft}"
     )
@@ -191,7 +191,19 @@ def _enforce_lexicon(text: str, sources_text: str, computations: dict, state: Co
                                                   user_msg) if n not in already_flagged]
     if rewritten and not banned_phrases(rewritten) and not new_numbers:
         return rewritten, {"found": found, "action": "rewritten"}
+    # Last resort before the handoff: the forward-looking promises have a safe conditional equivalent,
+    # so swap them in code rather than throw a correct explanation away over two words. "approved",
+    # "guaranteed" and "confirmed" have no meaning-preserving swap, so they still end in the handoff.
+    substituted = _SAFE_SWAP.sub(lambda m: _SAFE_WORDING[m.group(0).lower().replace("\u2019", "'")], text)
+    if not banned_phrases(substituted):
+        return substituted, {"found": found, "action": "substituted"}
     return HANDOFF_FALLBACK, {"found": found, "action": "replaced"}
+
+
+_SAFE_WORDING = {"you will qualify": "you would meet today's criteria",
+                 "you'll qualify": "you would meet today's criteria",
+                 "you'll get": "you would get"}
+_SAFE_SWAP = re.compile(r"(?<![\w])(you will qualify|you['\u2019]ll qualify|you['\u2019]ll get)(?![\w])", re.IGNORECASE)
 
 
 def _enforce_traceable(text: str, sources_text: str, computations: dict, state: ConversationState,

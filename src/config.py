@@ -24,7 +24,7 @@ RAW_DIR = DATA_DIR / "raw"
 EVAL_CASES = ROOT / "evals" / "cases.csv"
 EVAL_RESULTS_DIR = ROOT / "evals" / "results"
 
-RETRIEVAL_TOP_K = int(os.getenv("RETRIEVAL_TOP_K", "5"))
+RETRIEVAL_TOP_K = int(os.getenv("RETRIEVAL_TOP_K", "10"))  # 5 missed the right page in the 50-question review
 MAX_HISTORY_TURNS = int(os.getenv("MAX_HISTORY_TURNS", "12"))
 
 ASSISTANT_NAME = os.getenv("ASSISTANT_NAME", "DAISY")

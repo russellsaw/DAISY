@@ -64,3 +64,42 @@
 {"at": "2026-10-20T17:51:17", "event": "added", "id": "mas-tdsr-thresholds", "chars": 2602, "url": "https://www.mas.gov.sg/regulation/explainers/tdsr-for-property-loans/calculating-tdsr-thresholds"}
 {"at": "2026-10-20T17:51:17", "event": "added", "id": "mas-who-tdsr-applies-to", "chars": 3226, "url": "https://www.mas.gov.sg/regulation/explainers/tdsr-for-property-loans/who-tdsr-applies-to"}
 {"at": "2026-10-20T17:51:17", "event": "added", "id": "hdb-flat-eligibility-for-couples-and-families", "chars": 636, "url": "https://www.hdb.gov.sg/buying-a-flat/flat-grant-and-loan-eligibility/couples-and-families"}
+{"at": "2026-10-25T16:12:15", "event": "added", "id": "dbs-private-property-home-loan", "chars": 8312, "url": "https://www.dbs.com.sg/i-bank/loans/homeloans/buy-private-property"}
+{"at": "2026-10-25T16:12:15", "event": "added", "id": "dbs-fixed-deposit-home-rate-fhr", "chars": 2832, "url": "https://www.dbs.com.sg/personal/loans/home-loans/FHR-revision.page"}
+{"at": "2026-10-25T16:12:15", "event": "added", "id": "dbs-apply-for-dbs-balance-transfer", "chars": 3201, "url": "https://www.dbs.com.sg/personal/support/loans-application-balance-transfer.html"}
+{"at": "2026-10-25T16:12:15", "event": "added", "id": "dbs-documents-required-for-a-dbs-card-application", "chars": 7206, "url": "https://www.dbs.com.sg/personal/support/card-application-documents.html"}
+{"at": "2026-10-25T16:12:15", "event": "added", "id": "dbs-credit-card-application-process", "chars": 3864, "url": "https://www.dbs.com.sg/personal/support/card-application-new-card.html"}
+{"at": "2026-10-25T16:12:15", "event": "added", "id": "dbs-apply-for-a-dbs-supplementary-card", "chars": 3681, "url": "https://www.dbs.com.sg/personal/support/card-application-supplementary-card.html"}
+{"at": "2026-10-25T16:12:15", "event": "added", "id": "dbs-supplementary-cards", "chars": 4521, "url": "https://www.dbs.com.sg/personal/cards/card-services/supplementary-cards"}
+{"at": "2026-10-25T16:16:28", "event": "reextracted", "id": "dbs-altitude-card", "chars": 6256, "reason": "text extraction improved; source unchanged"}
+{"at": "2026-10-25T16:16:29", "event": "reextracted", "id": "dbs-balance-transfer", "chars": 5843, "reason": "text extraction improved; source unchanged"}
+{"at": "2026-10-25T16:16:29", "event": "reextracted", "id": "dbs-cashline", "chars": 6244, "reason": "text extraction improved; source unchanged"}
+{"at": "2026-10-25T16:16:29", "event": "reextracted", "id": "dbs-cashline-credit-limit-review", "chars": 5323, "reason": "text extraction improved; source unchanged"}
+{"at": "2026-10-25T16:16:29", "event": "reextracted", "id": "dbs-cashline-fees-and-charges", "chars": 1791, "reason": "text extraction improved; source unchanged"}
+{"at": "2026-10-25T16:16:29", "event": "reextracted", "id": "dbs-chromo-card", "chars": 8819, "reason": "text extraction improved; source unchanged"}
+{"at": "2026-10-25T16:16:29", "event": "reextracted", "id": "dbs-credit-card-annual-fee", "chars": 4049, "reason": "text extraction improved; source unchanged"}
+{"at": "2026-10-25T16:16:29", "event": "reextracted", "id": "dbs-credit-card-application-process", "chars": 3894, "reason": "text extraction improved; source unchanged"}
+{"at": "2026-10-25T16:16:29", "event": "reextracted", "id": "dbs-credit-card-cash-advance", "chars": 2240, "reason": "text extraction improved; source unchanged"}
+{"at": "2026-10-25T16:16:29", "event": "reextracted", "id": "dbs-credit-card-credit-limit-review", "chars": 5099, "reason": "text extraction improved; source unchanged"}
+{"at": "2026-10-25T16:16:29", "event": "reextracted", "id": "dbs-credit-card-eligibility-for-customers-65-and-above", "chars": 4022, "reason": "text extraction improved; source unchanged"}
+{"at": "2026-10-25T16:16:29", "event": "reextracted", "id": "dbs-credit-card-foreign-transaction-fees", "chars": 9440, "reason": "text extraction improved; source unchanged"}
+{"at": "2026-10-25T16:16:29", "event": "reextracted", "id": "dbs-credit-card-instalment-payment-plans", "chars": 3435, "reason": "text extraction improved; source unchanged"}
+{"at": "2026-10-25T16:16:29", "event": "reextracted", "id": "dbs-esso-card", "chars": 3841, "reason": "text extraction improved; source unchanged"}
+{"at": "2026-10-25T16:16:29", "event": "reextracted", "id": "dbs-green-home-loan", "chars": 6064, "reason": "text extraction improved; source unchanged"}
+{"at": "2026-10-25T16:16:30", "event": "reextracted", "id": "dbs-hdb-loan", "chars": 9350, "reason": "text extraction improved; source unchanged"}
+{"at": "2026-10-25T16:16:30", "event": "reextracted", "id": "dbs-home-loan-glossary", "chars": 24955, "reason": "text extraction improved; source unchanged"}
+{"at": "2026-10-25T16:16:30", "event": "reextracted", "id": "dbs-instant-cash-which-loan-suits-you", "chars": 4467, "reason": "text extraction improved; source unchanged"}
+{"at": "2026-10-25T16:16:30", "event": "reextracted", "id": "dbs-personal-loan", "chars": 8525, "reason": "text extraction improved; source unchanged"}
+{"at": "2026-10-25T16:16:30", "event": "reextracted", "id": "dbs-reprice-your-dbs-home-loan", "chars": 4984, "reason": "text extraction improved; source unchanged"}
+{"at": "2026-10-25T16:16:30", "event": "reextracted", "id": "dbs-safra-dbs-card", "chars": 4686, "reason": "text extraction improved; source unchanged"}
+{"at": "2026-10-25T16:16:31", "event": "reextracted", "id": "dbs-supplementary-cards", "chars": 4517, "reason": "text extraction improved; source unchanged"}
+{"at": "2026-10-25T16:16:31", "event": "reextracted", "id": "dbs-takashimaya-card", "chars": 3400, "reason": "text extraction improved; source unchanged"}
+{"at": "2026-10-25T16:16:31", "event": "reextracted", "id": "dbs-vantage-card", "chars": 5805, "reason": "text extraction improved; source unchanged"}
+{"at": "2026-10-25T16:16:31", "event": "reextracted", "id": "dbs-womans-card", "chars": 2917, "reason": "text extraction improved; source unchanged"}
+{"at": "2026-10-25T16:16:31", "event": "reextracted", "id": "dbs-yuu-card", "chars": 6254, "reason": "text extraction improved; source unchanged"}
+{"at": "2026-10-25T16:16:31", "event": "reextracted", "id": "mas-calculating-tdsr", "chars": 7298, "reason": "text extraction improved; source unchanged"}
+{"at": "2026-10-25T16:16:31", "event": "reextracted", "id": "mas-loan-tenure-and-loan-to-value-limits", "chars": 2444, "reason": "text extraction improved; source unchanged"}
+{"at": "2026-10-25T16:16:31", "event": "reextracted", "id": "mas-rules-for-new-housing-loans", "chars": 2361, "reason": "text extraction improved; source unchanged"}
+{"at": "2026-10-25T16:16:31", "event": "reextracted", "id": "mas-tdsr-thresholds", "chars": 2610, "reason": "text extraction improved; source unchanged"}
+{"at": "2026-10-25T16:16:31", "event": "reextracted", "id": "mas-who-tdsr-applies-to", "chars": 3232, "reason": "text extraction improved; source unchanged"}
+{"at": "2026-10-25T16:16:31", "event": "reextracted", "id": "posb-everyday-card", "chars": 5898, "reason": "text extraction improved; source unchanged"}

@@ -78,8 +78,12 @@ def html_to_text(content: bytes | str) -> str:
 
     for br in root.find_all("br"):
         br.replace_with(NavigableString("\n"))
-    for cell in root.find_all(["td", "th"]):
-        cell.append(NavigableString(" | "))
+    # Each table row becomes one line ("1 | 45% or 25% | 25%"), so a value stays next to its row label.
+    # (Cells used to come out one per line, and the model couldn't tell which limit went with which row.)
+    for tr in root.find_all("tr"):
+        cells = [re.sub(r"\s+", " ", c.get_text(" ", strip=True)) for c in tr.find_all(["td", "th"])]
+        if any(cells):
+            tr.replace_with(NavigableString("\n" + " | ".join(cells) + "\n"))
     for h in root.find_all(_HEADINGS):
         h.insert_before(NavigableString("\n\n## "))
         h.append(NavigableString("\n"))
@@ -384,14 +388,44 @@ def build(verbose: bool = True) -> dict:
     return kb
 
 
+def reextract(verbose: bool = True) -> int:
+    """Re-run text extraction over the saved raw snapshots (after an extraction fix), offline.
+    Logged as `reextracted`, not `changed`: the page itself didn't change, our reading of it did."""
+    manifest = load_manifest()
+    count = 0
+    for did, entry in manifest.items():
+        raw = next(iter(RAW_SNAPSHOT_DIR.glob(f"{did}.*")), None)
+        if entry.get("status") not in ("ok", "thin", "stale") or raw is None:
+            continue
+        data = raw.read_bytes()
+        text = pdf_to_text(data) if raw.suffix == ".pdf" else (
+            html_to_text(data) if raw.suffix in (".html", ".htm") else data.decode("utf-8", errors="ignore"))
+        sha = _sha(text)
+        if sha == entry.get("sha256"):
+            continue
+        entry.update({"sha256": sha, "chars": len(text)})
+        _write_snapshot(entry, text)
+        _log("reextracted", did, chars=len(text), reason="text extraction improved; source unchanged")
+        count += 1
+        if verbose:
+            print(f"  re-extracted {did:<55} {len(text):>8,} chars")
+    MANIFEST_PATH.write_text(json.dumps(dict(sorted(manifest.items())), indent=1, ensure_ascii=False))
+    return count
+
+
 def main(argv: list[str] | None = None) -> int:
     import argparse
 
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--build-only", action="store_true", help="rebuild kb.json from snapshots, no network")
     parser.add_argument("--only", default="", help="comma-separated document ids to re-fetch")
+    parser.add_argument("--reextract", action="store_true",
+                        help="re-run text extraction on the saved raw snapshots (offline), then rebuild")
     args = parser.parse_args(argv)
-    if not args.build_only:
+    if args.reextract:
+        print(f"Re-extracting text from {RAW_SNAPSHOT_DIR} …")
+        print(f"{reextract()} snapshot(s) re-extracted")
+    elif not args.build_only:
         only = {s.strip() for s in args.only.split(",") if s.strip()} or None
         print(f"Fetching {'selected' if only else 'all'} sources into {SOURCES_DIR} …")
         fetch(only=only)

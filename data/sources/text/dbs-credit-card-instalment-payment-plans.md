@@ -5,7 +5,7 @@ publisher: DBS
 url: https://www.dbs.com.sg/personal/cards/card-services/instalment-payment-plan
 products: credit_card
 fetched_at: 2026-10-21T19:17:13
-sha256: d408d5ed3271efae32c073fd5ed711ab41047ff20b60bec8c8172b45e88b2d63
+sha256: 9424c5e30a43e5858b91c499469ac13cd23472119d336461a9955a816b876cc8
 ---
 
 Home/Cards Rewards & Services/DBS Instalment Payment Plan
@@ -48,11 +48,7 @@ Digitally Savvy Young Adults
 For those who value quality, brand appeal, and the occasional indulgence as a form of self‑reward. Participating Merchants: Lazada, Shopee, Zalora, Challenger and more.
 Find out more
 ## Eligibility & Fees
-## You’re eligible to use DBS Instalment Payment Plan as long as you:
-Hold a DBS / POSB Credit Card, and
-Make a purchase at a DBS IPP‑accepting merchant
-That’s all you need - no separate sign‑up required.
-Find the full list of merchants here.
+You’re eligible to use DBS Instalment Payment Plan as long as you: | Hold a DBS / POSB Credit Card, and Make a purchase at a DBS IPP‑accepting merchant That’s all you need - no separate sign‑up required. Find the full list of merchants here .
 ## Frequently Asked Questions
 There is no interest fee when you use DBS Instalment Payment Plan. Your purchase amount is simply split into equal monthly instalments, with no additional interest charged.
 Minimum purchase amounts, specific terms and conditions and products for instalment plan may vary for different merchants.

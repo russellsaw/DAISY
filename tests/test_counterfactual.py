@@ -233,7 +233,8 @@ def test_pipeline_banned_phrase_is_rewritten_or_replaced(monkeypatch):
     from src.agents import compliance
 
     monkeypatch.setattr(compliance.llm, "chat", lambda *a, **k: "You're approved, guaranteed.")  # a bad rewrite
-    result, _ = _stub_pipeline(monkeypatch, SCENARIO_2, "Good news, you'll qualify!")
+    # "approved" has no meaning-preserving swap, so a failed rewrite ends in the handoff
+    result, _ = _stub_pipeline(monkeypatch, SCENARIO_2, "Good news, you're approved!")
     assert compliance.banned_phrases(result.response) == []
     assert result.compliance["lexicon"]["action"] == "replaced"
 
@@ -247,3 +248,14 @@ def test_untraceable_number_is_removed_or_replaced(monkeypatch):
     assert "987" not in result.response
     assert result.compliance["output_filter"]["untraceable"] == ["987"]
     assert result.compliance["output_filter"]["action"] == "replaced"
+
+
+def test_forward_looking_promise_is_swapped_not_thrown_away(monkeypatch):
+    """A correct explanation that says "you'll qualify" keeps its content when the rewrite fails."""
+    from src.agents import compliance
+
+    monkeypatch.setattr(compliance.llm, "chat", lambda *a, **k: "Still: you'll qualify.")  # rewrite fails
+    result, _ = _stub_pipeline(monkeypatch, SCENARIO_2, "Your TDSR is above the cap. If you borrowed less, you’ll qualify.")
+    assert result.compliance["lexicon"]["action"] == "substituted"
+    assert "you would meet today's criteria" in result.response and "TDSR is above the cap" in result.response
+    assert compliance.banned_phrases(result.response) == []

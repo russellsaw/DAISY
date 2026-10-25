@@ -76,7 +76,11 @@ def render_assistant(result, seconds: float | None) -> None:
             badges.append(f":{color}-badge[{name}: {layer['status']}]")
         st.caption(":material/layers: " + " ".join(badges))
     if result.sources:
-        st.caption(":material/link: Sources · " + " · ".join(f"[{s['title']}]({s['url']})" for s in result.sources))
+        def label(src):
+            ns = src.get("n")
+            ns = ns if isinstance(ns, list) else ([ns] if ns else [])
+            return ("".join(f"[{n}]" for n in ns) + " " if ns else "") + f"[{src['title']}]({src['url']})"
+        st.caption(":material/link: Sources · " + " · ".join(label(src) for src in result.sources))
     took = f" in {seconds:.0f}s" if seconds else ""
     render_trace(result, f"Checked by {len({ev.agent for ev in result.trace})} agents{took} · intent: {result.intent}")
 

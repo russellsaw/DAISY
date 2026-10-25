@@ -5,7 +5,7 @@ publisher: MAS
 url: https://www.mas.gov.sg/regulation/explainers/tdsr-for-property-loans/calculating-tdsr-thresholds
 products: home_loan
 fetched_at: 2026-10-21T19:17:13
-sha256: b10ea374d34da1fbba3405720dab414c290115236dae8bea01c8de64ed1c1996
+sha256: c5977bd83b7632d5b80899e066aa0df5cce3fe64fcb6accf278e5d6f5238572f
 ---
 
 Explainers
@@ -35,18 +35,10 @@ Subject these exceptional cases to enhanced credit evaluation.
 Implement a debt reduction plan with borrowers under these exceptional cases.
 Report all such exceptional cases to MAS.
 For details of each requirement, refer to the table:
-Requirement
-Details
-Subject exceptional cases to enhanced credit evaluation
-The policy and procedure of the overall process must be approved by the FI's board of directors. For FIs incorporated outside Singapore, local senior management can do this instead.
-Individual cases must be approved by the FI’s credit committee.
-Implement debt reduction plans (for refinancing of loans)
-The borrower must commit to a debt reduction plan with the FI.
-Report such cases to MAS
-All loans exceeding the 55% threshold must be reported to MAS. At minimum, the report should include:
-The borrower's profile (age, income, etc.)
-Details of the loan being granted (TDSR, loan-to-value ratio, loan tenure, etc.)
-Reasons why an exception was made.
+Requirement | Details
+Subject exceptional cases to enhanced credit evaluation | The policy and procedure of the overall process must be approved by the FI's board of directors. For FIs incorporated outside Singapore, local senior management can do this instead. Individual cases must be approved by the FI’s credit committee.
+Implement debt reduction plans (for refinancing of loans) | The borrower must commit to a debt reduction plan with the FI.
+Report such cases to MAS | All loans exceeding the 55% threshold must be reported to MAS. At minimum, the report should include: The borrower's profile (age, income, etc.) Details of the loan being granted (TDSR, loan-to-value ratio, loan tenure, etc.) Reasons why an exception was made.
 Guidelines for all financial institutions on how to apply the total debt servicing ratio (TDSR) to property loans.
 Previous
 Calculating TDSR for Property Loans

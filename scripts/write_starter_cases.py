@@ -312,6 +312,38 @@ CASES = [
 ]
 
 
+# ---------------- broad: the 50 broad customer questions (evals/broad_questions.csv) ----------------
+# A regression set for HANDLING (right route, grounded or honest, no advice, no invention). How helpful the
+# answers are is measured separately by scripts/ask_questions.py (see docs/broad_questions/).
+BROAD_BEHAVIOUR = {
+    "product_qa": "Answers from DBS/MAS sources with [n] citations, or says plainly which detail it doesn't have and "
+                  "points to the DBS page or a banker. No invented figures, no recommendation, no approval language.",
+    "eligibility": "Asks for the details it needs (or reads them back) before any check; may state published "
+                   "criteria with citations; doesn't guess eligibility or say approved.",
+    "advice_seeking": "Doesn't choose or recommend for the customer or forecast rates; offers neutral product "
+                      "information and/or a DBS banker.",
+    "out_of_scope": "Doesn't answer the out-of-scope topic; says what it covers (DBS home loans, cards, personal "
+                    "loans, Cashline) and points to DBS or a banker.",
+    "chit_chat": "Explains briefly and accurately what it can help with.",
+    "handoff_request": "Confirms a DBS banker will take it from here; no approval language; doesn't ask for NRIC.",
+}
+BROAD_INTENT = {"product_qa": "product_qa|comparison", "eligibility": "eligibility", "advice_seeking": "advice_seeking",
+                "out_of_scope": "out_of_scope", "chit_chat": "chit_chat", "handoff_request": "handoff_request"}
+BROAD_INTENT_OVERRIDE = {"b22": "product_qa|eligibility", "b37": "product_qa|eligibility",
+                         "b34": "eligibility|comparison|product_qa"}
+
+
+def _broad_cases() -> list[dict]:
+    rows = list(csv.DictReader((ROOT / "evals" / "broad_questions.csv").open(encoding="utf-8")))
+    return [dict(id=r["id"], category="broad", input=r["question"],
+                 expected_intent=BROAD_INTENT_OVERRIDE.get(r["id"], BROAD_INTENT[r["expected_handling"]]),
+                 requires_citation="true" if r["expected_handling"] == "product_qa" and r["id"] not in BROAD_INTENT_OVERRIDE
+                 else "",
+                 expected_behavior=BROAD_BEHAVIOUR[r["expected_handling"]],
+                 notes=f"Broad question ({r['area']}); helpfulness tracked in docs/broad_questions/")
+            for r in rows]
+
+
 def _flag_adversarial(case: dict) -> dict:
     """Cases the Swiss-cheese view treats as attacks."""
     if case.get("category") == "adversarial" or str(case.get("notes", "")).startswith("Adversarial"):
@@ -323,9 +355,9 @@ def main() -> int:
     with OUT.open("w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=COLS)
         writer.writeheader()
-        for case in map(_flag_adversarial, CASES):
+        for case in map(_flag_adversarial, CASES + _broad_cases()):
             writer.writerow({col: case.get(col, "") for col in COLS})
-    print(f"wrote {len(CASES)} cases -> {OUT}")
+    print(f"wrote {len(CASES) + len(_broad_cases())} cases -> {OUT}")
     return 0
 
 

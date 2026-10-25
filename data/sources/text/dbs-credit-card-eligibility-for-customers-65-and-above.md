@@ -5,7 +5,7 @@ publisher: DBS
 url: https://www.dbs.com.sg/personal/support/cards-application-56yo.html
 products: credit_card
 fetched_at: 2026-10-21T19:17:13
-sha256: b7d2f74fcb33df7b5962d4f86b89a3e3c8f64dc955738b2b491687a210e7873c
+sha256: ef28daaad2c6144aa8ae6430aeb5bcf1947dd65fefdacefd9a657b1fc55218dd
 ---
 
 ## Cards for Life: Credit Card Eligibility for 65 years old and above
@@ -21,43 +21,15 @@ Be sure to use the applicable promo code in the application form. Refer to our c
 Documents Required
 A copy of NRIC (Front & Back); and
 At least one of the income documents below, please provide latest copy.
-Income
-Document(s) required
-Period (months/year)
-Rental
-Income Tax Notice of Assessment in SGD
-1 year
-Pension
-For pension payout received in DBS/POSB accounts, please indicate your personal Savings/Current account number under the Income Information Submission section on the application form (available at our Branches or call our Customer Centre)
-or
-Personal Bank statement in SGD showing pension payout.
-3 months
-Dividend or Interest income
-Income Tax Notice of Assessment in SGD and/ or
-Annual personal bank statement in SGD showing Dividend or interest income
-1 year
-CPF Life Payout
-CPF monthly payouts history statement showing CPF Life payout
-or
-Personal Bank statement in SGD showing CPF Life payout.
-1 month
-Retirement Sum Scheme (RSS)
-CPF Transaction History showing RSS payout and RSS Balance
-1 year
-Salary
-Employees with length of service more than 3 months
-Computerized payslip in SGD or
-Salary Crediting bank statements in SGD
-For salary credited into DBS/POSB account, indicate your personal Savings/Current account number under the Income Information Submission section on the application form (available at our branches or call our customer centre)
-3 months
-Salary
-Employees with length of service less than 3 months
-Latest computerised payslip or
-Company letter certifying employment and salary in SGD (signed copy by HR and you) and a copy of Staff Pass
--
-Variable/ Commission-based Employees/ Self-Employed
-Income Tax Notice of Assessment in SGD
-1 year (2 years preferred)
+Income | Document(s) required | Period (months/year)
+Rental | Income Tax Notice of Assessment in SGD | 1 year
+Pension | For pension payout received in DBS/POSB accounts, please indicate your personal Savings/Current account number under the Income Information Submission section on the application form (available at our Branches or call our Customer Centre) or Personal Bank statement in SGD showing pension payout. | 3 months
+Dividend or Interest income | Income Tax Notice of Assessment in SGD and/ or Annual personal bank statement in SGD showing Dividend or interest income | 1 year
+CPF Life Payout | CPF monthly payouts history statement showing CPF Life payout or Personal Bank statement in SGD showing CPF Life payout. | 1 month
+Retirement Sum Scheme (RSS) | CPF Transaction History showing RSS payout and RSS Balance | 1 year
+Salary Employees with length of service more than 3 months | Computerized payslip in SGD or Salary Crediting bank statements in SGD For salary credited into DBS/POSB account, indicate your personal Savings/Current account number under the Income Information Submission section on the application form (available at our branches or call our customer centre) | 3 months
+Salary Employees with length of service less than 3 months | Latest computerised payslip or Company letter certifying employment and salary in SGD (signed copy by HR and you) and a copy of Staff Pass | -
+Variable/ Commission-based Employees/ Self-Employed | Income Tax Notice of Assessment in SGD | 1 year (2 years preferred)
 You can provide income document(s) that sum up to a minimum of S$1,250 monthly income ($15,000 annual income)
 We don't accept Assets Under Management (AUM) in place of income for unsecured credit card applications. However, you may consider applying for a Secured Credit Card by placing a Fixed Deposit. Learn more about Secured cards.
 Credit limit is determined at DBS' discretion. However, we will take your preferred limit into consideration and assign a credit limit not exceeding your preferred limit.

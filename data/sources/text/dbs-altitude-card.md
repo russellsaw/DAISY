@@ -5,7 +5,7 @@ publisher: DBS
 url: https://www.dbs.com.sg/personal/cards/credit-cards/dbs-altitude-cards
 products: credit_card
 fetched_at: 2026-10-21T19:17:13
-sha256: 3c35a0736acef6cee2082d5024d119764fad5bfabcd70b6c7a88d6c0655430f9
+sha256: fa2b751f7a7869998be65a834e738024d1790494eae39ee91a932881e9c3322b
 ---
 
 Home/Cards/DBS Altitude Card
@@ -57,36 +57,16 @@ Ideal for families who love travelling together, making meaningful family getawa
 Young Professionals
 Perfect for young professionals entering the world of travel rewards. It supports steady building of miles to offset expenses of your next getaway.
 ## Eligibility & Fees
-## Age
-Must be 21 to 75 years old
-## Minimum income
-Singaporeans/PR: S$30,000 p.a. (≤55 years old) or S$15,000 p.a. (56 years and above)
-Foreigners: S$45,000 p.a.
-## Annual fee
-Principal Card: S$196.20
-Supplementary Card: S$98.10 per card
-## Annual fee waiver
-1 year
-Note: 10,000 bonus miles (5,000 DBS Points) will be credited to your account when the annual fee is charged to your card. If the annual fee is subsequently waived, the 5,000 DBS Points credited will be reversed within 3 working days upon annual fee waiver.
-## Late fee
-S$100 will be levied if minimum payment is not received on the card account by payment due date.
-## Finance charges
-27.8% p.a. is chargeable daily (subject to compounding)
-## Converting DBS Points to miles
-Convert your DBS Points into air miles for your next trip with Asia Miles, Air Asia or KrisFlyer Miles.
-Conversion Rate | DBS Points | Miles
-KrisFlyer Miles | 5,000 | 10,000
-Asia Miles | 5,000 | 10,000
-Air Asia points | 500 | 1,500
-An administrative fee of S$27.25 (inclusive of GST) applies to each miles conversion and will be charged to DBS Credit Card.
-## KrisFlyer Miles Auto Conversion Programme
-An annual participation fee of S$43.60 (inclusive of GST) will be charged to your DBS Credit Card after successful enrolment. View full details here.
-## Full list of fees
-All fees shown here include GST. For full list, read our DBS Cards - Rates and Fees.
-## Documents required
-Refer to our Card Application Checklist on the documents required.
-Apply using Singpass to enjoy instant card approval. Check that your required income details are available on Myinfo before you start your application.
-If you are new to DBS/POSB and not using Singpass, verification of your identity document (NRIC or Passport) at one of our branches may be required to ensure the security of your account.
+Age | Must be 21 to 75 years old
+Minimum income | Singaporeans/PR: S$30,000 p.a. (≤55 years old) or S$15,000 p.a. (56 years and above) Foreigners: S$45,000 p.a.
+Annual fee | Principal Card: S$196.20 Supplementary Card: S$98.10 per card
+Annual fee waiver | 1 year Note: 10,000 bonus miles (5,000 DBS Points) will be credited to your account when the annual fee is charged to your card. If the annual fee is subsequently waived, the 5,000 DBS Points credited will be reversed within 3 working days upon annual fee waiver.
+Late fee | S$100 will be levied if minimum payment is not received on the card account by payment due date.
+Finance charges | 27.8% p.a. is chargeable daily (subject to compounding)
+Converting DBS Points to miles | Convert your DBS Points into air miles for your next trip with Asia Miles, Air Asia or KrisFlyer Miles. Conversion Rate DBS Points Miles KrisFlyer Miles 5,000 10,000 Asia Miles 5,000 10,000 Air Asia points 500 1,500 An administrative fee of S$27.25 (inclusive of GST) applies to each miles conversion and will be charged to DBS Credit Card. | | Conversion Rate | DBS Points | Miles | KrisFlyer Miles | 5,000 | 10,000 | Asia Miles | 5,000 | 10,000 | Air Asia points | 500 | 1,500
+KrisFlyer Miles Auto Conversion Programme | An annual participation fee of S$43.60 (inclusive of GST) will be charged to your DBS Credit Card after successful enrolment. View full details here .
+Full list of fees | All fees shown here include GST. For full list, read our DBS Cards - Rates and Fees .
+Documents required | Refer to our Card Application Checklist on the documents required. Apply using Singpass to enjoy instant card approval. Check that your required income details are available on Myinfo before you start your application. If you are new to DBS/POSB and not using Singpass, verification of your identity document (NRIC or Passport) at one of our branches may be required to ensure the security of your account.
 ## Frequently Asked Questions
 You can convert your DBS Points to KrisFlyer miles, Asia Miles, Qantas Points or Air Asia Points via DBS PayLah!, DBS Rewards Website or enrol into KrisFlyer Miles Auto Conversion Programme.
 The DBS Altitude Card offers up to 2.2 miles per S$1 on overseas spend and 1.3 miles per S$1 locally. Miles earned on DBS Altitude Card are for life as DBS Points earned do not expire.

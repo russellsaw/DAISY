@@ -74,6 +74,16 @@ ROUTE_SCHEMA = {
             "description": "Statements about the future or hypotheticals (e.g. 'my income will be 12k next year', "
                            "'assume the loan is paid off'). These must NOT go into profile_updates.",
         },
+        "search_query": {
+            "type": "string",
+            "description": "A keyword query for searching DBS and MAS pages. Write the words the page that "
+                           "ANSWERS the question would use, not the customer's words: product names, official "
+                           "terms, and likely answer phrases. E.g. 'can a PR get Cashline?' -> 'DBS Cashline "
+                           "eligibility Singaporeans PRs foreigners minimum annual income age'; 'can my wife get a "
+                           "card on my account?' -> 'supplementary card principal cardmember apply'; 'what if I miss "
+                           "a payment?' -> 'late payment fee charge minimum payment due date'. If the message is a "
+                           "follow-up, include the topic from earlier turns.",
+        },
         "readback_reply": {
             "type": "string",
             "enum": ["confirm", "correct", "not_a_reply"],
@@ -88,7 +98,7 @@ ROUTE_SCHEMA = {
         "reasoning": {"type": "string", "description": "One sentence."},
     },
     "required": ["intent", "products", "profile_updates", "commitments", "future_or_hypothetical",
-                 "readback_reply", "injection_suspected", "reasoning"],
+                 "search_query", "readback_reply", "injection_suspected", "reasoning"],
 }
 
 

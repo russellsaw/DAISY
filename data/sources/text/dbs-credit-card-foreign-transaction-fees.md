@@ -5,7 +5,7 @@ publisher: DBS
 url: https://www.dbs.com.sg/personal/support/card-charges-and-fees-overseas-transaction-fees.html
 products: credit_card
 fetched_at: 2026-10-21T19:17:13
-sha256: e4d761351dee31ce5aff8470a0c566e120e4adbe9aad69e42b4a6e95623be376
+sha256: b76f64eac2ce5b7a7ad1648736cd72d031e9222d507b27fae0a044ec4c61e64b
 ---
 
 ## Overseas Card Transaction Fees
@@ -20,18 +20,10 @@ Transactions in USD, Chinese Yuan (CNY) and Brunei Dollar (BND) are converted di
 Transactions in other foreign currencies are first converted to USD, then converted to SGD.
 Exchange rates are determined by the respective card associations (American Express, Mastercard, Visa and UnionPay).
 Exchange rates may differ from the rate on your purchase date due to market fluctuations.
-Foreign Currency Transaction Fees
-American Express / Mastercard / Visa Cards
-UnionPay Cards
-Administrative fee charged by respective card associations
-1.00%
-0.60%
-Administrative fee charged by bank
-2.25%
-2.65%
-Total administrative fee on top of the prevailing foreign exchange rate determined by respective card associations
-3.25%
-3.25%
+Foreign Currency Transaction Fees | American Express / Mastercard / Visa Cards | UnionPay Cards
+Administrative fee charged by respective card associations | 1.00% | 0.60%
+Administrative fee charged by bank | 2.25% | 2.65%
+Total administrative fee on top of the prevailing foreign exchange rate determined by respective card associations | 3.25% | 3.25%
 Foreign currency transaction fees are applicable to all foreign currency transactions, including purchases, refunds and reversals.
 Foreign currency transactions fees are applied on the converted SGD amount at the time of processing.
 Refund and reversal amounts may differ from the original transaction amount due to exchange rate fluctuations and the applicable administrative fees charged by the respective card associations and the Bank, at the time of processing of the refund / reversal transaction.
@@ -41,18 +33,10 @@ DCC is a service offered by some overseas merchants or websites that allows your
 The merchant converts the transaction amount from the local currency to SGD on the spot.
 The exchange rate is set by the merchant or their DCC service provider.
 Exchange rates may be higher than if you paid in the merchant's local currency.
-Dynamic Currency Conversion (DCC) Transaction Fees
-Credit Cards (Mastercard/Visa)
-Debit Cards (Mastercard/Visa)
-Administrative fee charged by respective card associations
-1.00%
-1.00%
-Administrative fee charged by bank
--
-1.80%
-Total administrative fee on top of the prevailing foreign exchange rate determined by respective card associations
-1.00%
-2.80%
+Dynamic Currency Conversion (DCC) Transaction Fees | Credit Cards (Mastercard/Visa) | Debit Cards (Mastercard/Visa)
+Administrative fee charged by respective card associations | 1.00% | 1.00%
+Administrative fee charged by bank | - | 1.80%
+Total administrative fee on top of the prevailing foreign exchange rate determined by respective card associations | 1.00% | 2.80%
 DCC transaction fees are applicable to all DCC transactions, including purchases, refunds and reversals.
 DCC transaction fees are applied on the converted SGD amount at the time of processing.
 Refund and reversal amounts may differ from the original transaction amount due to exchange rate fluctuations and applicable administrative fees charged by the respective card associations, at the time of processing of the refund / reversal transaction.
@@ -61,18 +45,10 @@ For more information on DCC fees, please click here.
 Foreign Currency transaction fees
 What fees apply to foreign currency transactions on credit/debit cards?
 Foreign currency transactions are subject to fees of 3.25% on the converted Singapore Dollar (SGD) amount. Details of the fees illustrated in the table below.
-Foreign Currency Transaction Fees
-American Express / Mastercard / Visa Cards
-UnionPay Cards
-Administrative fee charged by respective card associations
-1.00%
-0.60%
-Administrative fee charged by bank
-2.25%
-2.65%
-Total administrative fee on top of the prevailing foreign exchange rate determined by respective card associations
-3.25%
-3.25%
+Foreign Currency Transaction Fees | American Express / Mastercard / Visa Cards | UnionPay Cards
+Administrative fee charged by respective card associations | 1.00% | 0.60%
+Administrative fee charged by bank | 2.25% | 2.65%
+Total administrative fee on top of the prevailing foreign exchange rate determined by respective card associations | 3.25% | 3.25%
 These administrative fees apply to all foreign currency transactions, including purchases, refunds and reversals.
 How are foreign currency transactions converted?
 Foreign currency transactions are converted to SGD using exchange rates determined by the respective card associations (American Express, Mastercard, Visa and UnionPay).
@@ -103,18 +79,10 @@ What is Dynamic Currency Conversion (DCC)?
 DCC is a service offered by some overseas merchants or websites that allows your purchase to be converted into Singapore Dollars (SGD) at the point of payment.
 What fees apply to DCC transactions?
 DCC transactions are subject to administrative fees on the SGD amount charged. Details of the fees are illustrated in the table below.
-Dynamic Currency Conversion (DCC) Transaction Fees
-Credit Cards (Mastercard/Visa)
-Debit Cards (Mastercard/Visa)
-Administrative fee charged by respective card associations
-1.00%
-1.00%
-Administrative fee charged by bank
--
-1.80%
-Total administrative fee on top of the prevailing foreign exchange rate determined by respective card associations
-1.00%
-2.80%
+Dynamic Currency Conversion (DCC) Transaction Fees | Credit Cards (Mastercard/Visa) | Debit Cards (Mastercard/Visa)
+Administrative fee charged by respective card associations | 1.00% | 1.00%
+Administrative fee charged by bank | - | 1.80%
+Total administrative fee on top of the prevailing foreign exchange rate determined by respective card associations | 1.00% | 2.80%
 These fees apply to all DCC transactions (including purchases, refunds and reversals). As refunds/reversals are processed as separate transactions, fees apply to both the original transaction and the refunded/reversed transaction.
 What exchange rate is used?
 The exchange rate is determined by the overseas merchant or their DCC service provider, and not by the Bank or the respective card association.

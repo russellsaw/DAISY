@@ -5,7 +5,7 @@ publisher: DBS
 url: https://www.dbs.com.sg/personal/cards/credit-cards/dbs-vantage-visa-infinite-card
 products: credit_card
 fetched_at: 2026-10-21T19:17:13
-sha256: 1dee57dec729ffdaf9b2c3c9735e1b0e160ffcd08c218dfb179afab388d08b2b
+sha256: 78ff14cc17cd39898e23505a1d441f6a7f7d15a5c164f714138a72be09cb1fc4
 ---
 
 Home/Cards/DBS Vantage Visa Infinite Card
@@ -68,38 +68,19 @@ Whether you're flying for work or leisure, enjoy travel perks, airport lounge ac
 Maximising Everyday Spending
 Earn rewards on both local and overseas spending while enjoying travel and dining benefits that fit your lifestyle.
 ## Eligibility & Fees
-## Age
-Must be 21 to 75 years old
-## Minimum income
-S$120,000 p.a.
-For DBS Treasures, Treasures Private Client, and Private Bank clients, S$30,000 p.a.
-## Annual fee
-Principal Card: S$599.50
-Supplementary Card: Free
-12,500 DBS Points (25,000 miles) will be credited to your Card Account when the annual fee of S$599.50 (inclusive of GST) is charged to your card.
-## Late fee
-S$100 will be levied if minimum payment is not received on the card account by payment due date.
-## Finance charges
-27.8% p.a. is chargeable daily (subject to compounding)
+Age | Must be 21 to 75 years old
+Minimum income | S$120,000 p.a. For DBS Treasures, Treasures Private Client, and Private Bank clients, S$30,000 p.a.
+Annual fee | Principal Card: S$599.50 Supplementary Card: Free 12,500 DBS Points (25,000 miles) will be credited to your Card Account when the annual fee of S$599.50 (inclusive of GST) is charged to your card.
+Late fee | S$100 will be levied if minimum payment is not received on the card account by payment due date.
+Finance charges | 27.8% p.a. is chargeable daily (subject to compounding)
+Converting DBS Points to miles | Convert your DBS Points into air miles for your next trip with Asia Miles, Air Asia or KrisFlyer Miles. An administrative fee of S$27.25 (inclusive of GST) applies to each miles conversion and will be charged to DBS Credit Card. This fee is waived for conversion to Air Asia Points until 28 Feb 2026. From 1 Mar 2026, administrative fee of S$27.25 (inclusive of GST) will apply to Air Asia Points conversion.
+Full list of fees | All fees shown here include GST. For full list, read our DBS Cards - Rates and Fees
 ## Converting DBS Points to miles
 Convert your DBS Points into air miles for your next trip with Asia Miles, Air Asia or KrisFlyer Miles.
-An administrative fee of S$27.25 (inclusive of GST) applies to each miles conversion and will be charged to DBS Credit Card. This fee is waived for conversion to Air Asia Points until 28 Feb 2026. From 1 Mar 2026, administrative fee of S$27.25 (inclusive of GST) will apply to Air Asia Points conversion.
-## Full list of fees
-All fees shown here include GST. For full list, read our DBS Cards - Rates and Fees
-## Converting DBS Points to miles
-Convert your DBS Points into air miles for your next trip with Asia Miles, Air Asia or KrisFlyer Miles.
-## Conversion Rate
-## DBS Points
-## Miles
-KrisFlyer Miles | DBS Points
-5,000 | Miles
-10,000
-Asia Miles | DBS Points
-5,000 | Miles
-10,000
-Air Asia points | DBS Points
-500 | Miles
-1,500
+Conversion Rate | DBS Points | Miles
+KrisFlyer Miles | DBS Points 5,000 | Miles 10,000
+Asia Miles | DBS Points 5,000 | Miles 10,000
+Air Asia points | DBS Points 500 | Miles 1,500
 An administrative fee of S$27.25 (inclusive of GST) applies to each miles conversion and will be charged to DBS Credit Card.
 ## Frequently Asked Questions
 FAQs on DBS Vantage Visa Infinite Card

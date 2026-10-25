@@ -5,7 +5,7 @@ publisher: DBS
 url: https://www.dbs.com.sg/personal/cards/credit-cards/dbs-yuu-cards
 products: credit_card
 fetched_at: 2026-10-21T19:17:13
-sha256: bf8d04bffe11b0742283bb15a242643cf6b9e3bf8b8a2a65a1d8fcef5d4c47ba
+sha256: e2ba5082b0e708b8fcb877a2138ad9dc6c418ed5847fd5216f6db9b3673d9894
 ---
 
 Home/Cards/DBS yuu Card
@@ -38,30 +38,9 @@ How it worksHow to earn yuu Points
 Earn bonus yuu Points with your DBS yuu Card when you spend S$800 monthly, and spend at 4 different participating merchants such as SimplyGo, Cold Storage, foodpanda and Guardian. Redeem your yuu Points for cash rebates instantly or miles via the yuu App!
 ## Where you are rewarded
 Be rewarded at over 1,000 places across these participating merchants.
-## Supermarkets & Convenience stores
-Cold Storage1
-CS Fresh
-Giant
-Jasons Deli
-Giant
-Giant Hypermart
-Giant Express
-Guardian
-7-Eleven2
-1 Bonus Rewards will not be awarded for transactions made at Cold Storage On The Go stores.
-2 With effect from 13 Aug 2026, American Express® Cards will be accepted at all 7-Eleven outlets islandwide. DBS yuu American Express® Cardmembers can earn bonus rewards on 7-Eleven transactions w.e.f. 13 Aug 2026.
-## Dining & Delivery
-CHAGEE
-foodpanda food delivery
-panda mart
-panda shops
-## Transportation & Telco
-SimplyGo
-Gojek
-Charge+ Singapore3
-Singtel Shop
-Singtel Exclusive Retailers
-3 Bonus Rewards will not be awarded for any transactions made with DBS yuu American Express® Card.
+Supermarkets & Convenience stores | Cold Storage 1 CS Fresh Giant Jasons Deli Giant Giant Hypermart Giant Express Guardian 7-Eleven 2 1 Bonus Rewards will not be awarded for transactions made at Cold Storage On The Go stores. 2 With effect from 13 Aug 2026, American Express® Cards will be accepted at all 7-Eleven outlets islandwide. DBS yuu American Express® Cardmembers can earn bonus rewards on 7-Eleven transactions w.e.f. 13 Aug 2026.
+Dining & Delivery | CHAGEE foodpanda food delivery panda mart panda shops
+Transportation & Telco | SimplyGo Gojek Charge+ Singapore 3 Singtel Shop Singtel Exclusive Retailers 3 Bonus Rewards will not be awarded for any transactions made with DBS yuu American Express® Card.
 ## How to earn yuu Points
 Earn bonus yuu Points with your DBS yuu Card when you spend S$800 monthly, and spend at 4 different participating merchants such as SimplyGo, Cold Storage, foodpanda and Guardian. Redeem your yuu Points for cash rebates instantly or miles via the yuu App!
 Here's how:
@@ -82,22 +61,13 @@ Transport
 From bus and trains with SimplyGo, to ride‑hailing with Gojek, and EV charging with Charge+, be rewarded on your everyday journeys.
 ## Eligibility & Fees
 Who can get this card?
-## Age
-Must be 21 to 75 years old
-## Minimum income
-Singaporeans/PR: S$30,000 p.a. (≤55 years old) or S$15,000 p.a. (56 years and above)
-Foreigners: S$45,000 p.a.
-## Annual Fee
-Principal Card: S$196.20
-Supplementary Card: S$98.10 per card
-## Annual fee waiver
-1 year
-## Late fee
-S$100 will be levied if minimum payment is not received on the card account by payment due date.
-## Finance charges
-27.8% p.a. is chargeable daily (subject to compounding)
-## Full list of fees
-All fees shown here include GST. For full list, read our DBS Cards - Rates and Fees.
+Age | Must be 21 to 75 years old
+Minimum income | Singaporeans/PR: S$30,000 p.a. (≤55 years old) or S$15,000 p.a. (56 years and above) Foreigners: S$45,000 p.a.
+Annual Fee | Principal Card: S$196.20 Supplementary Card: S$98.10 per card
+Annual fee waiver | 1 year
+Late fee | S$100 will be levied if minimum payment is not received on the card account by payment due date.
+Finance charges | 27.8% p.a. is chargeable daily (subject to compounding)
+Full list of fees | All fees shown here include GST. For full list, read our DBS Cards - Rates and Fees .
 ## Frequently Asked Questions
 To earn the maximum yuu Points, when shopping at yuu merchants, you will need to perform these two steps at checkout:
 1.Scan your yuu ID/ link your yuu ID when transacting instore/ online, and

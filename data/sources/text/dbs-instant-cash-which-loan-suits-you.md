@@ -5,7 +5,7 @@ publisher: DBS
 url: https://www.dbs.com.sg/personal/loans/instant-cash/how-to-pick-a-loan
 products: personal_loan, cashline
 fetched_at: 2026-10-21T19:17:13
-sha256: d61ed538da1b231c845ca2b275846441436932b67cc326ff8eb46ad84f6ea158
+sha256: 2ba234df05f9a0d45f55873adb3693c8089f13753afa667b09bb6b8defd207fc
 ---
 
 Home/Loans/Instant loans
@@ -24,17 +24,12 @@ Benefits
 Guide
 FAQ
 ## Find a Loan (Find out which type of loan suits you)
-Unsure of which DBS Instant Loan product to select?
-Our easy-to-use calculator helps you find the perfect fit with the lowest interest and fees for your needs
+Unsure of which DBS Instant Loan product to select? Our easy-to-use calculator helps you find the perfect fit with the lowest interest and fees for your needs
 ## Instant cash 24/7 for all your planned & unplanned expenses
-## A range of loans, tailored for different financial needs
-Enjoy flexible access to funds for short-term needs with Cashline. For large expenses or bill consolidation, manage them confidently with Personal Loan and Balance Transfer.
-## Fixed or flexible repayment tenures at low interest rates
-Choose your preferred loan product based on their repayment tenures so you can manage your financial goals with ease
-## Get instant cash 24/7
-Access cash quickly via digibank once your loan or Cashline account is approved
-Unsure of which DBS Instant Loan product to select?
-Our easy-to-use calculator helps you find the perfect fit with the lowest interest and fees for your needs
+A range of loans, tailored for different financial needs | Enjoy flexible access to funds for short-term needs with Cashline. For large expenses or bill consolidation, manage them confidently with Personal Loan and Balance Transfer.
+Fixed or flexible repayment tenures at low interest rates | Choose your preferred loan product based on their repayment tenures so you can manage your financial goals with ease
+Get instant cash 24/7 | Access cash quickly via digibank once your loan or Cashline account is approved
+Unsure of which DBS Instant Loan product to select? Our easy-to-use calculator helps you find the perfect fit with the lowest interest and fees for your needs
 ## DBS Instant Loans
 ## DBS Cashline
 For short-term financial needs with more flexibility, get instant cash at 0.07% daily interest rate. Promotion: Unlock up to S$150 cashback when your Cashline is approved – from now until 31 Oct 2026. Terms and conditions apply.

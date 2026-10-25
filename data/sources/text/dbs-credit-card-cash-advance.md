@@ -5,7 +5,7 @@ publisher: DBS
 url: https://www.dbs.com.sg/personal/cards/card-services/cash-advance
 products: credit_card
 fetched_at: 2026-10-21T19:17:13
-sha256: 0f4c1bdc73a3dc70c29d6a211ee80d1d9611bb422ad8077d8cac558e9d88e244
+sha256: 57a45577001f6b13a02e8cd1f9f8e5a71e046a90c010c1cb08cfc0eb76d70024
 ---
 
 Home/Cards Rewards & Services/Cash Advance
@@ -31,10 +31,8 @@ Over the Bank Counter
 Visit any DBS/POSB branch or any overseas bank displaying your card logo (American Express, Visa or Mastercard)
 Locate Us
 ## Fees
-## Cash Advance Fee
-8% transaction fee or S$15, whichever is greater, applies for each cash advance transaction
-## Finance Charge
-Finance charge of effective interest rate of 28.5% p.a. (subject to compounding if the charges are not repaid in full) on the amount withdrawn, chargeable on a daily basis from the date of transaction until receipt of full payment (minimum charge: S$2.50)
+Cash Advance Fee | 8% transaction fee or S$15, whichever is greater, applies for each cash advance transaction
+Finance Charge | Finance charge of effective interest rate of 28.5% p.a. (subject to compounding if the charges are not repaid in full) on the amount withdrawn, chargeable on a daily basis from the date of transaction until receipt of full payment (minimum charge: S$2.50)
 ## Cash Advance Facility
 As part of our scam prevention efforts, the Cash Advance function on your credit card(s) will be disabled by default. To enable your Cash Advance Facility, please follow the instructions on DBS Payment Controls here.
 ## Frequently Asked Questions

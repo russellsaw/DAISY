@@ -12,8 +12,8 @@
   "status": "ok",
   "fetched_at": "2026-10-21T19:17:13",
   "last_good_fetch": "2026-10-21T19:17:13",
-  "sha256": "3c35a0736acef6cee2082d5024d119764fad5bfabcd70b6c7a88d6c0655430f9",
-  "chars": 6142,
+  "sha256": "fa2b751f7a7869998be65a834e738024d1790494eae39ee91a932881e9c3322b",
+  "chars": 6256,
   "last_changed": "2026-10-20T17:51:17",
   "error": null
  },
@@ -71,6 +71,44 @@
   "last_changed": "2026-10-20T17:51:17",
   "error": null
  },
+ "dbs-apply-for-a-dbs-supplementary-card": {
+  "id": "dbs-apply-for-a-dbs-supplementary-card",
+  "url": "https://www.dbs.com.sg/personal/support/card-application-supplementary-card.html",
+  "title": "Apply for a DBS Supplementary Card",
+  "publisher": "DBS",
+  "products": [
+   "credit_card"
+  ],
+  "kind": "html",
+  "origin": "web",
+  "status": "ok",
+  "fetched_at": "2026-10-25T16:12:15",
+  "last_good_fetch": "2026-10-25T16:12:15",
+  "sha256": "5e3c6acac0bc7a859daaf3655f931380c2a6d1c1cf53435f794aa40bef5220e9",
+  "chars": 3681,
+  "last_changed": "2026-10-25T16:12:15",
+  "error": null
+ },
+ "dbs-apply-for-dbs-balance-transfer": {
+  "id": "dbs-apply-for-dbs-balance-transfer",
+  "url": "https://www.dbs.com.sg/personal/support/loans-application-balance-transfer.html",
+  "title": "Apply for DBS Balance Transfer",
+  "publisher": "DBS",
+  "products": [
+   "personal_loan",
+   "cashline",
+   "credit_card"
+  ],
+  "kind": "html",
+  "origin": "web",
+  "status": "ok",
+  "fetched_at": "2026-10-25T16:12:15",
+  "last_good_fetch": "2026-10-25T16:12:15",
+  "sha256": "bc7e43723d3ef71184b45443c4bddd5623f1c4cb20154c895aa80d75f3b8336e",
+  "chars": 3201,
+  "last_changed": "2026-10-25T16:12:15",
+  "error": null
+ },
  "dbs-apply-for-dbs-cashline": {
   "id": "dbs-apply-for-dbs-cashline",
   "url": "https://www.dbs.com.sg/personal/support/loans-application-new-cashline.html",
@@ -96,15 +134,16 @@
   "publisher": "DBS",
   "products": [
    "personal_loan",
-   "cashline"
+   "cashline",
+   "credit_card"
   ],
   "kind": "html",
   "origin": "web",
   "status": "ok",
-  "fetched_at": "2026-10-21T19:17:13",
-  "last_good_fetch": "2026-10-21T19:17:13",
-  "sha256": "3bd182f390ad87b046f1dedb4a3d0128b02a77e2155da61bdd26d66e88c583ce",
-  "chars": 5841,
+  "fetched_at": "2026-10-25T16:12:15",
+  "last_good_fetch": "2026-10-25T16:12:15",
+  "sha256": "87efc498b5f53fae99b16a9eb0702465a59ef3c92a1e9ff562b0204d55c8acd6",
+  "chars": 5843,
   "last_changed": "2026-10-20T17:51:17",
   "error": null
  },
@@ -175,8 +214,8 @@
   "status": "ok",
   "fetched_at": "2026-10-21T19:17:13",
   "last_good_fetch": "2026-10-21T19:17:13",
-  "sha256": "7ef56885b051aaefc297c24dd95df72d54a6c704be47ef4aa095a01f09283c6b",
-  "chars": 6249,
+  "sha256": "51274506139c7c1fe847f4735227110176a420d08211e9fdcc0902a3cd43ab13",
+  "chars": 6244,
   "last_changed": "2026-10-20T17:51:17",
   "error": null
  },
@@ -193,8 +232,8 @@
   "status": "ok",
   "fetched_at": "2026-10-21T19:17:13",
   "last_good_fetch": "2026-10-21T19:17:13",
-  "sha256": "8188e47680b33b43685c0b887024c1b1ad24e2d53933994547e5efbbf71a84a2",
-  "chars": 5334,
+  "sha256": "0c1000c40954befcea82f609df7e2199c894d9309c3f6b7d9d08d40d7a395741",
+  "chars": 5323,
   "last_changed": "2026-10-20T17:51:17",
   "error": null
  },
@@ -211,8 +250,8 @@
   "status": "ok",
   "fetched_at": "2026-10-21T19:17:13",
   "last_good_fetch": "2026-10-21T19:17:13",
-  "sha256": "2651586774524ae585f90c497ef17b66b455fb66713b56be5576325234115ad9",
-  "chars": 1785,
+  "sha256": "e8a72a6d3ee8e59330e3b022226da7de543ccbebb0b999c0610c2250795eb2ff",
+  "chars": 1791,
   "last_changed": "2026-10-20T17:51:17",
   "error": null
  },
@@ -229,8 +268,8 @@
   "status": "ok",
   "fetched_at": "2026-10-21T19:17:13",
   "last_good_fetch": "2026-10-21T19:17:13",
-  "sha256": "6f36e393f3d6026154b640f1d254ae3295ef4151e4a9f1a93b5f040923d6c74e",
-  "chars": 8827,
+  "sha256": "af25e28451adfaf68a9f95c9298773df949a30bb8427c6adac217dc0d5a878ac",
+  "chars": 8819,
   "last_changed": "2026-10-20T17:51:17",
   "error": null
  },
@@ -285,9 +324,27 @@
   "status": "ok",
   "fetched_at": "2026-10-21T19:17:13",
   "last_good_fetch": "2026-10-21T19:17:13",
-  "sha256": "1a8ec177c816960c3f6924716ea48f8134c690cec9b04620e421c15af200e288",
-  "chars": 3946,
+  "sha256": "e450c26eb082318001412bac5cd274a013b838b38ec882d0c1f146b9962990f7",
+  "chars": 4049,
   "last_changed": "2026-10-20T17:51:17",
+  "error": null
+ },
+ "dbs-credit-card-application-process": {
+  "id": "dbs-credit-card-application-process",
+  "url": "https://www.dbs.com.sg/personal/support/card-application-new-card.html",
+  "title": "DBS Credit Card Application Process",
+  "publisher": "DBS",
+  "products": [
+   "credit_card"
+  ],
+  "kind": "html",
+  "origin": "web",
+  "status": "ok",
+  "fetched_at": "2026-10-25T16:12:15",
+  "last_good_fetch": "2026-10-25T16:12:15",
+  "sha256": "0f8c21c6aa4544de78adcb8efd9c7a1106837d66a05b442cd86698e6ce682b9d",
+  "chars": 3894,
+  "last_changed": "2026-10-25T16:12:15",
   "error": null
  },
  "dbs-credit-card-cash-advance": {
@@ -303,8 +360,8 @@
   "status": "ok",
   "fetched_at": "2026-10-21T19:17:13",
   "last_good_fetch": "2026-10-21T19:17:13",
-  "sha256": "0f4c1bdc73a3dc70c29d6a211ee80d1d9611bb422ad8077d8cac558e9d88e244",
-  "chars": 2242,
+  "sha256": "57a45577001f6b13a02e8cd1f9f8e5a71e046a90c010c1cb08cfc0eb76d70024",
+  "chars": 2240,
   "last_changed": "2026-10-20T17:51:17",
   "error": null
  },
@@ -321,8 +378,8 @@
   "status": "ok",
   "fetched_at": "2026-10-21T19:17:13",
   "last_good_fetch": "2026-10-21T19:17:13",
-  "sha256": "519a6ccf93ed8562c3a947306ca58457893df8c893910db2a4a21480a436ec7a",
-  "chars": 5104,
+  "sha256": "ba1649345d77893a6c4d82a2dfce328e45953d076682239e29f938e59f737c22",
+  "chars": 5099,
   "last_changed": "2026-10-20T17:51:17",
   "error": null
  },
@@ -339,8 +396,8 @@
   "status": "ok",
   "fetched_at": "2026-10-21T19:17:13",
   "last_good_fetch": "2026-10-21T19:17:13",
-  "sha256": "b7d2f74fcb33df7b5962d4f86b89a3e3c8f64dc955738b2b491687a210e7873c",
-  "chars": 3986,
+  "sha256": "ef28daaad2c6144aa8ae6430aeb5bcf1947dd65fefdacefd9a657b1fc55218dd",
+  "chars": 4022,
   "last_changed": "2026-10-20T17:51:17",
   "error": null
  },
@@ -357,8 +414,8 @@
   "status": "ok",
   "fetched_at": "2026-10-21T19:17:13",
   "last_good_fetch": "2026-10-21T19:17:13",
-  "sha256": "e4d761351dee31ce5aff8470a0c566e120e4adbe9aad69e42b4a6e95623be376",
-  "chars": 9376,
+  "sha256": "b76f64eac2ce5b7a7ad1648736cd72d031e9222d507b27fae0a044ec4c61e64b",
+  "chars": 9440,
   "last_changed": "2026-10-20T17:51:17",
   "error": null
  },
@@ -375,7 +432,7 @@
   "status": "ok",
   "fetched_at": "2026-10-21T19:17:13",
   "last_good_fetch": "2026-10-21T19:17:13",
-  "sha256": "d408d5ed3271efae32c073fd5ed711ab41047ff20b60bec8c8172b45e88b2d63",
+  "sha256": "9424c5e30a43e5858b91c499469ac13cd23472119d336461a9955a816b876cc8",
   "chars": 3435,
   "last_changed": "2026-10-20T17:51:17",
   "error": null
@@ -470,6 +527,24 @@
   "last_changed": "2026-10-20T17:51:17",
   "error": null
  },
+ "dbs-documents-required-for-a-dbs-card-application": {
+  "id": "dbs-documents-required-for-a-dbs-card-application",
+  "url": "https://www.dbs.com.sg/personal/support/card-application-documents.html",
+  "title": "Documents Required for a DBS Card Application",
+  "publisher": "DBS",
+  "products": [
+   "credit_card"
+  ],
+  "kind": "html",
+  "origin": "web",
+  "status": "ok",
+  "fetched_at": "2026-10-25T16:12:15",
+  "last_good_fetch": "2026-10-25T16:12:15",
+  "sha256": "5917e051450ba256f101ee84a83e8da68c450399b8ba5ca782aafe46d8d34aa7",
+  "chars": 7206,
+  "last_changed": "2026-10-25T16:12:15",
+  "error": null
+ },
  "dbs-documents-required-for-home-loan-repricing": {
   "id": "dbs-documents-required-for-home-loan-repricing",
   "url": "https://www.dbs.com.sg/personal/support/loans-homeloan-repricing-documents-required.html",
@@ -519,9 +594,27 @@
   "status": "ok",
   "fetched_at": "2026-10-21T19:17:13",
   "last_good_fetch": "2026-10-21T19:17:13",
-  "sha256": "72afd33d9d85db612adeaf20c7526a7c29ac1b96bf29cf2e969a98ba85760b6e",
-  "chars": 3856,
+  "sha256": "f0b2b7edbbb0103030e255f3d78ae6f06fd0542dbb966e1ae3703dbd6674062d",
+  "chars": 3841,
   "last_changed": "2026-10-20T17:51:17",
+  "error": null
+ },
+ "dbs-fixed-deposit-home-rate-fhr": {
+  "id": "dbs-fixed-deposit-home-rate-fhr",
+  "url": "https://www.dbs.com.sg/personal/loans/home-loans/FHR-revision.page",
+  "title": "DBS Fixed Deposit Home Rate (FHR)",
+  "publisher": "DBS",
+  "products": [
+   "home_loan"
+  ],
+  "kind": "html",
+  "origin": "web",
+  "status": "ok",
+  "fetched_at": "2026-10-25T16:12:15",
+  "last_good_fetch": "2026-10-25T16:12:15",
+  "sha256": "3d94517a7d70bfc6409af2490d97da404c1625d357a0c722fa71aaaa1f8e0c16",
+  "chars": 2832,
+  "last_changed": "2026-10-25T16:12:15",
   "error": null
  },
  "dbs-full-repayment-of-a-dbs-home-loan": {
@@ -555,8 +648,8 @@
   "status": "ok",
   "fetched_at": "2026-10-21T19:17:13",
   "last_good_fetch": "2026-10-21T19:17:13",
-  "sha256": "37b1cdd3a14903966d71ff971e2b1d0da8389f316ddbbfde721cb6ec2b0fff77",
-  "chars": 6077,
+  "sha256": "21ddad2a03ec49f2a0ed5d2cf1ef340b08f2458da5c693b14b89ab88a35489b8",
+  "chars": 6064,
   "last_changed": "2026-10-20T17:51:17",
   "error": null
  },
@@ -591,8 +684,8 @@
   "status": "ok",
   "fetched_at": "2026-10-21T19:17:13",
   "last_good_fetch": "2026-10-21T19:17:13",
-  "sha256": "80d8e6bd671d6d0371eb2bb1f4f7b2a1b07cf094834822ba58cece96e2fd94da",
-  "chars": 9357,
+  "sha256": "43ba842783a3dea0b3ad0500ed40fd5df0346cb7705244d0b0c3c27e5202e330",
+  "chars": 9350,
   "last_changed": "2026-10-20T17:51:17",
   "error": null
  },
@@ -627,8 +720,8 @@
   "status": "ok",
   "fetched_at": "2026-10-21T19:17:13",
   "last_good_fetch": "2026-10-21T19:17:13",
-  "sha256": "e9d20139f861982fa020170944750788ad88c74765ac9fb4576e76c48027da56",
-  "chars": 24771,
+  "sha256": "aaa3273129392aff9af4654b19d9399d397887f12b8a928a34f24dfab28254ff",
+  "chars": 24955,
   "last_changed": "2026-10-20T17:51:17",
   "error": null
  },
@@ -646,8 +739,8 @@
   "status": "ok",
   "fetched_at": "2026-10-21T19:17:13",
   "last_good_fetch": "2026-10-21T19:17:13",
-  "sha256": "d61ed538da1b231c845ca2b275846441436932b67cc326ff8eb46ad84f6ea158",
-  "chars": 4470,
+  "sha256": "2ba234df05f9a0d45f55873adb3693c8089f13753afa667b09bb6b8defd207fc",
+  "chars": 4467,
   "last_changed": "2026-10-20T17:51:17",
   "error": null
  },
@@ -754,8 +847,8 @@
   "status": "ok",
   "fetched_at": "2026-10-21T19:17:13",
   "last_good_fetch": "2026-10-21T19:17:13",
-  "sha256": "60db9cf720ec5fe7b6f45d50611166c7f303933f95d7f0922260452e01c29950",
-  "chars": 8533,
+  "sha256": "c04d5e284508b0a28387494b7d80923293ec18071ea150cab0dfa6a4727148f4",
+  "chars": 8525,
   "last_changed": "2026-10-20T17:51:17",
   "error": null
  },
@@ -775,6 +868,24 @@
   "sha256": "a4ea702545b53040fcc87a6b5bc2a817c70b5748307f9fe8f54c81324f84d6ba",
   "chars": 6676,
   "last_changed": "2026-10-20T17:51:17",
+  "error": null
+ },
+ "dbs-private-property-home-loan": {
+  "id": "dbs-private-property-home-loan",
+  "url": "https://www.dbs.com.sg/i-bank/loans/homeloans/buy-private-property",
+  "title": "DBS Private Property Home Loan",
+  "publisher": "DBS",
+  "products": [
+   "home_loan"
+  ],
+  "kind": "html",
+  "origin": "web",
+  "status": "ok",
+  "fetched_at": "2026-10-25T16:12:15",
+  "last_good_fetch": "2026-10-25T16:12:15",
+  "sha256": "0b4c9a54c4f92c5a1a46680981f038a8264499f51432674bb7f330403aecbff0",
+  "chars": 8312,
+  "last_changed": "2026-10-25T16:12:15",
   "error": null
  },
  "dbs-repay-a-dbs-home-loan-with-cpf": {
@@ -808,8 +919,8 @@
   "status": "ok",
   "fetched_at": "2026-10-21T19:17:13",
   "last_good_fetch": "2026-10-21T19:17:13",
-  "sha256": "050ed816435f7323532d115603be95eb8a527457ca18dbbe2f666e0924d1584b",
-  "chars": 4991,
+  "sha256": "60d66061d5e68712f41091e5dba0bdd9c9c2d51791dc50e4dbc39ebce77c666d",
+  "chars": 4984,
   "last_changed": "2026-10-20T17:51:17",
   "error": null
  },
@@ -844,8 +955,8 @@
   "status": "ok",
   "fetched_at": "2026-10-21T19:17:13",
   "last_good_fetch": "2026-10-21T19:17:13",
-  "sha256": "cfb8bafff6c28a5055fa226cc3a1a756ba9bd69d98a41a29ac1e505aea15f2f4",
-  "chars": 4702,
+  "sha256": "b2346d5aab46217a61b431637fe69313fe175d0e8c71b422d5a02783a7583373",
+  "chars": 4686,
   "last_changed": "2026-10-20T17:51:17",
   "error": null
  },
@@ -867,6 +978,24 @@
   "last_changed": "2026-10-20T17:51:17",
   "error": null
  },
+ "dbs-supplementary-cards": {
+  "id": "dbs-supplementary-cards",
+  "url": "https://www.dbs.com.sg/personal/cards/card-services/supplementary-cards",
+  "title": "DBS Supplementary Cards",
+  "publisher": "DBS",
+  "products": [
+   "credit_card"
+  ],
+  "kind": "html",
+  "origin": "web",
+  "status": "ok",
+  "fetched_at": "2026-10-25T16:12:15",
+  "last_good_fetch": "2026-10-25T16:12:15",
+  "sha256": "6fdf2ebc876e0fec15e4cd52bdedffd8e478190375522321138b6bc3a59b27a9",
+  "chars": 4517,
+  "last_changed": "2026-10-25T16:12:15",
+  "error": null
+ },
  "dbs-takashimaya-card": {
   "id": "dbs-takashimaya-card",
   "url": "https://www.dbs.com.sg/personal/cards/credit-cards/dbs-takashimaya-card",
@@ -880,8 +1009,8 @@
   "status": "ok",
   "fetched_at": "2026-10-21T19:17:13",
   "last_good_fetch": "2026-10-21T19:17:13",
-  "sha256": "9668ae2a2122558cbd2f3683aae4477bdc0f49c3d73d1969f216cf9f61c50ab8",
-  "chars": 3411,
+  "sha256": "258566b99667ea0f8376dd11085e6a84ce819deb23df0c799fcac3a7ef096900",
+  "chars": 3400,
   "last_changed": "2026-10-20T17:51:17",
   "error": null
  },
@@ -916,8 +1045,8 @@
   "status": "ok",
   "fetched_at": "2026-10-21T19:17:13",
   "last_good_fetch": "2026-10-21T19:17:13",
-  "sha256": "1dee57dec729ffdaf9b2c3c9735e1b0e160ffcd08c218dfb179afab388d08b2b",
-  "chars": 5817,
+  "sha256": "78ff14cc17cd39898e23505a1d441f6a7f7d15a5c164f714138a72be09cb1fc4",
+  "chars": 5805,
   "last_changed": "2026-10-20T17:51:17",
   "error": null
  },
@@ -971,8 +1100,8 @@
   "status": "ok",
   "fetched_at": "2026-10-21T19:17:13",
   "last_good_fetch": "2026-10-21T19:17:13",
-  "sha256": "991290b485523b2b1c2d03f5347637f69ff414990b2de1b97d01abccf69f7b4e",
-  "chars": 2928,
+  "sha256": "a5abff255e37639570db1da7b34755572f7aa75c18d9bdebd9111bb5935a045d",
+  "chars": 2917,
   "last_changed": "2026-10-20T17:51:17",
   "error": null
  },
@@ -1007,8 +1136,8 @@
   "status": "ok",
   "fetched_at": "2026-10-21T19:17:13",
   "last_good_fetch": "2026-10-21T19:17:13",
-  "sha256": "bf8d04bffe11b0742283bb15a242643cf6b9e3bf8b8a2a65a1d8fcef5d4c47ba",
-  "chars": 6260,
+  "sha256": "e2ba5082b0e708b8fcb877a2138ad9dc6c418ed5847fd5216f6db9b3673d9894",
+  "chars": 6254,
   "last_changed": "2026-10-20T17:51:17",
   "error": null
  },
@@ -1061,8 +1190,8 @@
   "status": "ok",
   "fetched_at": "2026-10-21T19:17:13",
   "last_good_fetch": "2026-10-21T19:17:13",
-  "sha256": "a8bfdde7935c2c19396f355c05d5fadfbf2a5bdf19d1522ee0775bba19799739",
-  "chars": 7264,
+  "sha256": "b6b3aba6a1381dddb5f60fc21a415ba7773d3af909333315abd113ef8ba3dedf",
+  "chars": 7298,
   "last_changed": "2026-10-20T17:51:17",
   "error": null
  },
@@ -1079,8 +1208,8 @@
   "status": "ok",
   "fetched_at": "2026-10-21T19:17:13",
   "last_good_fetch": "2026-10-21T19:17:13",
-  "sha256": "1fe533039212c3ae699ea2d27945451eecf4c51eddd8da892ea746034d8bd322",
-  "chars": 2428,
+  "sha256": "236d55eb958d66a5096c47a6109b0ccecd744d11e18318e4d4703e74a17fee1e",
+  "chars": 2444,
   "last_changed": "2026-10-20T17:51:17",
   "error": null
  },
@@ -1115,8 +1244,8 @@
   "status": "ok",
   "fetched_at": "2026-10-21T19:17:13",
   "last_good_fetch": "2026-10-21T19:17:13",
-  "sha256": "e1d8555296bdcee03a7a42869d68db8663bba9b7549e5f6edf70e843e15ce6b6",
-  "chars": 2351,
+  "sha256": "fcf8e85d8ee7cb1f9c82430e712922596c833f0414b11290b02bc0c387ec4056",
+  "chars": 2361,
   "last_changed": "2026-10-20T17:51:17",
   "error": null
  },
@@ -1133,8 +1262,8 @@
   "status": "ok",
   "fetched_at": "2026-10-21T19:17:13",
   "last_good_fetch": "2026-10-21T19:17:13",
-  "sha256": "b10ea374d34da1fbba3405720dab414c290115236dae8bea01c8de64ed1c1996",
-  "chars": 2602,
+  "sha256": "c5977bd83b7632d5b80899e066aa0df5cce3fe64fcb6accf278e5d6f5238572f",
+  "chars": 2610,
   "last_changed": "2026-10-20T17:51:17",
   "error": null
  },
@@ -1151,8 +1280,8 @@
   "status": "ok",
   "fetched_at": "2026-10-21T19:17:13",
   "last_good_fetch": "2026-10-21T19:17:13",
-  "sha256": "5240c35c569d9469e6c24b1aa9463827db52bbdbeedbf037353437c7503f1127",
-  "chars": 3226,
+  "sha256": "25d9218c8c7cafbdb39af2f9f16f7c2b1ec1c5d7747757a263875c447334be0a",
+  "chars": 3232,
   "last_changed": "2026-10-20T17:51:17",
   "error": null
  },
@@ -1169,8 +1298,8 @@
   "status": "ok",
   "fetched_at": "2026-10-21T19:17:13",
   "last_good_fetch": "2026-10-21T19:17:13",
-  "sha256": "cebb765f37cea54e1548c7c4fac74c01adda567708a27520c03348c732fbac15",
-  "chars": 5909,
+  "sha256": "5b499bbf9488993cda4116a8e867b1a566edc0752d7776a653b0fe454fd13179",
+  "chars": 5898,
   "last_changed": "2026-10-20T17:51:17",
   "error": null
  },

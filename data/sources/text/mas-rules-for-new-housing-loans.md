@@ -5,7 +5,7 @@ publisher: MAS
 url: https://www.mas.gov.sg/regulation/explainers/new-housing-loans
 products: home_loan
 fetched_at: 2026-10-21T19:17:13
-sha256: e1d8555296bdcee03a7a42869d68db8663bba9b7549e5f6edf70e843e15ce6b6
+sha256: fcf8e85d8ee7cb1f9c82430e712922596c833f0414b11290b02bc0c387ec4056
 ---
 
 Explainers
@@ -33,18 +33,11 @@ Strengthen credit underwriting standards at FIs.
 Ensure long-term stability in the property market.
 Housing Loan Rules
 Below is a summary of the rules on maximum limits for new housing loans.
-Rule
-Description
-Loan Tenure
-30 years for HDB flats.
-35 years for non-HDB properties.
-Loan-to-Value (LTV)
-The maximum amount that an individual can borrow for a housing loan based on the loan tenure, borrower’s age, borrower’s existing loans and whether the borrower is a shell company.
-Mortgage servicing ratio (MSR)
-No more than 30% of a borrower’s gross monthly income should go towards repaying all their property loans, including the loan being applied for.
-Only applies to the purchase of HDB flats and ECs.
-Total debt servicing ratio (TDSR)
-No more than 55% of a borrower’s gross monthly income should go towards repaying all their debt obligations, including the loan being applied for.
+Rule | Description
+Loan Tenure | 30 years for HDB flats. 35 years for non-HDB properties.
+Loan-to-Value (LTV) | The maximum amount that an individual can borrow for a housing loan based on the loan tenure, borrower’s age, borrower’s existing loans and whether the borrower is a shell company.
+Mortgage servicing ratio (MSR) | No more than 30% of a borrower’s gross monthly income should go towards repaying all their property loans, including the loan being applied for. Only applies to the purchase of HDB flats and ECs.
+Total debt servicing ratio (TDSR) | No more than 55% of a borrower’s gross monthly income should go towards repaying all their debt obligations, including the loan being applied for.
 In addition, FIs must also:
 Deduct discounts, rebates or benefits when calculating the purchase price of a residential property.
 Ensure that borrowers are also the mortgagors of the property.

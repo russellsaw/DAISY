@@ -138,7 +138,7 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
 
     try:
         if intent in ("product_qa", "comparison"):
-            out = product_knowledge.answer(state, user_msg, products)
+            out = product_knowledge.answer(state, user_msg, products, decision.get("search_query", ""))
             draft, sources = out["draft"], out["sources"]
             # Exactly the excerpts the drafting agent saw ([n], title, as-of date, URL), so the reviewer can
             # check citations and a quoted "as of" date or link traces to its source like any other fact.
@@ -152,11 +152,11 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
             out = {"engine_ran": False}
 
         elif intent == "eligibility":
-            out = eligibility.assess(state, user_msg, products)
+            out = eligibility.assess(state, user_msg, products, search_query=decision.get("search_query", ""))
             draft, computations = out["draft"], out["computations"]
             sources = out.get("sources", [])
             cfs = out.get("counterfactuals", [])
-            sources_text = "\n".join(str(r) for r in out["results"])
+            sources_text = "\n\n".join(x for x in (out.get("excerpts", ""), "\n".join(str(r) for r in out["results"])) if x)
 
         elif intent == "advice_seeking":
             card_job = start_card("customer sought personal financial advice")

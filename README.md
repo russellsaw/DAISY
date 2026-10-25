@@ -23,7 +23,7 @@ Input guardrail ─── code patterns + LLM classifier (in parallel with the o
    ▼
 Orchestrator ─── intent, profile facts, commitments (+ customer's words for end dates), readback replies
    │
-   ├─ product_qa / comparison ──▶ Product Knowledge agent (BM25 over 66 DBS/POSB/MAS/HDB sources, cites [n])
+   ├─ product_qa / comparison ──▶ Product Knowledge agent (BM25 over 73 DBS/POSB/MAS/HDB sources, cites [n])
    ├─ eligibility ──────────────▶ Eligibility agent:
    │                                1. details missing  → ask (no engine)
    │                                2. not confirmed    → code-written readback (no engine)
@@ -73,9 +73,11 @@ evals/
   cases.csv                the suite: golden_qa, eligibility, boundary, adversarial, scope, handoff
   run_evals.py             runs cases through the live pipeline, writes results/latest.json
   judge.py                 LLM-as-judge for behavioural checks
-tests/                     110 offline unit tests: engine, guards, counterfactual, readback, defence, recorder, input guard
+tests/                     118 offline unit tests: engine, guards, counterfactual, readback, defence, recorder,
+                           input guard, retrieval
 scripts/ingest.py          build the knowledge base
 scripts/write_starter_cases.py   regenerates the starter cases.csv
+scripts/ask_questions.py   asks a question list (evals/broad_questions.csv), reviews every answer, writes a report
 ```
 
 ## Setup
@@ -187,6 +189,15 @@ retrieval hits with URLs, the rules-engine input and output, **every counterfact
 the compliance verdict and reasons, and the final reply, with timings. The **Flight recorder** page replays
 any conversation (or eval case) event by event. Identifiers are redacted before agents see the message and
 again on every log line. Details and limits: `docs/ASSUMPTIONS_AND_LIMITATIONS.md` §9.
+
+## 50 broad questions ("retraining")
+
+DAISY isn't retrained like a model: it's a fixed Claude model answering from DBS's pages under coded rules.
+Improving it means asking real questions, fixing what the answers expose (knowledge, retrieval, routing,
+wording), and locking the questions in as regression tests. `scripts/ask_questions.py` asks 50 broad
+questions and has a reviewer model rate every answer; the first round took DAISY from 27 to 39–40 good
+answers (knowledge gaps 12 → 2–4, wrong handling 1 → 0, unsafe 0). Full write-up, every answer, and what's
+still weak: [`docs/broad_questions/README.md`](docs/broad_questions/README.md).
 
 ## Demo persona
 

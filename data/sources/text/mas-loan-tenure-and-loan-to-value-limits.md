@@ -5,7 +5,7 @@ publisher: MAS
 url: https://www.mas.gov.sg/regulation/explainers/new-housing-loans/loan-tenure-and-loan-to-value-limits
 products: home_loan
 fetched_at: 2026-10-21T19:17:13
-sha256: 1fe533039212c3ae699ea2d27945451eecf4c51eddd8da892ea746034d8bd322
+sha256: 236d55eb958d66a5096c47a6109b0ccecd744d11e18318e4d4703e74a17fee1e
 ---
 
 Explainers
@@ -41,19 +41,10 @@ LTV refers to the loan amount as a percentage of the property’s value. For exa
 LTV Limits and Minimum Downpayment for Individuals
 The LTV limits for individuals change depending on the number of outstanding housing loans a borrower has.
 For loans on residential properties where the OTP is granted on or after 6 July 2018, the following LTV limits apply:
-Outstanding housing loans
-LTV limit
-Minimum cash downpayment
-None
-75% or 55%
-5% (for LTV of 75%)
-10% (for LTV of 55%)
-1
-45% or 25%
-25%
-2 or more
-35% or 15%
-25%
+Outstanding housing loans | LTV limit | Minimum cash downpayment
+None | 75% or 55% | 5% (for LTV of 75%) 10% (for LTV of 55%)
+1 | 45% or 25% | 25%
+2 or more | 35% or 15% | 25%
 Apply the lower LTV limit if the loan tenure exceeds 30 years (or 25 years for HDB flats), or the loan period extends beyond the borrower’s age of 65 years.
 LTV Limits for Shell Companies
 If the borrower is a shell company or not an individual, the LTV limit is 15%.

@@ -5,7 +5,7 @@ publisher: DBS
 url: https://www.dbs.com.sg/personal/loans/home-loans/hdb-loan
 products: home_loan
 fetched_at: 2026-10-21T19:17:13
-sha256: 80d8e6bd671d6d0371eb2bb1f4f7b2a1b07cf094834822ba58cece96e2fd94da
+sha256: 43ba842783a3dea0b3ad0500ed40fd5df0346cb7705244d0b0c3c27e5202e330
 ---
 
 Home/Loans/DBS HDB Loan
@@ -55,24 +55,13 @@ Up to S$3,200 in cash or shopping vouchers
 Apply nowContact us
 ## Enjoy these great features with your DBS HDB Loan
 ## Explore our 3-Year CPF-OA HDB Loan
-## Year 1 to Year 3
-1.78% p.a.
-Pegged at 0.72% p.a. below CPF-OA rate
-## Year 4 to Year 5
-2.20% p.a.
-Pegged at 0.30% p.a. below CPF-OA rate
-## Thereafter
-2.40% p.a.
-Pegged at 0.10% p.a. below CPF-OA rate
-## Commitment period
-3 years
-## Reference rate
-Pegged below CPF-OA rate of 2.50% p.a. throughout loan tenure
-## Minimum loan amount
-S$100,000
-## Maximum loan tenure
-75% LTV: 25 years max loan tenor (provided borrower age + tenure ≤ 65 years old)
-55% LTV: 30 years max loan tenor (provided borrower age + tenure > 65 years old)
+Year 1 to Year 3 | 1.78% p.a. Pegged at 0.72% p.a. below CPF-OA rate
+Year 4 to Year 5 | 2.20% p.a. Pegged at 0.30% p.a. below CPF-OA rate
+Thereafter | 2.40% p.a. Pegged at 0.10% p.a. below CPF-OA rate
+Commitment period | 3 years
+Reference rate | Pegged below CPF-OA rate of 2.50% p.a. throughout loan tenure
+Minimum loan amount | S$100,000
+Maximum loan tenure | 75% LTV: 25 years max loan tenor (provided borrower age + tenure ≤ 65 years old) 55% LTV: 30 years max loan tenor (provided borrower age + tenure > 65 years old)
 ## Explore our promotions designed to maximise savings & rewards!
 ## Get your DBS HDB Loan in 4 easy steps
 Not sure where to start? Every property and its purchasing journey is unique, that's why we've crafted a simple step-by-step guide to streamline the process, whether you're a first-time buyer or a seasoned homeowner.

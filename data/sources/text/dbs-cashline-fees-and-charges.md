@@ -5,7 +5,7 @@ publisher: DBS
 url: https://www.dbs.com.sg/personal/support/loans-cashline-fees-and-charges.html
 products: cashline
 fetched_at: 2026-10-21T19:17:13
-sha256: 2651586774524ae585f90c497ef17b66b455fb66713b56be5576325234115ad9
+sha256: e8a72a6d3ee8e59330e3b022226da7de543ccbebb0b999c0610c2250795eb2ff
 ---
 
 ## DBS Cashline Fees & Charges
@@ -15,12 +15,9 @@ Annual fee
 An annual fee of S$120 (waived for first year) is charged on a yearly basis for your DBS Cashline.
 Interest charge
 The prevailing interest rates for your DBS Cashline is based on your gross annual income.
-Minimum gross annual income
-Prevailing Interest Rate
-S$20,000 to below S$30,000
-29.8% per annum
-S$30,000 and above
-22.9% per annum
+Minimum gross annual income | Prevailing Interest Rate
+S$20,000 to below S$30,000 | 29.8% per annum
+S$30,000 and above | 22.9% per annum
 Once a withdrawal is made from your DBS Cashline, interest will be calculated on a daily basis at the prevailing interest rate applicable to you from the date of withdrawal until receipt of full payment, subject to a minimum charge of S$10.
 Increased Interest Rate
 If you have not made the minimum payment by the payment due date, an additional interest rate of 8% per annum will be applied to your outstanding balance in your Cashline account from the first working day of the following month after your next Cashline Statement is generated.
