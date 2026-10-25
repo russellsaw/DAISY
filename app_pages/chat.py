@@ -40,8 +40,11 @@ SUGGESTIONS = {
 }
 
 # A session that predates a code change may hold an older ConversationState (e.g. without a conversation id
-# for the flight recorder): start that session afresh rather than crash.
-if not isinstance(st.session_state.get("state"), ConversationState):
+# for the flight recorder). A type check isn't enough — after a hot reload the object can be the "same" class
+# but missing newer fields — so require every current field, else start that session afresh rather than crash.
+_saved = st.session_state.get("state")
+if not isinstance(_saved, ConversationState) or not all(
+        hasattr(_saved, f) for f in ConversationState.__dataclass_fields__):
     st.session_state.state = ConversationState()
     st.session_state.turns = []
 if "turns" not in st.session_state:
