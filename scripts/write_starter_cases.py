@@ -46,6 +46,9 @@ CASES = [
          notes="DBS Personal Loan page: SG/PR $20,000 p.a., foreigners $60,000 p.a. (checked 2026-10-20)"),
     dict(id="qa-002", category="golden_qa", input="What is a lock-in period on a home loan?",
          expected_intent="product_qa", expected_product="home_loan", requires_citation="true",
+         expected_behavior="Explains that a lock-in period is a set time during which repaying, refinancing or "
+                           "repricing the loan can incur a penalty or fee, as the cited DBS pages describe. "
+                           "Does not recommend a package with or without a lock-in.",
          notes="Glossary page should cover this"),
     dict(id="qa-003", category="golden_qa", input="What's the difference between a fixed rate and a floating rate home loan package?",
          expected_intent="product_qa", expected_product="home_loan", requires_citation="true",
@@ -57,6 +60,8 @@ CASES = [
                            "account) without saying which the customer should take."),
     dict(id="qa-005", category="golden_qa", input="Is there an annual fee on DBS credit cards?",
          expected_intent="product_qa", expected_product="credit_card", requires_citation="true",
+         expected_behavior="Says the annual fee depends on the card and gives at least one card's fee from the "
+                           "cited sources (with any waiver the sources mention). Invents no fee.",
          notes="Answer varies by card; a good answer says so and cites"),
     dict(id="qa-007", category="golden_qa", input="Is there a fee if I repay my DBS personal loan early?",
          expected_intent="product_qa", expected_product="personal_loan", requires_citation="true",
@@ -74,6 +79,46 @@ CASES = [
          expected_intent="product_qa|comparison", expected_product="credit_card", requires_citation="true",
          expected_behavior="Names only cards whose grocery benefits appear in the cited sources, does not invent rates "
                            "or caps, and points to the card pages or comparator for full details. Does not recommend one."),
+    # Fact checks: every expected figure is quoted from a snapshot in data/sources/text (checked 2026-10-29).
+    dict(id="qa-011", category="golden_qa", input="What is the longest loan tenure allowed for a private condo?",
+         expected_intent="product_qa", expected_product="home_loan", requires_citation="true",
+         must_contain="35 years|35-year|35 yrs", notes="MAS: 35 years for non-HDB properties"),
+    dict(id="qa-012", category="golden_qa", input="What's the minimum annual income for a DBS credit card if I'm a Singaporean?",
+         expected_intent="product_qa|eligibility", expected_product="credit_card", requires_citation="true",
+         must_contain="30,000|30000|30k", must_not_contain=APPROVAL_CLAIMS,
+         notes="DBS card pages: S$30,000 p.a. for SC/PR (S$15,000 if 56 and above)"),
+    dict(id="qa-013", category="golden_qa", input="What interest rate does DBS Cashline charge?",
+         expected_intent="product_qa", expected_product="cashline", requires_citation="true",
+         must_contain="22.9", notes="DBS Cashline page: prevailing interest rate 22.9% p.a. (income S$30,000 and above)"),
+    dict(id="qa-014", category="golden_qa", input="What is the finance charge on an unpaid DBS credit card balance?",
+         expected_intent="product_qa", expected_product="credit_card", requires_citation="true",
+         must_contain="27.8", notes="DBS interest and finance charges FAQ: 27.80% p.a., calculated daily"),
+    dict(id="qa-015", category="golden_qa", input="What's the late payment fee on the DBS Altitude Card?",
+         expected_intent="product_qa", expected_product="credit_card", requires_citation="true",
+         must_contain="S$100|$100", notes="DBS Altitude Card page: late fee S$100"),
+    dict(id="qa-016", category="golden_qa", input="How much is the annual fee for the DBS Altitude Card?",
+         expected_intent="product_qa", expected_product="credit_card", requires_citation="true",
+         must_contain="196.20|196.2", notes="DBS Altitude Card page: principal card S$196.20"),
+    dict(id="qa-017", category="golden_qa", input="Compare the annual fees of the DBS Altitude Card and the DBS Woman's Card.",
+         expected_intent="comparison|product_qa", expected_product="credit_card", requires_citation="true",
+         must_contain="163.50|163.5",
+         expected_behavior="Gives both cards' annual fees as the cited pages state them (Altitude S$196.20, "
+                           "Woman's S$163.50) and does not recommend either card.",
+         notes="DBS Altitude Card page S$196.20; DBS Woman's Card page S$163.50"),
+    dict(id="qa-018", category="golden_qa", input="Is there a cap on how much unsecured credit I can have across all banks?",
+         expected_intent="product_qa", requires_citation="true",
+         must_contain="12 times|12x|12×|12 x|twelve times",
+         notes="DBS unsecured credit rules FAQ: 12 times monthly income from 1 June 2019"),
+    dict(id="qa-019", category="golden_qa", input="What is the maximum loan-to-value for a first housing loan?",
+         expected_intent="product_qa", expected_product="home_loan", requires_citation="true",
+         must_contain="75%|75 per cent|75 percent", notes="MAS: 75% LTV for the first housing loan"),
+    dict(id="qa-020", category="golden_qa",
+         input="I spend mostly on dining and online shopping. Which DBS cards should I look at?",
+         expected_intent="comparison|product_qa", expected_product="credit_card", requires_citation="true",
+         expected_behavior="Lists cards whose cited pages mention dining or online-shopping rewards, describes them "
+                           "from the sources, does not invent rates or caps, and does not say which card is best "
+                           "for the customer.",
+         notes="Product discovery from stated needs (brief: 'guide users through product discovery and comparison')"),
 
     # ---------------- eligibility: engine-verified outcomes ----------------
     dict(id="elig-001", category="eligibility", profile=PR_7K, input="Am I eligible for a DBS personal loan?",

@@ -4,7 +4,7 @@ title: DBS Fixed Deposit Home Rate (FHR)
 publisher: DBS
 url: https://www.dbs.com.sg/personal/loans/home-loans/FHR-revision.page
 products: home_loan
-fetched_at: 2026-10-25T16:12:15
+fetched_at: 2026-10-27T17:56:54
 sha256: 3d94517a7d70bfc6409af2490d97da404c1625d357a0c722fa71aaaa1f8e0c16
 ---
 

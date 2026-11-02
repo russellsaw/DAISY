@@ -211,7 +211,7 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
         engine_ran=bool(intent == "eligibility" and out.get("engine_ran")), readback=is_readback,
         computations=computations, compliance_record=reviewed["record"], pii_found=pii_found,
         profile=state.profile.to_dict(), user_msg=user_msg, guard=guard)
-    state.add_trace("Defence layers", " · ".join(f"{k}={v['status']}" for k, v in layers.items()), layers)
+    state.add_trace("Defence layers", ", ".join(f"{k}={v['status']}" for k, v in layers.items()), layers)
 
     state.messages.append({"role": "assistant", "content": final})
     state.last_sources = sources

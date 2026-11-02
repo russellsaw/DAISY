@@ -4,7 +4,7 @@ title: DBS Credit Card Rewards
 publisher: DBS
 url: https://www.dbs.com.sg/personal/cards/rewards/card-rewards
 products: credit_card
-fetched_at: 2026-10-21T19:17:13
+fetched_at: 2026-10-27T17:56:54
 sha256: 7c6bbb88358eabe2bc40f7ec872967c7fcea468f66c8a35d6a489db43c270a70
 ---
 

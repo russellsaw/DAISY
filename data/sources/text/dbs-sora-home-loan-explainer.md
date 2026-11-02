@@ -4,7 +4,7 @@ title: DBS SORA Home Loan Explainer
 publisher: DBS
 url: https://www.dbs.com.sg/iwov-resources/pdf/loan/home-loans/manage-your-mortgage/sora_dbs.pdf
 products: home_loan
-fetched_at: 2026-10-21T19:17:13
+fetched_at: 2026-10-27T17:56:54
 sha256: ee3dee7962d73ecf03d0936104ee9924c67a6a8a1a326614943dd79f17a5286d
 ---
 

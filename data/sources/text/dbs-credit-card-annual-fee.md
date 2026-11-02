@@ -4,7 +4,7 @@ title: DBS Credit Card Annual Fee
 publisher: DBS
 url: https://www.dbs.com.sg/personal/support/card-charges-and-fees-annual-fee.html
 products: credit_card
-fetched_at: 2026-10-21T19:17:13
+fetched_at: 2026-10-27T17:56:54
 sha256: e450c26eb082318001412bac5cd274a013b838b38ec882d0c1f146b9962990f7
 ---
 

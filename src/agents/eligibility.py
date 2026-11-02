@@ -152,7 +152,7 @@ def assess(state: ConversationState, user_msg: str, products: list[str], today: 
             "; ".join(f"{cf['product']}: binding {cf['binding_rule']}, "
                       f"{len(cf['paths'])} path(s) ({', '.join(x['lever_kind'] for x in cf['paths']) or 'none'}), "
                       f"{len(cf['borderline'])} borderline" for cf in cfs)
-            + f" · {len(runs)} engine runs",
+            + f"; {len(runs)} engine runs",
             {"counterfactuals": cfs, "runs": runs},
         )
 

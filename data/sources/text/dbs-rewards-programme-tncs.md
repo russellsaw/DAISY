@@ -4,7 +4,7 @@ title: DBS Rewards Programme T&Cs
 publisher: DBS
 url: https://www.dbs.com.sg/iwov-resources/pdf/cards/rewards_programme_tnc.pdf
 products: credit_card
-fetched_at: 2026-10-21T19:17:13
+fetched_at: 2026-10-27T17:56:54
 sha256: 895cf3be3b527dc3c7f4080b2d3ad9678b2f6e78656ad377a61b396364cc1240
 ---
 

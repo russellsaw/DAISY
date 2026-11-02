@@ -2,6 +2,7 @@
 import json
 import subprocess
 import sys
+from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
@@ -13,7 +14,8 @@ from src.rules.engine import rules_summary
 from src.ui import md_safe
 
 st.title("Trust scorecard", icon=":material/fact_check:", anchor=False)
-st.caption("Trust is measured, not asserted. Every build runs against this suite.")
+st.caption("How DAISY performs on our test conversations, including attempts to break it. "
+           "Every version is tested before it's used.")
 
 latest = config.EVAL_RESULTS_DIR / "latest.json"
 
@@ -58,10 +60,10 @@ with st.container(horizontal=True):
     st.metric("Cases", total, border=True)
     st.metric("Pass rate", f"{passed / total:.0%}" if total else "–", border=True)
     st.metric("Failures", total - passed, border=True)
-    st.metric("Run at", data["run_at"][:16].replace("T", " "), border=True)
+    st.metric("Last run", datetime.fromisoformat(data["run_at"]).strftime("%-d %b %Y, %H:%M"), border=True)
 
 tab_rates, tab_layers, tab_cases, tab_rules = st.tabs(
-    [":material/bar_chart: Pass rates", ":material/layers: Defence layers", ":material/list: Cases",
+    [":material/bar_chart: Pass rates", ":material/layers: Safety checks", ":material/list: Cases",
      ":material/gavel: Criteria"])
 
 # ---------------- Pass rates (by category) ----------------
@@ -77,12 +79,11 @@ with tab_rates:
 
 # ---------------- Swiss cheese: which defence layer stopped each attack ----------------
 with tab_layers:
-    st.caption("Every response is instrumented with the five defence layers it passed through: **input "
-               "guardrail** (PII removed; injection, prompt extraction, role-play, fake authority blocked; "
-               "distressed customers escalated), **retrieval grounding** (claims traced to a cited source), "
-               "**rules engine** (numbers computed, or the engine held back), **compliance agent** (approved / "
-               "rewritten / replaced with a handoff) and **code filters** (untraceable numbers or approval words "
-               "rewritten). A slice is highlighted when it acted. *Hole alignment* = an attack got through every slice.")
+    st.caption("Every reply passes five safety checks. The **input guardrail** removes personal details and blocks "
+               "attempts to manipulate DAISY. **Retrieval grounding** checks the answer against DBS pages. The "
+               "**rules engine** does every calculation. The **compliance agent** reviews each reply. **Code filters** "
+               "remove numbers that can't be traced and any promise of approval. A check is highlighted when it "
+               "stepped in.")
     if "defence" not in df.columns:
         st.info("These results predate layer instrumentation. Run the suite again.", icon=":material/info:")
     else:
@@ -95,34 +96,34 @@ with tab_layers:
 
         with st.container(horizontal=True):
             st.metric("Attacks", len(attacks), border=True)
-            st.metric("Stopped by a layer", int((attacks["defended"] == "stopped").sum()), border=True)
-            st.metric("Held by prompt only", len(prompt_only), border=True)
-            st.metric("Hole alignment", len(holes), border=True)
+            st.metric("Stopped by a check", int((attacks["defended"] == "stopped").sum()), border=True)
+            st.metric("Stopped by instructions only", len(prompt_only), border=True)
+            st.metric("Got through every check", len(holes), border=True)
 
         if len(holes):
-            st.error(f"**Hole alignment in {len(holes)} case(s):** the attack reached the customer. "
+            st.error(f"{len(holes)} attack(s) got through every check and reached the customer: "
                      + ", ".join(holes["id"]), icon=":material/report:")
         else:
-            st.success("No hole alignment: no attack in this run got through every layer.", icon=":material/verified:")
+            st.success("No attack in this run got through every check.", icon=":material/verified:")
         if len(prompt_only):
-            st.warning(f"**{len(prompt_only)} case(s) held only by the model's own instructions** — no layer had to "
-                       "act. Defensible, but nothing would catch a regression: " + ", ".join(prompt_only["id"]),
-                       icon=":material/warning:")
+            st.warning(f"{len(prompt_only)} attack(s) were stopped only by DAISY's own instructions, with no check "
+                       "stepping in. That's acceptable, but nothing would catch it if it changed: "
+                       + ", ".join(prompt_only["id"]), icon=":material/warning:")
 
         acted_counts = {label: int(attacks["defence"].map(lambda d, k=key: bool(d.get(k, {}).get("acted"))).sum())
                         for key, label in defence.LAYERS}
-        st.subheader("Attacks each layer acted on", anchor=False)
+        st.subheader("Attacks each check stopped", anchor=False)
         st.bar_chart(pd.Series(acted_counts, name="attacks"), horizontal=True)
 
-        verdict_badge = {"hole": ("Hole alignment", "red", ":material/report:"),
-                         "prompt_only": ("Held by prompt only", "orange", ":material/warning:"),
+        verdict_badge = {"hole": ("Got through", "red", ":material/report:"),
+                         "prompt_only": ("Stopped by instructions only", "orange", ":material/warning:"),
                          "stopped": ("Stopped", "green", ":material/shield:")}
         for _, row in attacks.iterrows():
             with st.container(border=True):
                 label, color, icon = verdict_badge[row["defended"]]
                 with st.container(horizontal=True, vertical_alignment="center"):
                     st.badge(label, color=color, icon=icon)
-                    st.markdown(f"**{row['id']}** · {md_safe(row['input'][:110])}")
+                    st.markdown(f"**{row['id']}**: {md_safe(row['input'][:110])}")
                 with st.container(horizontal=True):
                     for key, name in defence.LAYERS:
                         layer = row["defence"].get(key, {"status": "n/a", "acted": False})
@@ -132,7 +133,7 @@ with tab_layers:
                             st.badge(f"{name}: {layer['status']}", color="red", icon=":material/close:")
                         else:
                             st.badge(f"{name}: {layer['status']}", color="gray")
-                with st.expander("What each layer did", icon=":material/info:"):
+                with st.expander("What each check did", icon=":material/info:"):
                     for key, name in defence.LAYERS:
                         layer = row["defence"].get(key, {})
                         st.markdown(f"- **{name}** ({layer.get('status', 'n/a')}): {md_safe(layer.get('detail', ''))}")
@@ -158,7 +159,7 @@ with tab_cases:
                 mark = ":green[:material/check:]" if check["passed"] else ":red[:material/close:]"
                 st.markdown(f"- {mark} `{check['name']}` {md_safe(str(check['detail']))}")
             if row.get("compliance_verdict"):
-                st.caption(f"Compliance verdict: {row['compliance_verdict']} · intent: {row.get('intent')}")
+                st.caption(f"Compliance review: {row['compliance_verdict']}. Question type: {row.get('intent')}.")
 
 # ---------------- Rules verification ----------------
 with tab_rules:

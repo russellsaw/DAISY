@@ -4,7 +4,7 @@ title: MAS: Who TDSR Applies To
 publisher: MAS
 url: https://www.mas.gov.sg/regulation/explainers/tdsr-for-property-loans/who-tdsr-applies-to
 products: home_loan
-fetched_at: 2026-10-21T19:17:13
+fetched_at: 2026-10-27T17:56:54
 sha256: 25d9218c8c7cafbdb39af2f9f16f7c2b1ec1c5d7747757a263875c447334be0a
 ---
 

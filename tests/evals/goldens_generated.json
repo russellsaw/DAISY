@@ -1,0 +1,202 @@
+[
+ {
+  "id": "gen-01",
+  "input": "How does accrued interest on my DBS home loan work, and how is it different for me as the borrower versus for the bank?",
+  "expected_output": "Accrued interest is interest that has been incurred but not yet paid by you, the borrower, or received by the lender. For you, it is interest you owe but haven't yet paid. For DBS, it is interest it has earned but hasn't yet received.",
+  "source_doc": "dbs-home-loan-glossary",
+  "source_url": "https://www.dbs.com.sg/personal/articles/nav/my-home/home-loan-glossary",
+  "context": [
+   "DBS Home Loan Glossary (DBS) — https://www.dbs.com.sg/personal/articles/nav/my-home/home-loan-glossary\nNAV\nMy Home\n30 Jun 2022\n## Home loans guide – mortgage terms & jargon explained\nHome Loans Glossary\nThis glossary is for general information only, in the context of housing loans. It should not be relied upon as legal or professional advice. Whilst reasonable care has been taken to ensure the accuracy of the information herein, no warranty or representation is made as to its correctness or completeness. Content herein may be modified at any time without notice.\nTerm | Description\nAccrued Interest | Accrued Interest is the interest that has been incurred but not paid by the borrower or received by the lender."
+  ],
+  "vetting_note": "2026-10-29: removed a claim about what 'the context' lacks; expected answers state source facts only."
+ },
+ {
+  "id": "gen-02",
+  "input": "For a DBS HDB loan, what's the max LTV and min cash downpayment if the flat's valuation is below the purchase price?",
+  "expected_output": "The maximum LTV is 75% of the purchase price or the property valuation, whichever is lower. Since the valuation is below the purchase price, the 75% applies to the valuation. The minimum downpayment is 25%, of which at least 5% must be paid in cash. The balance can be paid with CPF savings.",
+  "source_doc": "dbs-hdb-loan",
+  "source_url": "https://www.dbs.com.sg/personal/loans/home-loans/hdb-loan",
+  "context": [
+   "DBS HDB Loan (DBS) — https://www.dbs.com.sg/personal/loans/home-loans/hdb-loan\nWhen and where is it published?\nCPF-OA benchmark: The CPF-OA interest rate is published on the CPF website.\n3M SORA benchmark: 3M SORA rates are published daily on the MAS website at 9 a.m.\nThe maximum Loan-to-Value (LTV) limit is 75% of the purchase price or property valuation of your HDB flat, whichever is lower.\nFor individuals who are looking to fund their HDB property with a bank loan, the minimum downpayment is 25% of the purchase price. 5% of the minimum downpayment must be paid in cash and the balance can be paid with your CPF savings\nYou can request for an In-Principle Approval (IPA) here or through the HDB Flat Portal when applying for a HDB Flat Eligibility (HFE) letter. The IPA provides an assessment of the eligible loan amount based on the affordability of the borrower(s)."
+  ],
+  "vetting_note": "2026-10-29: removed a claim about what 'the context' lacks; expected answers state source facts only."
+ },
+ {
+  "id": "gen-03",
+  "input": "What is the TDSR cap for DBS home loans, and what is the MSR cap and does it apply to HDB flats?",
+  "expected_output": "The TDSR is capped at 55% of all borrowers' gross monthly income. The MSR is capped at 30% of all borrowers' gross monthly income and applies only to HDB flat purchases.",
+  "source_doc": "dbs-mortgage-calculator",
+  "source_url": "https://www.dbs.com.sg/personal/landing/loans/homeloans/calculate-loans.html",
+  "context": [
+   "DBS Mortgage Calculator (DBS) — https://www.dbs.com.sg/personal/landing/loans/homeloans/calculate-loans.html\nIncome and Financial Commitment\nIn calculating your maximum home loan amount, banks will take into account the ratio of your debt to your income. This is called the Total Debt Servicing Ratio (TDSR) and this ratio is capped at 55% of all borrowers' gross monthly income.\nIf you are purchasing a HDB flat, banks also have to calculate your Mortgage Servicing Ratio (MSR). MSR is capped at 30% of all borrowers' gross monthly income. Calculation of MSR is based on loan amount and combined monthly gross income.\nYour maximum home loan amount is determined by TDSR, MSR (for HDB only), loan tenure and a medium-term 3.5% interest rate.\nCheck out our calculators below to find out how much you can borrow."
+  ],
+  "vetting_note": "Removed the source page's stale 'medium-term 3.5% interest rate'; MAS's floor is 4% (src/rules/criteria.py)."
+ },
+ {
+  "id": "gen-04",
+  "input": "What documents do I need to reprice my DBS home loan for an investment property as a foreigner, and for an HDB flat?",
+  "expected_output": "For DBS repricing of an investment property (or owner-occupied property with cash out), a foreigner needs:\n- Varying Terms of Mortgage Form (completed).\n- IRAS My Property Summary (saved as PDF from the myTax Portal under Property > View Property Summary).\n- Passport plus a utility or telephone bill showing the subject property address as the mailing address.\n\nIf the property is an HDB flat, also provide the HDB Flat Details and Minimum Occupation Period (MOP) PDF. Log in to MyHDBPage with Singpass, go to My Flat > Purchased Flat > Flat Details and MOP, then Save to PDF.",
+  "source_doc": "dbs-documents-required-for-home-loan-repricing",
+  "source_url": "https://www.dbs.com.sg/personal/support/loans-homeloan-repricing-documents-required.html",
+  "context": [
+   "Documents Required for Home Loan Repricing (DBS) — https://www.dbs.com.sg/personal/support/loans-homeloan-repricing-documents-required.html\nDRP – Investment Property or Owner Occupied Property with Cash Out\nVarying Terms of Mortgage Form\nDownload and complete the Varying Terms of Mortgage Form.\nIRAS My Property Summary\nLog on to myTax Portal at IRAS Website using your Singpass or IRAS pin.\nUnder Property, click View Property Summary.\nClick Save as PDF/ Print to save as a PDF copy.\nIdentification Documents\nFor Singaporeans/ Permanent Residents: A copy of your NRIC (front and back) reflecting the subject property address.\nFor Foreigners: A copy of your passport AND your utility bill/telephone bill reflecting the subject property address as your mailing address.\nHDB Flat Details (if your property is a HDB flat)\nClick Login to MyHDBPage at HDB Website using your Singpass.\nUnder My Flat, click Purchased Flat.\nSelect Flat Details and Minimum Occupation Period (MOP).\nSelect Save to PDF on bottom of the page."
+  ]
+ },
+ {
+  "id": "gen-05",
+  "input": "What's the difference between using my CPF for monthly instalments and using it to partially or fully repay my DBS home loan?",
+  "expected_output": "You can use your CPF funds for your DBS home loan in three separate ways: for your monthly instalments, for a partial repayment, or for a full repayment; you can also revise your monthly repayment amount. To use CPF for monthly instalments: log in to the CPF website with Singpass, select Using CPF for housing under Home ownership, select Manage instalments under Manage housing monthly instalments, then select your property under Property Details and click Next.",
+  "source_doc": "dbs-manage-your-dbs-home-loan",
+  "source_url": "https://www.dbs.com.sg/personal/loans/home-loans/manage-mortgage",
+  "context": [
+   "Manage your DBS Home Loan (DBS) — https://www.dbs.com.sg/personal/loans/home-loans/manage-mortgage\nApply with digibot\nDownload the Loan Servicing Account Authorisation formPlease download the Loan Servicing Account Authorisation form, complete it and mail to: DBS Bank Ltd, Credit Operations (CP No: AH0021) 12 Marina Boulevard, Marina Bay Financial Centre Tower 3, Singapore 018982\nLoan Servicing Account Authorisation form\n## Repay your home loan using CPF funds\nLearn how to use your CPF funds for your monthly home loan instalments, revise your monthly repayment amount, or use make a partial or full repayment of your home loan.\nFor monthly instalmentsFor partial repaymentFor full repayment\nStep 1Visit CPF website and login with your Singpass.\nStep 2Under Home ownership, select Using CPF for housing.\nStep 3Under Manage housing monthly instalments, select Manage instalments.\nStep 4Select your property under Property Details and click Next."
+  ],
+  "vetting_note": "2026-10-29: removed a claim about what 'the context' lacks; expected answers state source facts only."
+ },
+ {
+  "id": "gen-06",
+  "input": "What was the 3M compounded SORA rate on 3 Jan 2023, according to DBS's SORA page for home loans?",
+  "expected_output": "The 3M compounded SORA rate quoted for 3 January 2023 (the first business day of January 2023) was 3.029%, according to DBS's SORA home loan explainer.",
+  "source_doc": "dbs-sora-home-loan-explainer",
+  "source_url": "https://www.dbs.com.sg/iwov-resources/pdf/loan/home-loans/manage-your-mortgage/sora_dbs.pdf",
+  "context": [
+   "DBS SORA Home Loan Explainer (DBS) — https://www.dbs.com.sg/iwov-resources/pdf/loan/home-loans/manage-your-mortgage/sora_dbs.pdf\nDisclaimers: This document may contain proprietary information and no part of this document may be reproduced in any form outside DBS without\nits prior written consent. Although the information contained herein has been taken from sources that are believed to be accurate as at the original\npublication date appearing on this document, no warranty or representation is made as to its correctness, completeness or accuracy. Any use of, or\nreliance on, the contents of this document shall be at your own risk. DBS accepts no liability whatsoever for any direct, indirect or consequential loss\narising from or in connection with any use of or reliance on this document or its contents. DBS reserves all its rights in respect of any misuse or\nunauthorised distribution of this document.\n3-month SORA Table (2023)\nMonth 3M SORA\nRates quoted as of\n1st business day of the\nmonth\nJan 23 3.029% 03/01/2023"
+  ]
+ },
+ {
+  "id": "gen-07",
+  "input": "After logging into digibank, what steps and income verification method do I need to submit a DBS credit card limit review?",
+  "expected_output": "After logging into digibank online with your User ID and PIN, select your card under Cards, click the Manage tab under Card details, and select Manage limits. Then complete the application, choosing \"Retrieve Myinfo with Singpass\" under Proof of income, and verify the details before clicking Submit.",
+  "source_doc": "dbs-credit-card-credit-limit-review",
+  "source_url": "https://www.dbs.com.sg/personal/cards/card-services/credit-limit-review",
+  "context": [
+   "DBS Credit Card Credit Limit Review (DBS) — https://www.dbs.com.sg/personal/cards/card-services/credit-limit-review\n1Log inLog in to digibank online with your User ID & PIN .\n2Select Card Under Cards, select a card .\n3Manage Cards Under Card details, click on Manage tab, select Manage limits .\n4Proof of IncomeComplete the application, under Proof of income, select Retrieve Myinfo with Singpass.\n5ReviewVerify the details of the application and click Submit .\n## Who is this for?\nPlanned Spending Needs\nWhen you have upcoming large expenses and need more flexibility in your credit limit\nIncome Growth\nIf your income has increased and your current credit limit no longer reflects your financial situation\nRegular Review\nAdjust your credit limit from time to time to stay in control\nSINGAPORE CITIZENS & PRs"
+  ]
+ },
+ {
+  "id": "gen-08",
+  "input": "How do I register my DBS Vantage Card for Priority Pass and activate it through the Priority Pass app?",
+  "expected_output": "Register at the DBS registration page, enter your DBS Vantage Card number to verify eligibility, and complete registration to receive your complimentary digital Priority Pass membership. Then download the Priority Pass app (App Store or Google Play) and log in to access your digital membership card and lounge privileges.",
+  "source_doc": "dbs-vantage-card",
+  "source_url": "https://www.dbs.com.sg/personal/cards/credit-cards/dbs-vantage-visa-infinite-card",
+  "context": [
+   "DBS Vantage Card (DBS) — https://www.dbs.com.sg/personal/cards/credit-cards/dbs-vantage-visa-infinite-card\n3Activate MembershipComplete the Accor+ Explorer registration using the same email address provided during sign-up.\nRegister now\n1RegisterVisit the DBS registration page and begin your complimentary Priority Pass membership activation.\n2Verify Your Vantage CardEnter your DBS Vantage Card number to verify your eligibility.\n3Activate Your MembershipComplete the registration process and receive your complimentary digital Priority Pass membership.\n4Download the Priority Pass AppDownload the Priority Pass app from the App Store or Google Play Store.\n5Access Your MembershipLog in to the Priority Pass app to access your digital membership card and begin enjoying lounge privileges.\nRegister now"
+  ]
+ },
+ {
+  "id": "gen-09",
+  "input": "How do I make a partial repayment on one of my loan accounts after logging in to the DBS digibot?",
+  "expected_output": "After authenticating with iBanking Login or Card & PIN, follow these steps in the DBS digibot:\n\n1. Select **Submit new request**.\n2. Confirm your contact information is up to date by selecting **Yes**.\n3. Select **Partial Repayment**.\n4. Choose the **Loan Account** for the repayment.\n5. Choose the **sub-loan account** to apply it to.\n6. If you've submitted a repayment request before, the screen shows your most recent submission. Select **Yes** to proceed with a different loan account or sub-loan.\n\nTo check an existing application, select **Check existing request**.",
+  "source_doc": "dbs-partial-repayment-of-a-dbs-home-loan",
+  "source_url": "https://www.dbs.com.sg/personal/support/loans-homeloan-partial-repayment.html",
+  "context": [
+   "Partial Repayment of a DBS Home Loan (DBS) — https://www.dbs.com.sg/personal/support/loans-homeloan-partial-repayment.html\nTo check your application status, click Check existing request under the digibot.\n## How to request for partial repayment of Home Loan\nDBS digibot\n1\nStep 1\nLaunch our digibot, and complete the authentication using either your iBanking Login or Card & PIN. Select Submit new request.\nIf you are checking on application status, select Check existing request.\n2\nStep 2\nVerify that your contact information with the bank is up to date and select Yes.\n3\nStep 3\nSelect Partial Repayment.\n4\nStep 4\nSelect the Loan Account that you would like to make the partial repayment on.\n5\nStep 5\nSelect the sub-loan account that you would like to effect the change on.\n6\nStep 6\nIf you have previously submitted a repayment request via DBS digibot, this screen will highlight the most recent submission.\nSelect Yes if you would like to proceed for a partial repayment for a different loan account or sub-loan.\n7\nStep 7"
+  ],
+  "vetting_note": "2026-10-29: removed a claim about what 'the context' lacks; expected answers state source facts only."
+ },
+ {
+  "id": "gen-10",
+  "input": "What is the annual fee for the DBS Altitude Amex card, and does spending S$25,000 still waive it after 1 Aug 2026?",
+  "expected_output": "The DBS Altitude American Express® Card's annual fee is S$196.20 for the principal card and S$98.10 for each supplementary card. Spending S$25,000 in a card year currently earns a 1-year fee waiver for the following year, but with effect from 1 August 2026 this spend-based waiver eligibility will cease, so S$25,000 will no longer waive the fee.",
+  "source_doc": "dbs-credit-card-annual-fee",
+  "source_url": "https://www.dbs.com.sg/personal/support/card-charges-and-fees-annual-fee.html",
+  "context": [
+   "DBS Credit Card Annual Fee (DBS) — https://www.dbs.com.sg/personal/support/card-charges-and-fees-annual-fee.html\nDBS Altitude American Express® Card | S$196.20 | S$98.10 | 1 Year Annual Fee Waiver *Charge a minimum of S$25,000 to your DBS Altitude American Express ® Card each year to receive the annual fee waiver for the following year. With effect from 1 August 2026 , the Annual Fee waiver eligibility upon meeting the retail spend of S$25,000 in the previous card year will be ceased.\nPOSB Everyday Card | S$196.20 | S$98.10 | 1 Year Annual Fee Waiver\nSAFRA DBS Card | No annual fee, so long as you remain a SAFRA member. SAFRA membership fee applies. Click here for more details.\nRequest for Waiver of Charges\nCheck Credit Card Transaction Details\nCards for Life: Credit Card Eligibility for 65 years old and above\nRequest for Waiver of Charges\nCheck Credit Card Transaction Details\nCards for Life: Credit Card Eligibility for 65 years old and above"
+  ],
+  "vetting_note": "2026-10-29: removed a claim about what 'the context' lacks; expected answers state source facts only."
+ },
+ {
+  "id": "gen-11",
+  "input": "How does the SAFRA DBS Card's up to 3% cashback on online and contactless spending compare with its SAFRA membership privileges?",
+  "expected_output": "The SAFRA DBS Card offers up to 3% cash rebates on online or contactless payments, which come in addition to (not in place of) your existing SAFRA membership privileges. The card also gives exclusive deals at 1,800 merchants.",
+  "source_doc": "dbs-safra-dbs-card",
+  "source_url": "https://www.dbs.com.sg/personal/cards/credit-cards/dbs-safra-credit-card",
+  "context": [
+   "SAFRA DBS Card (DBS) — https://www.dbs.com.sg/personal/cards/credit-cards/dbs-safra-credit-card\nHome/Cards/SAFRA DBS Mastercard Card\n## Earn Up to 3% cashback on SAFRA DBS Card\nCashback on your everyday spending and get more value from every purchase\nUp to 3% cash rebates online or contactless payment\nGet exclusive deals at 1,800 merchants\nEnjoy SAFRA member privileges\nApply now\nEarn Up to 3% cashback on SAFRA DBS Card\nApply now\nGet cashback\nHow it works\nMembership privileges\nEligibility\nFAQ\n## Cash Rebates on Your Everyday Spend\nWith your SAFRA DBS Card, you get cash rebates in addition to your existing SAFRA membership benefits."
+  ],
+  "vetting_note": "2026-10-29: removed a claim about what 'the context' lacks; expected answers state source facts only."
+ },
+ {
+  "id": "gen-12",
+  "input": "Does my DBS credit card cash advance limit reset next billing cycle, or do I need to pay to reduce the balance first?",
+  "expected_output": "No, your DBS credit card cash advance limit does not reset in the next billing cycle. You must make a payment to reduce the cash advance balance.",
+  "source_doc": "dbs-credit-card-cash-advance",
+  "source_url": "https://www.dbs.com.sg/personal/cards/card-services/cash-advance",
+  "context": [
+   "DBS Credit Card Cash Advance (DBS) — https://www.dbs.com.sg/personal/cards/card-services/cash-advance\n## Cash Advance Facility\nAs part of our scam prevention efforts, the Cash Advance function on your credit card(s) will be disabled by default. To enable your Cash Advance Facility, please follow the instructions on DBS Payment Controls here.\n## Frequently Asked Questions\nThis is part of our scam prevention efforts to provide an additional layer of security to protect our customers’ funds.\nYou can enable/disable your cash advance facility instantly through the digibank mobile app. This feature is available on digibank mobile and digibank Online.\nPlease follow the step-by-step instructions under “Cash Advance Transactions (For Credit Card Only)” here.\nThe limit will not reset in the next billing cycle. You will need to make payment to reduce the cash advance balance."
+  ]
+ },
+ {
+  "id": "gen-13",
+  "input": "What's the difference between the rebates and bonus points I get with the DBS Takashimaya Card at Takashimaya Department Store versus at participating Specialty Stores?",
+  "expected_output": "At Takashimaya Department Store, the DBS Takashimaya Card gives a 6% voucher rebate and 2 Takashimaya Bonus Points per S$10 charged. At participating Specialty Stores in Takashimaya Shopping Centre, it gives a 2% voucher rebate and 2 Bonus Points per S$30 charged.",
+  "source_doc": "dbs-takashimaya-card",
+  "source_url": "https://www.dbs.com.sg/personal/cards/credit-cards/dbs-takashimaya-card",
+  "context": [
+   "DBS Takashimaya Card (DBS) — https://www.dbs.com.sg/personal/cards/credit-cards/dbs-takashimaya-card\n## Takashimaya App\nRedeem digital vouchers on Takashimaya App\n## Up to 6% voucher rebate at Takashimaya\nDBS Takashimaya American Express® CardDBS Takashimaya Visa Card\nUp to 6% voucher rebate at Takashimaya\n6% voucher rebates when you shop at Takashimaya Department Store\n(Earn 2 Takashimaya Bonus Points per S$10 charged)\n2% voucher rebates when you shop at participating Specialty Stores at Takashimaya Shopping Centre\n(Earn 2 Takashimaya Bonus Points per S$30 charged)\nParticipating stores"
+  ]
+ },
+ {
+  "id": "gen-14",
+  "input": "What's the difference between applying for DBS Cashline on digibank mobile as an existing customer and applying online as a new customer?",
+  "expected_output": "Existing customers apply through digibank mobile. They log in with Touch/Face ID or their digibank User ID & PIN, then go to Apply > Borrow > Personal Loans > Cashline > Apply now. The process takes 7 steps: confirm contact, address and personal details, enter employment details and company address, select a preferred Cashline limit, and confirm. Customers new to DBS/POSB apply for Cashline online.",
+  "source_doc": "dbs-apply-for-dbs-cashline",
+  "source_url": "https://www.dbs.com.sg/personal/support/loans-application-new-cashline.html",
+  "context": [
+   "Apply for DBS Cashline (DBS) — https://www.dbs.com.sg/personal/support/loans-application-new-cashline.html\n## Apply for DBS Cashline\nIf you are new to DBS/POSB Bank, you can apply for DBS Cashline with us online. For existing customers, application can be made easily via digibank.\n## How to apply for DBS Cashline\nThere are various channels which you may apply for DBS Cashline with us. The most convenient method would be via digibank mobile.\ndigibank mobile\n1\nStep 1\nLog in to digibank mobile with your Touch / Face ID or digibank User ID & PIN.\n2\nStep 2\nTap on Apply at the bottom. Under Borrow, tap on Personal Loans.\n3\nStep 3\nScroll down to Cashline and tap on Apply now.\n4\nStep 4\nTap Start.\n5\nStep 5\nCheck that your Contact details, Address details and Personal details are up to date. Then, tap Next.\n6\nStep 6\nEnter your Employment details, Company address and select your preferred Cashline limit. Tap Next.\n7\nStep 7\nVerify your application details and click Confirm to complete your application."
+  ],
+  "vetting_note": "2026-10-29: removed a claim about what 'the context' lacks; expected answers state source facts only."
+ },
+ {
+  "id": "gen-15",
+  "input": "Which report shows my total unsecured credit balances, how much does it cost including GST, and can I get it through SingPass or SingPost?",
+  "expected_output": "Your credit report shows your aggregate unsecured balances (interest-bearing and non-interest-bearing). It costs $6.42 including GST, and you can get it online at www.creditbureau.com.sg with SingPass or in person at any SingPost branch.",
+  "source_doc": "dbs-credit-card-and-unsecured-credit-rules-faq",
+  "source_url": "https://www.dbs.com.sg/personal/cards/credit-cards/faq-revised-credit-card-and-unsecured-credit-rules.page",
+  "context": [
+   "Credit Card and Unsecured Credit Rules (FAQ) (DBS) — https://www.dbs.com.sg/personal/cards/credit-cards/faq-revised-credit-card-and-unsecured-credit-rules.page\nIf I have already accumulated unsecured balances, will I be given more concessionary time to reduce the unsecured balances?\nIf your aggregate interest-bearing unsecured balances have already exceeded 12 times your monthly income before 1 June 2015, you may be given extended concessionary timeline up to end-May 2019 to reduce your unsecured balances on a strict case-by-case basis, and subject to the bank’s own credit evaluation criteria.\nHow can I determine my aggregate interest-bearing unsecured balances?\nYou may refer to your credit reports for a summary of your aggregate unsecured balances (comprising both interest-bearing and non interest-bearing balances).\nYou can apply for a copy of your credit report ($6.42 inclusive of GST) online via www.creditbureau.com.sg with your SingPass or apply in-person at any SingPost branches. For more information, please contact CBS at 6565 6363."
+  ]
+ },
+ {
+  "id": "gen-16",
+  "input": "Does DBS use the Rule of 78 for personal loan interest, and how does it affect my early repayment?",
+  "expected_output": "Yes. DBS uses the Rule of 78 (sum of digits) method to apportion interest in its personal loan instalments. Earlier months allocate a larger share of each instalment to interest, and this share declines over time. For example, on a S$3,000 loan at 1.99% p.a. over 12 months, month 1's S$254.97 instalment is S$9.18 interest and S$245.79 principal.",
+  "source_doc": "dbs-personal-loan",
+  "source_url": "https://www.dbs.com.sg/personal/loans/instant-cash/personal-loan",
+  "context": [
+   "DBS Personal Loan (DBS) — https://www.dbs.com.sg/personal/loans/instant-cash/personal-loan\nAssuming that you are taking a loan of S$3,000 at 1.99% p.a. + 1% processing fee for 12 months (EIR 5.47% p.a.2):\nPrincipal loan amount: S$3,000\nInterest payable for 12 months tenure: S$59.70\nOne-time processing fee: S$30 (Billed together with the first month instalment)\nEstimated monthly instalment amount: S$254.97\nInterest amortisation:\nThe amortisation of the amount of interest payment allocated to the monthly instalment is calculated using the Rule of 78 method (which is also known as the sum of digits method). Monthly interest and principal are apportioned differently; in the earlier months, a larger portion of your monthly repayment goes towards paying off the interest on the loan and gradually decreases over time. (See below for an illustration of the repayment schedule).\nMonth | Principal | Interest | Monthly Instalment\n1 | S$245.79 | S$9.18 | S$254.97"
+  ],
+  "vetting_note": "2026-10-29: removed a claim about what 'the context' lacks; expected answers state source facts only."
+ },
+ {
+  "id": "gen-17",
+  "input": "How do I increase my Cashline limit using MyInfo with Singpass on the digibank mobile app for big or unexpected expenses?",
+  "expected_output": "Log in to digibank mobile (Touch/Face ID or User ID & PIN), tap More, and under Manage Cards & Loans select Cashline Limit Review. Enter your Preferred Credit Limit, choose Retrieve Myinfo with Singpass under Proof of income, then review your details and tap Submit.",
+  "source_doc": "dbs-cashline-credit-limit-review",
+  "source_url": "https://www.dbs.com.sg/personal/loans/instant-cash/cashline/credit-limit-review",
+  "context": [
+   "DBS Cashline Credit Limit Review (DBS) — https://www.dbs.com.sg/personal/loans/instant-cash/cashline/credit-limit-review\n## Manage Larger Expenses with Greater Ease\nA higher credit limit can help you manage big-ticket purchases with greater ease.\n## Apply in Minutes with MyInfo\nSubmit your credit limit review seamlessly through DBS/POSB digibank using MyInfo with Singpass.\n## Be Better Prepared for Unexpected Needs\nAccess additional credit when unforeseen expenses arise, from emergency repairs to urgent payments.\n## How It Works\nOn your digibank mobileOn your digibank online\n1Log inLog in to digibank mobile with your Touch / Face ID or digibank User ID & PIN.\n2Manage CardsTap on More and under Manage Cards & Loans select Cashline Limit Review.\n3Preferred Credit LimitEnter your Preferred Credit Limit\n4Proof of IncomeUnder Proof of income, select Retrieve Myinfo with Singpass.\n5ReviewReview your application details and tap Submit.\n1Log inLogin to digibank online with your User ID & PIN"
+  ]
+ },
+ {
+  "id": "gen-18",
+  "input": "How does the DBS Esso Card get up to 26.2% fuel savings, including 20% instant Supreme+ savings and S$10 extra?",
+  "expected_output": "The DBS Esso Card offers up to 26.2% fuel savings, made up of a 20% instant saving on Esso Supreme+ fuel plus an additional S$10 in fuel savings. The 26.2% is made up of a 20% instant discount on Synergy Supreme+, an additional 5% rebate (S$10 with S$160 nett fuel spend a month) and about 1.2% from Smiles Points. Cardholders are also auto-enrolled in the Esso Smiles Driver Rewards programme and earn 1 Smiles point per litre of Synergy fuel bought at any Esso station.",
+  "source_doc": "dbs-esso-card",
+  "source_url": "https://www.dbs.com.sg/personal/cards/credit-cards/dbs-esso-platinum-card",
+  "context": [
+   "DBS Esso Card (DBS) — https://www.dbs.com.sg/personal/cards/credit-cards/dbs-esso-platinum-card\nHow it works\nRewards Programme\nEarn Smiles points\nDeals\nEligibility\n## Fuel Up and Save\nMake your journey more rewarding with up to 26.2% fuel savings\n## Instant Fuel Savings\nEnjoy up to 26.2% in fuel savings. With 20% instant on Supreme+ and additional S$10 fuel savings.\n## Esso Smiles Driver Rewards Programme\nAuto-enrolment into the Esso Smiles Driver Rewards programme. Earn 1 Smiles Point for every litre of Synergy fuel purchased at any Esso station."
+  ],
+  "vetting_note": "2026-10-29: removed a claim about what 'the context' lacks; expected answers state source facts only."
+ },
+ {
+  "id": "gen-20",
+  "input": "If I miss the minimum payment due date on my DBS Cashline, does the interest rate go up by 8% p.a., and does paying in July remove it?",
+  "expected_output": "Yes. If the minimum payment isn't received by the due date (e.g., 25 Jun), the interest rate rises by 8% p.a. on top of the Prevailing Interest Rate. No, paying in July does not remove it: the increase still applies even if the minimum payment is received on or before the following month's due date.",
+  "source_doc": "dbs-cashline",
+  "source_url": "https://www.dbs.com.sg/personal/loans/instant-cash/cashline",
+  "context": [
+   "DBS Cashline (DBS) — https://www.dbs.com.sg/personal/loans/instant-cash/cashline\nAlternatively, you may also make repayment via AXS or DBS/POSB ATMs.\nIf the Bank does not receive the required minimum payment by its due date (for example, due date on 25 Jun as illustrated in the example below), the interest rate applicable to your DBS/POSB Cashline account will be increased by 8% p.a. on top of the Prevailing Interest Rate (“Increased Interest Rate”). This Increased Interest Rate shall be applied to the outstanding balance in your DBS/POSB Cashline account from the first working day after the date of the subsequent DBS/POSB Cashline account statement following your DBS/POSB Cashline account statement (i.e. August’s statement) and used to compute the finance charges applicable to your DBS/POSB Cashline account.\nThis additional interest rate shall be applied even if minimum payment is received by the Bank on or before the due date of the following month (i.e. in July)."
+  ]
+ }
+]

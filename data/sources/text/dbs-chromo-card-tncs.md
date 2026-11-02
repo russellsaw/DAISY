@@ -4,7 +4,7 @@ title: DBS Chromo Card T&Cs
 publisher: DBS
 url: https://www.dbs.com.sg/iwov-resources/media/pdf/cards/dbs-chromo-tnc.pdf
 products: credit_card
-fetched_at: 2026-10-21T19:17:13
+fetched_at: 2026-10-27T17:56:54
 sha256: d9a73dbf95ad410bc1b5cdd72b407e0166e1ecaef5889a0594024878a598089c
 ---
 

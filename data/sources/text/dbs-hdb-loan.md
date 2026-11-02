@@ -4,7 +4,7 @@ title: DBS HDB Loan
 publisher: DBS
 url: https://www.dbs.com.sg/personal/loans/home-loans/hdb-loan
 products: home_loan
-fetched_at: 2026-10-21T19:17:13
+fetched_at: 2026-10-27T17:56:54
 sha256: 43ba842783a3dea0b3ad0500ed40fd5df0346cb7705244d0b0c3c27e5202e330
 ---
 

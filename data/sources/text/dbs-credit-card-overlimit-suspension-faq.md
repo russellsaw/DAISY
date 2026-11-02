@@ -4,7 +4,7 @@ title: Credit Card Overlimit Suspension (FAQ)
 publisher: DBS
 url: https://www.dbs.com.sg/personal/cards/credit-cards/customer-overlimit-faq.page
 products: credit_card
-fetched_at: 2026-10-21T19:17:13
+fetched_at: 2026-10-27T17:56:54
 sha256: 539a49930123ec6dd21fe0fa7061be8af20f3b1629987c63b7b61ddd60f2d414
 ---
 

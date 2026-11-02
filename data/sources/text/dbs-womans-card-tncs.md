@@ -4,7 +4,7 @@ title: DBS Woman's Card T&Cs
 publisher: DBS
 url: https://www.dbs.com.sg/iwov-resources/media/pdf/cards/dbs-womans-card-tnc.pdf
 products: credit_card
-fetched_at: 2026-10-21T19:17:13
+fetched_at: 2026-10-27T17:56:54
 sha256: b748058461af96d7980cb209ae1bc60c9c1ceb9b012e63ef48a953766a1aa132
 ---
 

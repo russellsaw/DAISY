@@ -4,13 +4,13 @@ title: DBS Cashline
 publisher: DBS
 url: https://www.dbs.com.sg/personal/loans/instant-cash/cashline
 products: cashline
-fetched_at: 2026-10-21T19:17:13
-sha256: 51274506139c7c1fe847f4735227110176a420d08211e9fdcc0902a3cd43ab13
+fetched_at: 2026-10-27T17:56:54
+sha256: f074f0dd1972e636017af7d7ba55ded877aefb7cd6e269bc3df7634f0e464dcc
 ---
 
 Home/Loans/DBS Cashline
 ## 24/7 instant cash with DBS Cashline
-When life hits with surprises, get instant cash for short-term expenses at just 0.07%1 daily interest.
+When life hits with surprises, get instant cash for short-term expenses at just 0.07%¹ daily interest.
 Access funds anytime with flexibility
 Repay anytime with no penalty
 No fees to withdraw or transfer funds with your Cashline account
@@ -30,11 +30,13 @@ FAQ
 Flexibility at your own terms | Get instant cash 24/7: Withdraw from our ATMs islandwide Transfer money directly from Cashline to your preferred bank account with DBS digibank Pay your bills directly with Cashline
 Low daily interest rate for short-term expenses | Daily interest rate at 0.07% 1 only: Withdraw or transfer any amount from as little as S$1 Repay anytime with no transaction or early repayment fees
 Other features | Apply for a Balance Transfer or Personal Loan on your Cashline at affordable interest rates and longer tenure Top up your DBS/POSB Saving Accounts automatically with Cashline Auto Top Up function Unsure of which DBS Instant Loan product to select? Our easy-to-use calculator helps you find the perfect fit with the lowest interest and fees for your needs
+Note: | 1 Daily interest rate of 0.07% is calculated based on 365 days at the prevailing interest rate of 22.9% p.a.
 ## Fees & Charges
 Understand what are the fees and charges to expect with Cashline
-Prevailing interest rate 3 | 22.9% p.a (Annual income S$30,000 and above)
+Prevailing interest rate 2 | 22.9% p.a (Annual income S$30,000 and above)
 Annual Fee | S$120 (Waived for 1 st year)
 Late Fee | S$120 (If min payment of 2.5% of total outstanding or S$50, whichever is higher, is not paid on due date)
+Note: | 2 The prevailing interest rate is calculated on a daily basis, from the date of transaction until the outstanding amount is paid in full (subject to a minimum interest charge of S$10.00 per statement) or such other rate(s) as the bank may determine from time to time.
 ## Eligibility
 Requirements | Singaporeans/PRs: S$30,000 p.a Foreigners: S$60,000 p.a 21-70 Years Old
 Documents required | Singaporean/ Permanent Resident Salaried Employee NRIC (Front & Back) Latest Computerised Payslip or Salary Crediting to DBS/POSB, OR Latest 1 Year Income Tax Notice of Assessment (NOA) (with latest pay slip) Variable Commissioned/ Self-Employed NRIC (Front & Back) Latest 2 Years Income Tax Notice of Assessment (else minimally 1 year) Foreigner Salaried Employee Valid Passport and Work Pass (at least 6 months validity from the date of application) Latest Computerised Payslip or Salary Crediting to DBS/POSB, OR Latest 1 Year Income Tax Notice of Assessment (NOA) (with latest pay slip) Residential Address proof dated within 3 months from application date (For new DBS/POSB Bank customers only) Variable Commissioned/ Self-Employed Valid Passport and Work Pass (at least 6 months validity from the date of application) Latest 2 Years Income Tax Notice of Assessment (else minimally 1 year) Residential Address proof dated within 3 months from application date (For new DBS/POSB Bank customers only) Skip income documents: Apply via Myinfo (Singpass) or salary crediting to DBS/POSB. For new to bank customers who are not using Myinfo for application, verification of your identity document (NRIC or Passport) at one of our branches may be required to ensure the security of your account.
@@ -70,3 +72,5 @@ Find out more
 DBS Cashline Auto Topup
 Top up your DBS/POSB Saving Accounts automatically with Cashline Auto Top Up function.
 Find out more
+Cashline Terms & Conditions
+List of Fees & Charges

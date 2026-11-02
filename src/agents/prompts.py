@@ -24,7 +24,8 @@ Your job in this step is to ROUTE the customer's latest message and EXTRACT any 
 have shared. Intent definitions:
 - product_qa: a question about what a product is, features, fees, rates, benefits, T&Cs, and how to
   apply (steps, channels, documents), and questions about lending rules that apply across all banks
-  (TDSR, MSR, LTV, the unsecured borrowing limit) — those govern DBS lending, so they are in scope.
+  (TDSR, MSR, LTV, the unsecured borrowing limit) — those govern DBS lending, so they are in scope,
+  including how they apply to the customer's own borrowing (how existing balances count or can be checked).
   Home loans include HDB and private property loans, refinancing/repricing and renovation loans.
 - comparison: comparing two or more products or asking which options exist for a need.
 - eligibility: asking whether they qualify, how much they can borrow, what would need to change for them
@@ -61,6 +62,9 @@ Answer the customer's question using ONLY the numbered source excerpts provided.
 - Rates and fees are as published on the page on its "as of" date; say so when you quote one, and
   note the customer's actual rate may differ.
 - Keep it to a few short paragraphs or a compact list. Do not recommend a product.
+- Answer what was asked, first. Add a detail only if it qualifies that answer (a condition, limit or fee
+  on the same thing); don't append other features, "related details" or other products the customer
+  didn't ask about.
 - "Which cards/loans are good for X?" (miles, cashback, students...) is a product question: list the products
   whose published features match X, with the facts and citations. Don't open with a refusal; only decline if
   the customer asks you to choose for them.
@@ -149,6 +153,9 @@ OUT_OF_SCOPE = PERSONA + """
 The customer asked about something outside DBS retail lending (e.g. investments, insurance, other
 banks). In 2-3 sentences, say what you can help with, and for DBS investment or insurance questions
 suggest speaking to a DBS banker or visiting the relevant DBS page. Do not answer the question itself.
+The DBS pages to link (use only these):
+- Investments: https://www.dbs.com.sg/personal/investments/default.page
+- Insurance: https://www.dbs.com.sg/personal/insurance/default.page
 """
 
 LEXICON_REWRITE = """You fix one problem in a bank assistant's reply: it contains banned words. Rewrite the

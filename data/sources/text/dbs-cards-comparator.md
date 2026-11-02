@@ -4,8 +4,8 @@ title: DBS Cards Comparator
 publisher: DBS
 url: https://www.dbs.com.sg/personal/cards/cards-comparator.page
 products: credit_card
-fetched_at: 2026-10-21T19:17:13
-sha256: ebcdd2ef1aeac289bf21788b215c0735c2a1b285914828e99d1ce3bad09508bf
+fetched_at: 2026-10-27T17:56:54
+sha256: 3ff7812716acb8be4b03619769fb0ca0f1107b4987e3c943be511ecb60fd6c37
 ---
 
 Home/Cards
@@ -83,9 +83,9 @@ Learn more
 CompareApply now
 ## DBS Esso Mastercard Card
 Rewards
-Enjoy up to 23% fuel savings
+Enjoy up to 26.2% fuel savings
 With 18% instant fuel discount
-Additional S$11 fuel rebates with minimum S$180 fuel spend at Esso per month
+Additional S$10 fuel rebates with minimum S$160 fuel spend at Esso per month
 Learn more
 CompareApply now
 ## DBS Takashimaya Visa Card

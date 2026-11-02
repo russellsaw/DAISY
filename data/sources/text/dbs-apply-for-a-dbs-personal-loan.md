@@ -4,7 +4,7 @@ title: Apply for a DBS Personal Loan
 publisher: DBS
 url: https://www.dbs.com.sg/personal/support/card-application-dbs-personal-loan.html
 products: personal_loan
-fetched_at: 2026-10-21T19:17:13
+fetched_at: 2026-10-27T17:56:54
 sha256: 93e3aef13876eae8f1c3f081e5179048e08041112738a137d971ef40b0b9c641
 ---
 

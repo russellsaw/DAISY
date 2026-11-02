@@ -4,7 +4,7 @@ title: DBS Woman's Card
 publisher: DBS
 url: https://www.dbs.com.sg/personal/cards/credit-cards/dbs-woman-mastercard-card
 products: credit_card
-fetched_at: 2026-10-21T19:17:13
+fetched_at: 2026-10-27T17:56:54
 sha256: a5abff255e37639570db1da7b34755572f7aa75c18d9bdebd9111bb5935a045d
 ---
 

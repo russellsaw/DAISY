@@ -1,0 +1,2 @@
+-r requirements.txt
+deepeval==4.3.2      # build-loop evals in tests/evals/ (DeepEval); not needed to run the app

@@ -7,8 +7,7 @@ import streamlit as st
 from src import config
 
 st.set_page_config(page_title=config.ASSISTANT_NAME, page_icon="static/daisy-mark.svg", layout="wide")
-dark = st.context.theme.type == "dark"
-st.logo(f"static/daisy-logo-{'dark' if dark else 'light'}.svg", icon_image="static/daisy-mark.svg", size="large")
+st.logo("static/daisy-logo-light.svg", icon_image="static/daisy-mark.svg", size="large")  # light theme only
 
 pages = [
     st.Page("app_pages/chat.py", title="Assistant", icon=":material/forum:", default=True),

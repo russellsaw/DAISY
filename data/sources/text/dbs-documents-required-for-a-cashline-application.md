@@ -4,7 +4,7 @@ title: Documents Required for a Cashline Application
 publisher: DBS
 url: https://www.dbs.com.sg/personal/support/loans-application-cashline-documents.html
 products: cashline
-fetched_at: 2026-10-21T19:17:13
+fetched_at: 2026-10-27T17:56:54
 sha256: 8a1341c16fac5e0e8380eaef8af4c6dd6e6d716cdd31dc318b98cab8f6f4c8b7
 ---
 

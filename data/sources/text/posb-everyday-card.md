@@ -4,7 +4,7 @@ title: POSB Everyday Card
 publisher: POSB
 url: https://www.posb.com.sg/personal/cards/credit-cards/posb-everyday-card
 products: credit_card
-fetched_at: 2026-10-21T19:17:13
+fetched_at: 2026-10-27T17:56:54
 sha256: 5b499bbf9488993cda4116a8e867b1a566edc0752d7776a653b0fe454fd13179
 ---
 

@@ -4,7 +4,7 @@ title: DBS HDB Loan T&Cs
 publisher: DBS
 url: https://www.dbs.com.sg/iwov-resources/media/pdf/loans/dbs-hdb-loan-lpa-tnc.pdf
 products: home_loan
-fetched_at: 2026-10-21T19:17:13
+fetched_at: 2026-10-27T17:56:54
 sha256: 764d426a388983ecdf48ecebd5cb44dca2d8cfe5fe5086801d05dba9f53b5515
 ---
 

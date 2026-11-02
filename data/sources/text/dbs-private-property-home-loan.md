@@ -4,7 +4,7 @@ title: DBS Private Property Home Loan
 publisher: DBS
 url: https://www.dbs.com.sg/i-bank/loans/homeloans/buy-private-property
 products: home_loan
-fetched_at: 2026-10-25T16:12:15
+fetched_at: 2026-10-27T17:56:54
 sha256: 0b4c9a54c4f92c5a1a46680981f038a8264499f51432674bb7f330403aecbff0
 ---
 

@@ -4,7 +4,7 @@ title: Documents Required for Home Loan Repricing
 publisher: DBS
 url: https://www.dbs.com.sg/personal/support/loans-homeloan-repricing-documents-required.html
 products: home_loan
-fetched_at: 2026-10-21T19:17:13
+fetched_at: 2026-10-27T17:56:54
 sha256: 7e66efa74c1ce1abd15989050557c36d607cbff4f7e74e9f4f29344bfa8ea983
 ---
 

@@ -4,7 +4,7 @@ title: Reprice your DBS Home Loan
 publisher: DBS
 url: https://www.dbs.com.sg/personal/loans/home-loans/repricing
 products: home_loan
-fetched_at: 2026-10-21T19:17:13
+fetched_at: 2026-10-27T17:56:54
 sha256: 60d66061d5e68712f41091e5dba0bdd9c9c2d51791dc50e4dbc39ebce77c666d
 ---
 

@@ -4,7 +4,7 @@ title: DBS Chromo Card
 publisher: DBS
 url: https://www.dbs.com.sg/personal/cards/credit-cards/dbs-chromo-card
 products: credit_card
-fetched_at: 2026-10-21T19:17:13
+fetched_at: 2026-10-27T17:56:54
 sha256: af25e28451adfaf68a9f95c9298773df949a30bb8427c6adac217dc0d5a878ac
 ---
 

@@ -4,7 +4,7 @@ title: MAS: Rules for New Housing Loans
 publisher: MAS
 url: https://www.mas.gov.sg/regulation/explainers/new-housing-loans
 products: home_loan
-fetched_at: 2026-10-21T19:17:13
+fetched_at: 2026-10-27T17:56:54
 sha256: fcf8e85d8ee7cb1f9c82430e712922596c833f0414b11290b02bc0c387ec4056
 ---
 

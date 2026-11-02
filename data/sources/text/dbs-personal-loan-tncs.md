@@ -4,7 +4,7 @@ title: DBS Personal Loan T&Cs
 publisher: DBS
 url: https://www.dbs.com.sg/iwov-resources/pdf/loan/personal-loan/dbs_personal_loan_tnc.pdf
 products: personal_loan
-fetched_at: 2026-10-21T19:17:13
+fetched_at: 2026-10-27T17:56:54
 sha256: a4ea702545b53040fcc87a6b5bc2a817c70b5748307f9fe8f54c81324f84d6ba
 ---
 

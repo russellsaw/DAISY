@@ -14,10 +14,9 @@ ICONS = {
 }
 
 st.title("Flight recorder", icon=":material/flight:", anchor=False)
-st.caption("Every conversation is logged turn by turn: the customer's message, what the orchestrator extracted, "
-           "retrieval hits with URLs, rules-engine inputs and outputs (including each counterfactual run), the "
-           "draft, the compliance verdict and reasons, and the final reply. Logs are local "
-           "(`data/conversations/`), PII-redacted and never committed.")
+st.caption("Replay any conversation step by step: what the customer asked, what DAISY understood, which pages it "
+           "used, what it calculated, what the review changed and the final reply. Personal details are removed, "
+           "and logs stay on this computer.")
 
 
 @st.cache_data(ttl=10)
@@ -46,8 +45,8 @@ if not convs:
 
 conv = st.selectbox(
     "Conversation", convs,
-    format_func=lambda c: f"{c['started'].replace('T', ' ')} · {c['turns']} turn(s) · {c['id']} · "
-                          f"{c['first_message'][:60]}")
+    format_func=lambda c: f"{c['started'].replace('T', ' ')}, {c['turns']} turn(s): {c['first_message'][:60]} "
+                          f"({c['id']})")
 path = recorder.Path(conv["path"])
 events = events_of(str(path), path.stat().st_mtime)
 turns = sorted({e["turn"] for e in events})
@@ -86,7 +85,8 @@ def render(e: dict) -> None:
         with st.expander("Profile after this message", icon=":material/person:"):
             st.json(d.get("profile_after"))
     elif kind == "retrieval":
-        st.markdown(f"**Query:** {md_safe(d.get('query', ''))} · product filter: `{d.get('product_filter')}`")
+        st.markdown(f"**Searched for:** {md_safe(d.get('query', ''))}  \n"
+                    f":gray[Product filter:] `{d.get('product_filter')}`")
         hits = d.get("hits") or []
         if hits:
             st.dataframe(pd.DataFrame(hits), hide_index=True,
@@ -94,7 +94,7 @@ def render(e: dict) -> None:
                                         "cited": st.column_config.CheckboxColumn("Cited")})
     elif kind == "engine":
         if isinstance(d, dict) and "results" in d:
-            st.caption(f"criteria_version {d.get('criteria_version')} · products {d.get('products')}")
+            st.caption(f"Criteria version {d.get('criteria_version')}. Products: {', '.join(d.get('products') or [])}.")
             with st.expander("Input: the confirmed profile the engine ran on", icon=":material/input:"):
                 st.json(d.get("input_profile"))
             for r in d["results"]:
@@ -105,9 +105,9 @@ def render(e: dict) -> None:
             st.json(d)
     elif kind == "counterfactual":
         for cf in d.get("counterfactuals", []):
-            st.markdown(f"**{cf['product_name']}** — binding rule `{cf['binding_rule']}`: {cf['current_value']} vs "
-                        f"{cf['threshold']} (gap {cf['gap']}) · assessed {cf['assessed_on']} · "
-                        f"criteria {cf['criteria_version']}")
+            st.markdown(f"**{cf['product_name']}**: limiting rule `{cf['binding_rule']}` is {cf['current_value']} "
+                        f"against {cf['threshold']} (gap {cf['gap']})  \n"
+                        f":gray[Checked {cf['assessed_on']} against criteria version {cf['criteria_version']}.]")
             rows = [{"kind": x["lever_kind"], "label": x["label"], "change": x["description"],
                      "headroom": x["headroom"], "earliest_date": x["earliest_date"]}
                     for x in cf["paths"] + cf["borderline"]]
@@ -141,9 +141,10 @@ def render(e: dict) -> None:
     elif kind == "final":
         with st.chat_message("assistant", avatar="static/daisy-mark.svg"):
             st.markdown(md_safe(d.get("response", "")))
-        st.caption(f"{d.get('elapsed_s')} s · intent {d.get('intent')} · readback {d.get('readback')} · engine ran "
-                   f"{d.get('engine_ran')} · confirmed {d.get('confirmed')}"
-                   + (f" · dated paths {d['counterfactual_dates']}" if d.get("counterfactual_dates") else ""))
+        st.caption(f"Took {d.get('elapsed_s')} seconds. Question type: {d.get('intent')}. Read back: "
+                   f"{d.get('readback')}. Eligibility calculated: {d.get('engine_ran')}. Details confirmed: "
+                   f"{d.get('confirmed')}."
+                   + (f" Dated paths: {d['counterfactual_dates']}." if d.get("counterfactual_dates") else ""))
         if d.get("handoff_card"):
             with st.expander("Banker lead card", icon=":material/badge:"):
                 st.json(d["handoff_card"])
@@ -152,7 +153,7 @@ def render(e: dict) -> None:
 
 
 def header(e: dict) -> str:
-    return f"+{e['t_ms']:,} ms · {e['agent']} · {e['summary']}"
+    return f"{e['agent']} at +{e['t_ms']:,} ms: {e['summary']}"
 
 
 if mode == "Step through":
@@ -168,7 +169,7 @@ if mode == "Step through":
         st.caption(f"Event {st.session_state[key] + 1} of {len(turn_events)}")
     event = turn_events[min(st.session_state[key], len(turn_events) - 1)]
     with st.container(border=True):
-        st.subheader(md_safe(f"{event['agent']} · {event['type']}"), anchor=False)
+        st.subheader(md_safe(f"{event['agent']}: {event['type'].replace('_', ' ')}"), anchor=False)
         st.caption(md_safe(header(event)))
         render(event)
     st.caption("Timeline: " + " → ".join(f"**{e['agent']}**" if i == st.session_state[key] else e["agent"]

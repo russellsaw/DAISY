@@ -12,8 +12,7 @@ from src.rules.criteria import unverified_count
 from src.rules.engine import rules_summary
 
 st.title("Knowledge repository", icon=":material/library_books:", anchor=False)
-st.caption("Everything the assistant is allowed to answer from — with where it came from and when it was fetched. "
-           "Snapshots live in `data/sources/`; the chunked index the model searches is `data/kb.json`.")
+st.caption("Every page DAISY can answer from, where it came from and when we last checked it.")
 
 
 @st.cache_data(ttl=60)
@@ -101,14 +100,13 @@ with tab_docs:
             "last_good_fetch": st.column_config.TextColumn("Last good fetch"),
         },
     )
-    st.caption("**ok** fetched and indexed · **thin** under 800 characters, probably rendered by JavaScript · "
-               "**stale** latest fetch failed, last good snapshot still used · **failed** never fetched · "
-               "**retired** removed from `src/knowledge/sources.py`, kept for the record.")
+    st.caption("**ok**: saved and searchable. **thin**: under 800 characters, usually a page that only loads in a "
+               "browser. **stale**: the last check failed, so the previous copy is used. **failed**: never saved. "
+               "**retired**: no longer used, kept for the record.")
 
 # ---------------- Search ----------------
 with tab_search:
-    st.caption("Runs the same BM25 retrieval the Product Knowledge agent uses, so you can see exactly which "
-               "excerpts the model would be given for a question.")
+    st.caption("Search the pages the same way DAISY does, to see exactly which passages it would answer from.")
     with st.container(horizontal=True, vertical_alignment="bottom"):
         query = st.text_input("Customer question", placeholder="e.g. Is there an early repayment fee on a personal loan?")
         product = st.selectbox("Product filter", ["(none)", "home_loan", "credit_card", "personal_loan", "cashline"])
@@ -116,12 +114,11 @@ with tab_search:
     if query:
         hits = retriever.retrieve(query, k=int(k), product=None if product == "(none)" else product)
         if not hits:
-            st.warning("No matching excerpts — the assistant would say it doesn't have that detail.",
-                       icon=":material/search_off:")
+            st.warning("Nothing matches. DAISY would say it doesn't have that detail.", icon=":material/search_off:")
         for i, hit in enumerate(hits, 1):
             with st.container(border=True):
-                st.markdown(f"**[{i}] {hit['title']}** · {hit.get('publisher', '')} · score {hit['score']} · "
-                            f"[source]({hit['url']})")
+                st.markdown(f"**[{i}] {hit['title']}**  \n:gray[{hit.get('publisher', '')}, score {hit['score']}.] "
+                            f"[Open source]({hit['url']})")
                 st.text(hit["text"])
 
 # ---------------- Read ----------------
@@ -130,9 +127,9 @@ with tab_read:
     doc = st.selectbox("Document", options, format_func=lambda i: f"{manifest[i]['title']}  ({i})")
     if doc:
         entry = manifest[doc]
-        st.markdown(f"[{entry['url']}]({entry['url']}) · fetched {entry.get('last_good_fetch', '–')} · "
-                    f"{entry.get('chars', 0):,} characters · sha256 `{(entry.get('sha256') or '')[:12]}`")
-        st.text_area("Snapshot text (what the model reads, before boilerplate removal and chunking)",
+        st.markdown(f"[{entry['url']}]({entry['url']})  \n:gray[Saved {entry.get('last_good_fetch', '–')}. "
+                    f"{entry.get('chars', 0):,} characters. Fingerprint] `{(entry.get('sha256') or '')[:12]}`")
+        st.text_area("Saved text (what DAISY reads)",
                      ingest.read_snapshot(doc), height=500, disabled=True)
 
 # ---------------- Rules ----------------

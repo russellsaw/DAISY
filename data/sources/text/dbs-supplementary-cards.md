@@ -4,7 +4,7 @@ title: DBS Supplementary Cards
 publisher: DBS
 url: https://www.dbs.com.sg/personal/cards/card-services/supplementary-cards
 products: credit_card
-fetched_at: 2026-10-25T16:12:15
+fetched_at: 2026-10-27T17:56:54
 sha256: 6fdf2ebc876e0fec15e4cd52bdedffd8e478190375522321138b6bc3a59b27a9
 ---
 

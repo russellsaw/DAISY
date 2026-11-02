@@ -4,7 +4,7 @@ title: DBS MyHome Planning Tool
 publisher: DBS
 url: https://www.dbs.com.sg/personal/articles/nav/my-home/buy-your-home-with-ease-and-confidence
 products: home_loan
-fetched_at: 2026-10-21T19:17:13
+fetched_at: 2026-10-27T17:56:54
 sha256: b8687ecf9624922a4b4113bd568a129ed58c55f4b3efabeca5a08297e6559e3b
 ---
 

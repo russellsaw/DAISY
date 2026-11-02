@@ -4,8 +4,8 @@ title: DBS Home Loan Glossary
 publisher: DBS
 url: https://www.dbs.com.sg/personal/articles/nav/my-home/home-loan-glossary
 products: home_loan
-fetched_at: 2026-10-21T19:17:13
-sha256: aaa3273129392aff9af4654b19d9399d397887f12b8a928a34f24dfab28254ff
+fetched_at: 2026-10-27T17:56:54
+sha256: e698b8366b2f24848bf70118db40d89160ea2c4d6550ac0bcaa5504dd53b4584
 ---
 
 NAV
@@ -118,8 +118,8 @@ Apply In-Principle Approval
 NAVBorrowingBuying a HomeHome LoansRefinancing
 ## Keep reading
 ## A guide to Commercial real estate investing in Singapore
-## Investing in Industrial Property in Singapore
 ## Industrial property classes and what they mean for investors
+## Investing in Industrial Property in Singapore
 ## Useful Links
 About DBS
 Investor Relations

@@ -4,7 +4,7 @@ title: Apply for a DBS Supplementary Card
 publisher: DBS
 url: https://www.dbs.com.sg/personal/support/card-application-supplementary-card.html
 products: credit_card
-fetched_at: 2026-10-25T16:12:15
+fetched_at: 2026-10-27T17:56:54
 sha256: 5e3c6acac0bc7a859daaf3655f931380c2a6d1c1cf53435f794aa40bef5220e9
 ---
 

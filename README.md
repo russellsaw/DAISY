@@ -8,6 +8,18 @@ Hackathon MVP. See `PITCH.md` for the proposition and demo arc, and
 **[`docs/ASSUMPTIONS_AND_LIMITATIONS.md`](docs/ASSUMPTIONS_AND_LIMITATIONS.md)** for every assumption,
 limitation, criterion and design decision (the place to look when someone asks "why does it do that?").
 
+## How DAISY meets the brief
+
+| The brief asks for | Where it is |
+|---|---|
+| Accurate product Q&A from public DBS information | Product Knowledge agent over 73 snapshotted DBS/POSB/MAS/HDB pages (`data/sources/`), a citation on every answer; 20 golden Q&A eval cases, 14 checking a figure quoted from the page |
+| Basic eligibility checks using rule-based logic | `src/rules/engine.py`: deterministic TDSR, MSR, LTV, tenure, income and unsecured-limit checks; every criterion in `src/rules/criteria.py` carries its source URL and quoted evidence. The model never produces a number |
+| Product discovery and comparison | `comparison` intent: side-by-side answers from the cited pages, needs-based shortlists without a recommendation (eval cases qa-004, qa-017, qa-020) |
+| A conversational chat interface | Streamlit app (`streamlit run app.py`), **Assistant** page, with the customer profile and agent timeline shown live |
+| Guardrails aligned to banking guidelines | PII redaction, input guardrail, compliance agent, code filters on numbers and approval wording, advice-boundary handoff to a banker (see *Swiss-cheese defence view* below) |
+| An evaluation framework | `evals/`: 129 cases (golden Q&A, eligibility, adversarial, boundary, scope, guardrail, …), LLM judge, results on the **Trust scorecard** page |
+| Scope: mortgages, cards, unsecured loans | Home loans, credit cards, Personal Loan, Cashline, Balance Transfer. Investments and insurance are out of scope: DAISY declines and points to the DBS page or a banker |
+
 ## Architecture
 
 ```
@@ -50,7 +62,7 @@ app_pages/chat.py          Assistant: chat, live agent timeline, profile side pa
 app_pages/evals.py         Trust scorecard: pass rates, drill-down, run button, rules-verification status
 app_pages/knowledge.py     Knowledge repository: documents, "search as the assistant", rule evidence, change history
 app_pages/replay.py        Flight recorder: pick a conversation or eval case, step through every event
-.streamlit/config.toml     "DBS 2030" theme (light + dark), static/ holds the DAISY logo
+.streamlit/config.toml     DBS colours (red #FF3333, black #000000), light only; static/ holds the DAISY logo
 src/
   config.py                models, paths, settings (.env)
   llm.py                   Claude API wrapper; structured() uses structured outputs, effort per call,
@@ -78,6 +90,7 @@ tests/                     118 offline unit tests: engine, guards, counterfactua
 scripts/ingest.py          build the knowledge base
 scripts/write_starter_cases.py   regenerates the starter cases.csv
 scripts/ask_questions.py   asks a question list (evals/broad_questions.csv), reviews every answer, writes a report
+scripts/calculator_check.py  prints the engine's numbers for the DBS-calculator comparison (docs/CALCULATOR_CHECK.md)
 ```
 
 ## Setup
@@ -128,10 +141,12 @@ Trust scorecard page.
 1. **Re-verify the criteria** in `src/rules/criteria.py`. 20 of 21 were checked against the cited
    MAS/HDB/DBS page on 2026-10-20 and carry the quoted evidence; the home-loan minimum age is still
    unverified (no DBS page states it). Re-run ingest first and re-check anything whose source changed.
-2. **Validate the engine against DBS's own online calculators** for three or four personas. Record the
-   comparison; it's a slide.
-3. **Fill the `must_contain` fields** for the remaining `golden_qa` cases (qa-001, qa-007–010 are done).
-4. **Grow the suite** to 150+ cases. Every failure you find during rehearsal becomes a case.
+2. **Validate the engine against DBS's own online calculators**: fill in `docs/CALCULATOR_CHECK.md` (five
+   personas, engine side done; DBS side by hand). It's a slide.
+3. ~~Fill the `must_contain` fields for the `golden_qa` cases.~~ Done 2026-10-29: 20 golden cases, 14 with
+   a fact quoted from a DBS/MAS page, the rest judged for behaviour (including a comparison and a
+   needs-based discovery question).
+4. **Grow the suite** (129 cases now). Every failure you find during rehearsal becomes a case.
 5. **Freeze the code 24h before.** Rehearse the live red-team with someone who hasn't seen the bot.
 
 ## Design decisions worth saying out loud
@@ -180,6 +195,26 @@ adversarial eval case, the four slices with the ones that acted highlighted, and
 alignment** (an attack that got through every layer) at the top, followed by attacks held only by the
 model's own instructions. Definitions and the first run's findings are in
 [`docs/ASSUMPTIONS_AND_LIMITATIONS.md`](docs/ASSUMPTIONS_AND_LIMITATIONS.md) §8.
+
+## DeepEval build loop
+
+`tests/evals/` scores DAISY's product Q&A as a RAG chatbot with [DeepEval](https://www.deepeval.com), and is
+the ground truth for what to change next: run it, read the lowest metric's reasons and the failing goldens'
+flight-recorder logs, make the smallest app change, re-run (plus `python evals/run_evals.py` as the
+regression gate). Never lower a threshold or drop a failing golden.
+
+```bash
+pip install -r requirements-dev.txt                    # DeepEval; not needed to run the app
+deepeval test run tests/evals/test_daisy.py --num-processes 4 --identifier round-2
+python tests/evals/summarize.py                        # per-metric stats + every failure's reason
+```
+
+- Goldens: 57 from `evals/cases.csv` (golden Q&A + product broad questions) and 19 synthesised from DBS page
+  chunks by `tests/evals/generate_goldens.py` (`goldens_generated.json`, read and vetted before use).
+- Metrics (Claude Sonnet 5.5 as judge): Faithfulness ≥ 0.8, Answer Relevancy ≥ 0.7, Contextual Recall ≥ 0.7
+  (goldens with an expected answer). Contextual Relevancy is left out on purpose: see `test_daisy.py`.
+- Local only (no Confident AI), telemetry off (`DEEPEVAL_TELEMETRY_OPT_OUT=1`). A full run takes ~9 minutes
+  and about US$5 of judge calls, plus DAISY's own calls. Plain `pytest` skips `tests/evals/`.
 
 ## Flight recorder
 

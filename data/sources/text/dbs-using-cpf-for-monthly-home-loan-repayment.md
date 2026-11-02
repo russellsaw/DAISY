@@ -4,7 +4,7 @@ title: Using CPF for Monthly Home Loan Repayment
 publisher: DBS
 url: https://www.dbs.com.sg/personal/support/loans-homeloan-revise-cpf-monthly-repayment.html
 products: home_loan
-fetched_at: 2026-10-21T19:17:13
+fetched_at: 2026-10-27T17:56:54
 sha256: 8341b8b78611fe804ec0eee35d18a8bd2175f1a155af14de7a26e388bb4ee743
 ---
 

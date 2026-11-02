@@ -4,7 +4,7 @@ title: DBS Credit Card Application Process
 publisher: DBS
 url: https://www.dbs.com.sg/personal/support/card-application-new-card.html
 products: credit_card
-fetched_at: 2026-10-25T16:12:15
+fetched_at: 2026-10-27T17:56:54
 sha256: 0f8c21c6aa4544de78adcb8efd9c7a1106837d66a05b442cd86698e6ce682b9d
 ---
 

@@ -4,7 +4,7 @@ title: Repay a DBS Home Loan with CPF
 publisher: DBS
 url: https://www.dbs.com.sg/personal/support/loans-homeloan-repay-using-cpf-funds.html
 products: home_loan
-fetched_at: 2026-10-21T19:17:13
+fetched_at: 2026-10-27T17:56:54
 sha256: ab6cbee8d47b94e4441b7b73ef6a46b3e1c819cfc421747e7a482109a4a12a2a
 ---
 

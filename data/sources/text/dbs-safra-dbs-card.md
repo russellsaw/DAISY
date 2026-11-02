@@ -4,7 +4,7 @@ title: SAFRA DBS Card
 publisher: DBS
 url: https://www.dbs.com.sg/personal/cards/credit-cards/dbs-safra-credit-card
 products: credit_card
-fetched_at: 2026-10-21T19:17:13
+fetched_at: 2026-10-27T17:56:54
 sha256: b2346d5aab46217a61b431637fe69313fe175d0e8c71b422d5a02783a7583373
 ---
 

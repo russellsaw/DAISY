@@ -1,12 +1,15 @@
-# DAISY ("DBS AI, Straight with You") — "DBS 2030" theme. DBS-red accent on deep graphite (dark) or clean white (light);
-# geometric display type, rounded surfaces. Users can switch light/dark in Settings.
-# Brand-inspired palette only: no DBS logo or trademarked assets are used.
+# DAISY ("DBS AI, Straight with You"): DBS colours and design language. DBS red (#FF3333) for actions and
+# accents, black (#000000) type on white, light grey surfaces, one clean sans-serif. Light only: a single
+# [theme] section locks the look, so there is no dark mode to switch to.
+# Small red text (links, red badges) uses #CC2929, a shade of the same red: #FF3333 on white is about 3.4:1,
+# below the 4.5:1 small text needs; #CC2929 is about 5.4:1. No DBS logo or trademarked assets are used.
 
 [theme]
+base = "light"
 font = "Inter:https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-headingFont = "'Space Grotesk':https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap"
+headingFont = "Inter:https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
 codeFont = "'JetBrains Mono':https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"
-headingFontWeights = [700, 600, 600, 600, 500, 500]
+headingFontWeights = [700, 700, 600, 600, 600, 600]
 baseRadius = "0.85rem"
 buttonRadius = "full"
 showWidgetBorder = true
@@ -14,54 +17,28 @@ showSidebarBorder = false
 linkUnderline = false
 metricValueFontSize = "1.9rem"
 metricValueFontWeight = 600
-
-[theme.light]
-primaryColor = "#D71921"
+primaryColor = "#FF3333"
 backgroundColor = "#FFFFFF"
 secondaryBackgroundColor = "#F4F5F7"
-textColor = "#111318"
+textColor = "#000000"
 borderColor = "#E3E5EA"
-linkColor = "#B3141B"
+linkColor = "#CC2929"
 codeBackgroundColor = "#F4F5F7"
-redColor = "#D71921"
+redColor = "#CC2929"
 greenColor = "#0F8A5F"
 orangeColor = "#C2410C"
 blueColor = "#1D4ED8"
 dataframeHeaderBackgroundColor = "#F4F5F7"
-chartCategoricalColors = ["#D71921", "#111318", "#0E9F9A", "#F59E0B", "#6366F1", "#64748B", "#DB2777"]
+chartCategoricalColors = ["#FF3333", "#000000", "#0E9F9A", "#F59E0B", "#6366F1", "#64748B", "#DB2777"]
 
-[theme.dark]
-primaryColor = "#D9252E"
-backgroundColor = "#0A0B0F"
-secondaryBackgroundColor = "#15171E"
-textColor = "#ECEEF3"
-borderColor = "#262A35"
-linkColor = "#FF7A7F"
-codeBackgroundColor = "#15171E"
-redColor = "#FF4D55"
-greenColor = "#34D399"
-orangeColor = "#FB923C"
-blueColor = "#60A5FA"
-dataframeHeaderBackgroundColor = "#15171E"
-chartCategoricalColors = ["#FF4D55", "#ECEEF3", "#2DD4BF", "#FBBF24", "#818CF8", "#94A3B8", "#F472B6"]
-
-[theme.light.sidebar]
+[theme.sidebar]
 backgroundColor = "#FAFAFB"
 secondaryBackgroundColor = "#F0F1F4"
 codeBackgroundColor = "#F0F1F4"
-textColor = "#111318"
+textColor = "#000000"
 borderColor = "#E3E5EA"
-primaryColor = "#D71921"
-linkColor = "#B3141B"
-
-[theme.dark.sidebar]
-backgroundColor = "#07080B"
-secondaryBackgroundColor = "#13151B"
-codeBackgroundColor = "#13151B"
-textColor = "#ECEEF3"
-borderColor = "#22252F"
-primaryColor = "#D9252E"
-linkColor = "#FF7A7F"
+primaryColor = "#FF3333"
+linkColor = "#CC2929"
 
 [client]
 toolbarMode = "minimal"

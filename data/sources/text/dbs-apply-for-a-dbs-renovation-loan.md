@@ -4,7 +4,7 @@ title: Apply for a DBS Renovation Loan
 publisher: DBS
 url: https://www.dbs.com.sg/personal/support/loans-homeloan-reno-loan-application.html
 products: home_loan
-fetched_at: 2026-10-21T19:17:13
+fetched_at: 2026-10-27T17:56:54
 sha256: 20934dbb0158e20dce06ab302c2913a756dc5ef7ba14a183f969fd15012caa80
 ---
 

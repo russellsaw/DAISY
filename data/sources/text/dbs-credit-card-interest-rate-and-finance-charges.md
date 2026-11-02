@@ -4,7 +4,7 @@ title: Credit Card Interest Rate & Finance Charges
 publisher: DBS
 url: https://www.dbs.com.sg/personal/support/card-charges-and-fees-finance-charge.html
 products: credit_card
-fetched_at: 2026-10-21T19:17:13
+fetched_at: 2026-10-27T17:56:54
 sha256: 020eed883bc0f3d1fb77c90601bcfd5e74af547323e64d4ddbf6a4febedfced4
 ---
 

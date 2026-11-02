@@ -4,7 +4,7 @@ title: Apply for DBS Cashline
 publisher: DBS
 url: https://www.dbs.com.sg/personal/support/loans-application-new-cashline.html
 products: cashline
-fetched_at: 2026-10-21T19:17:13
+fetched_at: 2026-10-27T17:56:54
 sha256: 2ac1e30c24ff0dc1e1cc93a588d731e1ae0e56d928306b1db372d6b4bd406eb3
 ---
 

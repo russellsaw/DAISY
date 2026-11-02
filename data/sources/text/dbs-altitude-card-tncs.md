@@ -4,7 +4,7 @@ title: DBS Altitude Card T&Cs
 publisher: DBS
 url: https://www.dbs.com.sg/iwov-resources/pdf/cards/altitude-card-tnc.pdf
 products: credit_card
-fetched_at: 2026-10-21T19:17:13
+fetched_at: 2026-10-27T17:56:54
 sha256: 2bfe0f8cfff6c1961f18d06bec6281ced283cce74a7a4ab3859e9f0d7419a26d
 ---
 

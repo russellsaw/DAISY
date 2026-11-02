@@ -4,7 +4,7 @@ title: Apply for DBS Balance Transfer
 publisher: DBS
 url: https://www.dbs.com.sg/personal/support/loans-application-balance-transfer.html
 products: personal_loan, cashline, credit_card
-fetched_at: 2026-10-25T16:12:15
+fetched_at: 2026-10-27T17:56:54
 sha256: bc7e43723d3ef71184b45443c4bddd5623f1c4cb20154c895aa80d75f3b8336e
 ---
 
