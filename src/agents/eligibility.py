@@ -12,7 +12,7 @@ from datetime import date
 
 from .. import config, llm
 from ..rules import assess_all
-from ..rules import counterfactual
+from ..rules import counterfactual, max_loan
 from ..rules.counterfactual import fmt_date
 from ..rules.criteria import SOURCE_TITLES
 from ..rules.engine import missing_fields
@@ -44,7 +44,7 @@ _RESIDENCY = {"citizen": "Singapore Citizen", "pr": "Singapore PR", "foreigner":
 _PROPERTY = {"hdb": "HDB flat", "ec": "Executive Condominium", "private": "private property"}
 
 
-def readback_text(profile: CustomerProfile, products: list[str] | None = None) -> str:
+def readback_text(profile: CustomerProfile, products: list[str] | None = None, max_loan_check: bool = False) -> str:
     """The readback, written by code: exact values, nothing paraphrased by a model. Anything the check
     would otherwise treat as none is shown as such, so the customer can correct it before it runs."""
     d = profile.to_dict()
@@ -88,6 +88,11 @@ def readback_text(profile: CustomerProfile, products: list[str] | None = None) -
                      + (f" over {d['tenure_years']} years" if "tenure_years" in d else ""))
     if "personal_loan_amount" in d:
         lines.append(f"Personal loan: {money(d['personal_loan_amount'])}")
+    if max_loan_check and "tenure_years" not in d:
+        lines.append(f"Tenure: not given, so I'll use {max_loan.default_tenure(profile)} years, the longest that keeps "
+                     "the full loan-to-value limit")
+    elif max_loan_check and "home_loan_amount" not in d:
+        lines.append(f"Tenure: {d['tenure_years']} years")
     body = "\n".join(f"- {line}" for line in lines)
     return ("Before I run the eligibility check, here's what I've noted. Is it all right?\n\n" + body +
             "\n\nReply **yes** if that's right, or tell me what to change. I won't run the check until you do.")
@@ -104,6 +109,57 @@ def readback_numbers(profile: CustomerProfile) -> dict:
     return out
 
 
+def _ask_for(state: ConversationState, user_msg: str, missing: list[str], keys: list[str], search_query: str) -> dict:
+    labels = [f"{PROFILE_FIELDS[f][0]} — {PROFILE_FIELDS[f][1]}" for f in missing]
+    # The published criteria relevant to the question ("can I get a card at 66?"), so the reply can
+    # state the rule with a citation before asking — the engine still isn't called.
+    chunks, excerpts = product_knowledge.search(user_msg, keys, search_query, k=4)
+    prompt = (
+        f"Products being checked: {', '.join(keys)}\n"
+        f"Known so far:\n{state.profile.describe()}\n\n"
+        f"Missing fields to ask for:\n- " + "\n- ".join(labels) +
+        f"\n\nSource excerpts (published criteria):\n{excerpts or '(none)'}"
+        f"\n\nCustomer's latest message:\n{user_msg}"
+    )
+    draft = llm.chat(prompts.ELIGIBILITY_ASK, [{"role": "user", "content": prompt}], model=config.MODEL_MAIN)
+    sources, cited = product_knowledge.cited_sources(draft, chunks)
+    state.last_counterfactuals, state.last_eligibility = [], []
+    state.add_trace("Eligibility", f"needs {', '.join(missing)} before anything can run (engine not called)",
+                    product_knowledge.hits_detail(user_msg, search_query, keys, chunks, cited))
+    return {"draft": draft, "results": [], "computations": readback_numbers(state.profile),
+            "asked_for": missing, "counterfactuals": [], "engine_ran": False,
+            "sources": sources, "excerpts": excerpts}
+
+
+def assess_max_loan(state: ConversationState, user_msg: str, search_query: str = "") -> dict:
+    """'How much can I borrow?' The same steps as an eligibility check (ask, read back, run on confirmed details),
+    but the result is the largest loan the engine passes, written by code."""
+    state.pending_max_loan = True
+    missing = missing_fields(state.profile, "max_home_loan")
+    if missing:
+        return _ask_for(state, user_msg, missing, ["home_loan"], search_query)
+    if not state.is_confirmed():
+        state.start_readback(["home_loan"])
+        state.last_counterfactuals, state.last_eligibility = [], []
+        state.add_trace("Readback", "read back the parameters for the maximum loan; engine waits for a yes",
+                        state.readback_profile)
+        return {"draft": readback_text(state.profile, ["home_loan"], max_loan_check=True), "results": [],
+                "computations": readback_numbers(state.profile), "counterfactuals": [], "engine_ran": False,
+                "readback": True}
+    result = max_loan.find(state.profile)
+    state.pending_max_loan = False
+    state.last_max_loan = result
+    state.last_counterfactuals, state.last_eligibility = [], []
+    state.add_trace("Eligibility", "engine searched for the largest loan at the MAS floor and DBS's planning rate: "
+                                   f"{result['at_floor']['max_loan']} and {result['at_planner']['max_loan']}",
+                    {"input_profile": state.profile.to_dict(), "criteria_version": result["criteria_version"],
+                     "max_loan": result})
+    sources = [{"n": None, "title": SOURCE_TITLES.get(url, url), "url": url} for url in result["sources"]]
+    return {"draft": max_loan.text(result), "results": [], "computations": {**max_loan.numbers_in(result),
+            **readback_numbers(state.profile)}, "sources": sources, "counterfactuals": [], "engine_ran": True,
+            "code_written": True, "max_loan": result}
+
+
 def assess(state: ConversationState, user_msg: str, products: list[str], today: date | None = None,
            search_query: str = "") -> dict:
     keys = products or DEFAULT_PRODUCTS
@@ -113,25 +169,7 @@ def assess(state: ConversationState, user_msg: str, products: list[str], today: 
     if not ready:
         missing = sorted({f for k in keys for f in missing_fields(state.profile, k)},
                          key=list(PROFILE_FIELDS).index)
-        labels = [f"{PROFILE_FIELDS[f][0]} — {PROFILE_FIELDS[f][1]}" for f in missing]
-        # The published criteria relevant to the question ("can I get a card at 66?"), so the reply can
-        # state the rule with a citation before asking — the engine still isn't called.
-        chunks, excerpts = product_knowledge.search(user_msg, keys, search_query, k=4)
-        prompt = (
-            f"Products being checked: {', '.join(keys)}\n"
-            f"Known so far:\n{state.profile.describe()}\n\n"
-            f"Missing fields to ask for:\n- " + "\n- ".join(labels) +
-            f"\n\nSource excerpts (published criteria):\n{excerpts or '(none)'}"
-            f"\n\nCustomer's latest message:\n{user_msg}"
-        )
-        draft = llm.chat(prompts.ELIGIBILITY_ASK, [{"role": "user", "content": prompt}], model=config.MODEL_MAIN)
-        sources, cited = product_knowledge.cited_sources(draft, chunks)
-        state.last_counterfactuals, state.last_eligibility = [], []
-        state.add_trace("Eligibility", f"needs {', '.join(missing)} before anything can run (engine not called)",
-                        product_knowledge.hits_detail(user_msg, search_query, keys, chunks, cited))
-        return {"draft": draft, "results": [], "computations": readback_numbers(state.profile),
-                "asked_for": missing, "counterfactuals": [], "engine_ran": False,
-                "sources": sources, "excerpts": excerpts}
+        return _ask_for(state, user_msg, missing, keys, search_query)
 
     # 2. Readback before clearance: no engine call — forward or counterfactual — until the customer
     #    has said yes to exactly these parameters.

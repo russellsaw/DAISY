@@ -7,6 +7,7 @@ No API calls. For each persona it runs the same forward engine DAISY uses (src/r
   - status and the binding checks (LTV, MSR, TDSR) for the requested loan
   - the monthly instalment at the stress rate (compare with DBS's Home Loan Repayment Calculator at that rate)
   - the largest loan the engine passes, found by searching the loan amount with the forward engine
+    (src/rules/max_loan.py, which also answers "how much can I borrow?" in the app)
     (compare with the maximum loan from DBS's MyHome Planner)
 The maximum loan is also shown at 4.65%, the medium-term rate DBS's planning tools currently use, while MAS's
 rule (and the engine) use a 4% floor.
@@ -20,6 +21,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.rules import engine  # noqa: E402
 from src.rules.criteria import MAS  # noqa: E402
+from src.rules.max_loan import largest_loan  # noqa: E402
 from src.state import CustomerProfile  # noqa: E402
 
 BASE = {"age": 32, "residency": "pr", "monthly_income": 7000, "existing_housing_loans": 0, "existing_monthly_debt": 0}
@@ -42,27 +44,9 @@ PERSONAS = [
 ]
 
 
-def max_loan(fields: dict) -> float | None:
-    """Largest loan (to S$100) the forward engine passes, all else equal. None if nothing passes."""
-    def passes(amount: float) -> bool:
-        return engine.check_home_loan(CustomerProfile(**{**fields, "home_loan_amount": amount})).status == "eligible"
-
-    lo, hi = 1, int(fields["property_price"]) // 100  # in S$100 steps: lo passes, hi + 1 doesn't
-    if not passes(lo * 100):
-        return None
-    while lo < hi:
-        mid = (lo + hi + 1) // 2
-        lo, hi = (mid, hi) if passes(mid * 100) else (lo, mid - 1)
-    return lo * 100.0
-
-
 def max_loan_at(rate: float, fields: dict) -> float | None:
-    original = MAS["stress_rate"]["value"]
-    MAS["stress_rate"]["value"] = rate
-    try:
-        return max_loan(fields)
-    finally:
-        MAS["stress_rate"]["value"] = original
+    p = CustomerProfile(**fields)
+    return largest_loan(p, p.tenure_years, rate)["max_loan"]
 
 
 def money(x: float | None) -> str:
@@ -80,7 +64,7 @@ def main() -> None:
         msr = f"{c['msr']:.1%}" if "msr" in c else "n/a"
         tdsr = f"{c['tdsr']:.1%}" if "tdsr" in c else "n/a"
         print(f"| {pid} | {label} | {r.status} | S${c.get('stressed_monthly_instalment', 0):,.2f} | {msr} | {tdsr} "
-              f"| {c['ltv_limit']:.0%} ({money(c['max_loan_by_ltv'])}) | {money(max_loan(fields))} "
+              f"| {c['ltv_limit']:.0%} ({money(c['max_loan_by_ltv'])}) | {money(max_loan_at(stress, fields))} "
               f"| {money(max_loan_at(0.0465, fields))} |")
     print("\nInputs:")
     for pid, _, f in PERSONAS:

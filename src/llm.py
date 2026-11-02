@@ -11,7 +11,8 @@ Model notes (Sonnet 5.5 / Haiku 5.5):
   - Forced tool_choice is rejected on Sonnet 5.5, so structured() uses structured
     outputs instead of a forced tool call — it works on whichever model is configured.
   - Thinking is adaptive by default and counts against max_tokens; `effort` is the
-    latency/quality lever. Routing and review run at low effort, drafting at medium.
+    latency/quality lever. Routing and short replies run at low effort; compliance review, product
+    answers and narration at medium.
   - Sonnet 5.5 requests opt into server-side refusal fallbacks ("default" routing).
     If a whole chain still refuses, Refusal is raised and the pipeline answers with
     the banker handoff instead of an error.
@@ -44,7 +45,8 @@ def client() -> anthropic.Anthropic:
             raise RuntimeError(
                 "ANTHROPIC_API_KEY is not set. Copy .env.example to .env and add your key."
             )
-        _client = anthropic.Anthropic(api_key=config.ANTHROPIC_API_KEY)
+        # A stuck request should fail within a turn's patience, not after the SDK's 10-minute default.
+        _client = anthropic.Anthropic(api_key=config.ANTHROPIC_API_KEY, timeout=config.LLM_TIMEOUT_S)
     return _client
 
 

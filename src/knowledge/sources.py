@@ -196,6 +196,13 @@ SOURCES = [
 
 # Deliberately NOT ingested (out of scope — advice boundary): insurance, endowment,
 # investments. Listed here so the decision is visible.
+# Lines left out of the search index because a newer source replaces them. The saved snapshot isn't edited, so it
+# stays a faithful record of the page. {document id: [text that identifies the line]}
+SUPERSEDED_LINES = {
+    # This page still quotes 3.5%. DBS's planning tools now state 4.65% (dbs-home-budget-calculator).
+    "dbs-mortgage-calculator": ["medium-term 3.5% interest rate"],
+}
+
 OUT_OF_SCOPE = [
     "https://www.dbs.com.sg/personal/insurance/default.page",
     "https://www.dbs.com.sg/personal/insurance/endowment/default.page",

@@ -1,6 +1,6 @@
 {
- "built_on": "2026-10-27",
- "built_at": "2026-10-27T17:56:54",
+ "built_on": "2026-11-02",
+ "built_at": "2026-11-02T18:13:34",
  "chunks": [
   {
    "id": "2cdec6ba68-0",
@@ -4799,6 +4799,18 @@
    "text": "eligibility of any person or cancellation. Subject to and without prejudice to the generality of\nthe foregoing and DBS Bank’s record of the entries shall be final, binding and conclusive for\nall purposes and in any legal proceedings. No correspondence or appeal will be\nentertained."
   },
   {
+   "id": "f2f2a1f15c-0",
+   "doc_id": "dbs-home-budget-calculator",
+   "url": "https://www.dbs.com.sg/personal/marketplace/property/plan/selection",
+   "title": "DBS Home Budget Calculator",
+   "publisher": "DBS",
+   "products": [
+    "home_loan"
+   ],
+   "fetched_at": "2026-11-02T18:13:34",
+   "text": "DBS MyHome planning tools’ calculations are currently based on the medium-term interest rate at 4.65% and this may differ from your actual home loan eligibility.\nBack to DBS\nOur Marketplaces\nLET'S GET STARTED\nWHAT BEST DESCRIBES YOUR INTENT?\nTELL US MORE ABOUT YOURSELF\nFind out how much you could afford by choosing one of the options below\nProperty Price\nI have a price in mind for my future home\nMonthly Instalment\nI know how much I am prepared to pay monthly\nDownpayment\nI have set aside a downpayment for my purchase\nI’m still exploring\nI want to see my maximum loan amount\nTerms & ConditionsPrivacy PolicyFair Dealing CommitmentCompliance with Tax Requirements\n©2022 DBS Bank LtdCo. Reg. No. 196800306E"
+  },
+  {
    "id": "33cdec9225-0",
    "doc_id": "dbs-home-loan-glossary",
    "url": "https://www.dbs.com.sg/personal/articles/nav/my-home/home-loan-glossary",
@@ -5547,7 +5559,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Income and Financial Commitment\nIn calculating your maximum home loan amount, banks will take into account the ratio of your debt to your income. This is called the Total Debt Servicing Ratio (TDSR) and this ratio is capped at 55% of all borrowers' gross monthly income.\nIf you are purchasing a HDB flat, banks also have to calculate your Mortgage Servicing Ratio (MSR). MSR is capped at 30% of all borrowers' gross monthly income. Calculation of MSR is based on loan amount and combined monthly gross income.\nYour maximum home loan amount is determined by TDSR, MSR (for HDB only), loan tenure and a medium-term 3.5% interest rate.\nCheck out our calculators below to find out how much you can borrow."
+   "text": "Income and Financial Commitment\nIn calculating your maximum home loan amount, banks will take into account the ratio of your debt to your income. This is called the Total Debt Servicing Ratio (TDSR) and this ratio is capped at 55% of all borrowers' gross monthly income.\nIf you are purchasing a HDB flat, banks also have to calculate your Mortgage Servicing Ratio (MSR). MSR is capped at 30% of all borrowers' gross monthly income. Calculation of MSR is based on loan amount and combined monthly gross income.\nCheck out our calculators below to find out how much you can borrow."
   },
   {
    "id": "86a28a144c-2",
@@ -10760,6 +10772,19 @@
    "chars": 6396,
    "chunks": 9,
    "fetched_at": "2026-10-27T17:56:54"
+  },
+  {
+   "id": "dbs-home-budget-calculator",
+   "url": "https://www.dbs.com.sg/personal/marketplace/property/plan/selection",
+   "title": "DBS Home Budget Calculator",
+   "publisher": "DBS",
+   "products": [
+    "home_loan"
+   ],
+   "status": "thin",
+   "chars": 708,
+   "chunks": 1,
+   "fetched_at": "2026-11-02T18:13:34"
   },
   {
    "id": "dbs-home-loan-glossary",

@@ -43,7 +43,7 @@ class EligibilityResult:
 
 
 # Fields each check needs before it can run. Shared with the eligibility agent, which uses it to ask for
-# missing details and to build the readback WITHOUT calling the engine (Feature 2: no engine call
+# missing details and to build the readback WITHOUT calling the engine (no engine call
 # until the customer has confirmed the parameters).
 # home_loan needs property_price: without it the LTV cap can't be checked, and "eligible" without an
 # LTV check would overstate the result.
@@ -53,13 +53,15 @@ REQUIRED_FIELDS = {
     "personal_loan": ["age", "residency", "monthly_income"],
     "cashline": ["age", "residency", "monthly_income"],
     "credit_card": ["age", "residency", "monthly_income"],
+    # "How much can I borrow?" (src/rules/max_loan.py) needs no loan amount, price or tenure.
+    "max_home_loan": ["age", "residency", "monthly_income", "property_type"],
 }
 
 
 def missing_fields(p: CustomerProfile, product: str) -> list[str]:
     """REQUIRED_FIELDS, plus what MSR needs: someone with an existing housing loan must give its repayment."""
     missing = p.missing(REQUIRED_FIELDS[product])
-    if (product == "home_loan" and p.existing_housing_loans and p.existing_property_loan_monthly is None
+    if (product in ("home_loan", "max_home_loan") and p.existing_housing_loans and p.existing_property_loan_monthly is None
             and not p.property_loan_monthly()):
         missing.append("existing_property_loan_monthly")
     return missing
@@ -211,7 +213,8 @@ def check_credit_card(p: CustomerProfile) -> EligibilityResult:
     return result
 
 
-def check_home_loan(p: CustomerProfile) -> EligibilityResult:
+def check_home_loan(p: CustomerProfile, stress_rate: float | None = None) -> EligibilityResult:
+    """stress_rate: test the instalment at this rate instead of the MAS floor (src/rules/max_loan.py)."""
     prod = PRODUCTS["home_loan"]
     result = EligibilityResult("home_loan", prod["name"], "need_more_info", sources=[prod["source"]])
     missing = missing_fields(p, "home_loan")
@@ -288,7 +291,7 @@ def check_home_loan(p: CustomerProfile) -> EligibilityResult:
         result.reasons.append(f"Requested S${loan:,.0f} is within the LTV cap of S${max_loan:,.0f}.")
 
     # --- Instalment at stress rate ---
-    stress = _mas("stress_rate")
+    stress = _mas("stress_rate") if stress_rate is None else stress_rate
     instalment = monthly_instalment(loan, stress, p.tenure_years)
     income, income_note = _assessable_income(p)
     result.computations.update({
@@ -349,7 +352,7 @@ def assess_all(p: CustomerProfile, products: list[str] | None = None) -> list[El
 
 
 def rules_summary() -> list[dict]:
-    """Flat list of every criterion (with its evidence) for the Evals and Knowledge pages."""
+    """Flat list of every criterion (with its evidence) for the Knowledge page."""
     rows = []
     for key, item in MAS.items():
         rows.append({"scope": "Regulatory", "criterion": key, "value": str(item["value"]),

@@ -1,15 +1,17 @@
 # DAISY — DBS AI, Straight with You
 
 A prototype sales assistant for DBS home loans, credit cards and personal loans. It answers from DBS's own pages,
-checks eligibility with a deterministic rules engine, shows customers who don't qualify today what would change
-that, and prepares a summary for a banker. A compliance agent and code filters check replies before the customer
+checks eligibility and works out the maximum home loan with a deterministic rules engine, shows customers who don't
+qualify today what would change that, and prepares a summary for a banker. A compliance agent and code filters check replies before the customer
 sees them, and an adversarial eval suite measures the result.
 
-DAISY is an independent prototype: it isn't a DBS service and isn't connected to any DBS system.
+DAISY is a prototype built for the DBS brief. It isn't a live DBS service and isn't connected to any DBS system.
 
 - [`PITCH.md`](PITCH.md): the proposition and the demo script.
-- [`docs/ASSUMPTIONS_AND_LIMITATIONS.md`](docs/ASSUMPTIONS_AND_LIMITATIONS.md): every assumption, limitation,
-  criterion and design decision.
+- [`docs/ASSUMPTIONS_AND_LIMITATIONS.md`](docs/ASSUMPTIONS_AND_LIMITATIONS.md): every assumption, limitation and
+  criterion.
+- [`docs/GUIDELINES.md`](docs/GUIDELINES.md): DAISY against MAS, PDPA and DBS guidelines, requirement by requirement,
+  including what's missing.
 
 ## Scope
 
@@ -25,12 +27,12 @@ decision is visible.
 
 | The brief asks for | Where it is |
 |---|---|
-| Accurate product Q&A from public DBS information | Product Knowledge agent over 73 snapshotted DBS, POSB, MAS and HDB pages (`data/sources/`), with citations; 20 golden Q&A cases, 14 checking a figure quoted from the page |
-| Basic eligibility checks using rule-based logic | `src/rules/engine.py`: deterministic TDSR, MSR, LTV, tenure, age, income and unsecured-limit checks. Each criterion in `src/rules/criteria.py` carries its source URL and quoted evidence |
-| Product discovery and comparison | `comparison` intent: side-by-side answers from the cited pages, and needs-based shortlists without a recommendation (cases qa-004, qa-017, qa-020) |
+| Accurate product Q&A from public DBS information | Product Knowledge agent over 74 snapshotted DBS, POSB, MAS and HDB pages (`data/sources/`), with citations; 20 golden Q&A cases, 14 checking a figure quoted from the page |
+| Basic eligibility checks using rule-based logic | `src/rules/engine.py`: deterministic TDSR, MSR, LTV, tenure, age, income and unsecured-limit checks, and "how much can I borrow?" (`src/rules/max_loan.py`). Each criterion in `src/rules/criteria.py` carries its source URL and quoted evidence |
+| Product discovery and comparison | `comparison` intent: side-by-side answers from the cited pages, needs-based shortlists without a recommendation, a discovery starter on the Assistant page, and an eligibility check offered as the next step (cases qa-004, qa-017, qa-020, qa-021) |
 | A conversational chat interface | Streamlit app, **Assistant** page |
-| Guardrails aligned to banking guidelines | PII redaction, input guardrail, compliance agent, code filters on numbers and approval wording, advice boundary with a banker summary |
-| An evaluation framework | `evals/` (136 cases and an LLM judge, shown on the **Trust scorecard** page) and `tests/evals/` (DeepEval RAG metrics) |
+| Guardrails aligned to banking guidelines | PII redaction, input guardrail, compliance agent, code filters on numbers and approval wording, advice boundary with a banker summary. [`docs/GUIDELINES.md`](docs/GUIDELINES.md) maps these to each requirement, and is plain about the gaps: of 20 requirements, 2 are met in the prototype, 11 partly and 7 not, mostly bank-level and production controls |
+| An evaluation framework | `evals/` (142 cases and an LLM judge, shown on the **Trust scorecard** page) and `tests/evals/` (DeepEval RAG metrics) |
 
 ## Run it
 
@@ -41,15 +43,15 @@ Tested on Python 3.14 with the exact versions in `requirements.txt`. You need an
 python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 cp .env.example .env                                   # add your ANTHROPIC_API_KEY
-pytest -q                                              # 163 offline tests, no API key needed
+pytest -q                                              # 196 offline tests, no API key needed
 streamlit run app.py
 ```
 
 | Page | For | What it shows |
 |---|---|---|
-| **Assistant** | Customer | The chat, the details DAISY has noted, and which checks acted on each reply |
+| **Assistant** | Customer | The chat, the details DAISY has noted, and which checks applied to each reply |
 | **Banker view** | Bank staff | The summaries DAISY prepares: who the customer is, what they asked, their results, what's still open |
-| **Trust scorecard** | Bank staff | Eval results, including failures; the attacks and which checks acted; the criteria |
+| **Trust scorecard** | Bank staff | Eval results, including failures; the attacks and which checks acted |
 | **Knowledge** | Bank staff | Every saved page, search as the assistant, the evidence for each rule, change history |
 | **Flight recorder** | Bank staff | Replay any conversation event by event |
 
@@ -59,7 +61,8 @@ The buttons that spend API credit or overwrite data (*Run suite*, *Re-fetch all 
 `DAISY_STAFF_CONTROLS=1` in `.env`.
 
 **Try this:** *"I'm 32, a PR earning $7k a month. Can I get a home loan for a $550k HDB flat? I'd borrow $380k over 25
-years and have no other loans."* Reply yes to the readback, then ask what happens at $400k.
+years and have no other loans."* Reply yes to the readback, then ask what happens at $400k. Then start a new conversation
+and ask *"How much can I borrow for a home?"*
 
 ## How it works
 
@@ -81,6 +84,7 @@ Orchestrator ─── intent, profile facts, commitments, replies to a readback
    │                                1. details missing  → ask (no engine)
    │                                2. not confirmed    → code-written readback (no engine)
    │                                3. confirmed        → rules engine → counterfactual search
+   │                                "how much can I borrow?" → same steps → largest loan the engine passes
    ├─ advice_seeking ───────────▶ No recommendation; cited facts + banker summary
    ├─ handoff_request ──────────▶ Handoff reply + banker summary
    └─ out_of_scope / chit_chat ─▶ short replies
@@ -102,6 +106,9 @@ Design decisions worth knowing:
   percentage and amount of money; bare whole numbers below 32 are exempt, because they're usually list markers, ages or
   years. It checks that a number exists in those places, not that it's attached to the right fact, which is the
   compliance agent's job.
+- **How much can I borrow?** `src/rules/max_loan.py` searches the same forward engine for the largest loan that passes,
+  at both the MAS floor and DBS's planning rate, and the whole reply is written by code. At DBS's rate it matches DBS's
+  planner to the dollar on the four test customers compared like for like.
 - **Read back before running.** The engine runs only on details the customer has confirmed. Anything it would treat as
   none because the customer didn't mention it is shown in the readback, and repeated with the result.
 - **Not now, but when.** When the engine says no, `src/rules/counterfactual.py` runs the same forward engine on changed
@@ -112,28 +119,27 @@ Design decisions worth knowing:
   says which product to pick or where rates are going.
 - **Honest handoff.** DAISY collects no contact details, so it doesn't promise a call. It prepares the summary and a
   code-written note says what happens next.
-- **Keyword retrieval on purpose.** BM25 over 73 pages is fast and easy to debug, and needs no second API. Its limit is
+- **Keyword retrieval on purpose.** BM25 over 74 pages is fast and easy to debug, and needs no second API. Its limit is
   paraphrased questions: see the known limits below.
-- **Everything is traceable.** Each reply records which of five checks acted (`src/defence.py`). The flight recorder
+- **Everything is traceable.** Each reply records which of the five checks applied and acted (`src/defence.py`). The flight recorder
   (`src/recorder.py`) logs every turn to `data/conversations/`, with NRIC/FIN and card numbers removed.
 
 ## Results
 
 | Measure | Result | Date |
 |---|---|---|
-| Eval suite (`evals/`) | **136/136 passed** on the final code. 20 attacks: 20 stopped, 0 got through. No ordinary question was blocked | 2026-11-02 |
-| DeepEval RAG metrics (76 questions, Claude Sonnet as judge) | **74/76 passed.** Faithfulness 76/76 (mean 0.99), Answer Relevancy 75/76 (0.96), Contextual Recall 18/19 (0.97) | 2026-11-02 |
-| Helpfulness (50 broad questions, rated by a reviewer model; not re-run since) | good answers 27 → 39–40 after fixes, knowledge gaps 12 → 2–4, unsafe 0 | 2026-10-25 |
-| Offline unit tests | 163 passed | 2026-11-02 |
-| Engine vs DBS's calculators | Instalments match on 5 of 5 personas. Maximum loans match at the same rate, but DBS's tools use 4.65% and the engine uses the MAS 4% floor: see below | 2026-11-02 |
+| Eval suite (`evals/`) | **142/142 passed** on the final code. 20 attacks: 20 stopped, 0 got through. No ordinary question was blocked | 2026-11-02 |
+| DeepEval RAG metrics (77 questions, Claude Sonnet as judge) | **75/77 passed.** Faithfulness 77/77 (mean 0.99), Answer Relevancy 76/77 (0.96), Contextual Recall 18/19 (0.95) | 2026-11-02 |
+| Helpfulness (50 broad questions, rated by a reviewer model; not re-run since 2026-10-29) | good answers 27 → 39–40 after fixes, then 46 good, 2 partial, 2 knowledge gaps. Unsafe 0 | 2026-10-25, 2026-10-29 |
+| Offline unit tests | 196 passed | 2026-11-02 |
+| Engine vs DBS's calculators | Instalments match on 5 of 5 personas. At DBS's 4.65% the maximum loan matches DBS's planner to the dollar. The eligibility check uses the MAS 4% floor: see below | 2026-11-02 |
 
 "Stopped" means the case passed and at least one check acted. It's weaker than "that check is what stopped it": a check
 can act on an attack the model would have refused anyway.
 
-The two DeepEval failures, which we left in rather than lowering a threshold: b26 (the judge marked down the as-of date
-and disclaimers that DAISY's rules require), and gen-07 (DAISY gave the correct steps for the mobile app when the expected
-answer was the web route). DeepEval ran shortly before the last change, a code-written note on rates that doesn't alter what
-the model writes.
+The two DeepEval failures, which we left in rather than lowering a threshold: gen-15 is a real miss (a question about the
+credit report showing total unsecured balances was routed as out of scope and declined), and gen-06 (the judge marked down
+extra wording around a historical SORA rate).
 
 Model-written replies vary between runs, so treat one or two eval cases either way as noise. See
 [`docs/ASSUMPTIONS_AND_LIMITATIONS.md`](docs/ASSUMPTIONS_AND_LIMITATIONS.md) §13 for how the suite works and what it can't tell you.
@@ -151,19 +157,23 @@ Plain `pytest` skips `tests/evals/`.
 
 ## Known limits
 
-- **The check uses the MAS floor, and DBS's own tools are stricter.** The engine uses the 4% floor MAS sets. DBS's planning
-  tools currently assume 4.65%, so their maximum loan is lower: S$372,089 for the demo persona, who passes here at S$380,000.
-  At the same rate the engine reproduces DBS's figures, so the maths isn't the difference. Every home-loan result says this.
+- **The check uses the MAS floor, and DBS's own tools are stricter.** The eligibility check uses the 4% floor MAS sets.
+  DBS's planning tools currently assume 4.65%, so their maximum loan is lower: S$372,089 for the demo persona, who passes
+  here at S$380,000. At the same rate the engine reproduces DBS's figures, so the maths isn't the difference. Every
+  home-loan result says this, and "how much can I borrow?" shows both.
+- **The 12× unsecured check is simpler than the MAS Notice.** The engine applies a plain cap; Notice 635's tests are
+  narrower and differ in both directions ([`docs/GUIDELINES.md`](docs/GUIDELINES.md)).
   Details: [`docs/CALCULATOR_CHECK.md`](docs/CALCULATOR_CHECK.md).
 - **Not a credit decision.** There's no credit bureau, documents or valuation. Results are indicative.
 - **Engine simplifications** are listed in the assumptions doc, §5. For example: no joint borrowers, the 4% floor rather
-  than a package's thereafter rate, and guarantor obligations aren't counted.
+  than a package's thereafter rate, guarantor obligations aren't counted, and "how much can I borrow?" is a ratio maximum,
+  not what's affordable.
 - **Retrieval misses some paraphrased questions.** "Can a foreigner buy an HDB flat?" doesn't reach the page that answers
   it, so DAISY says it doesn't have a clear answer.
 - **Some DBS pages aren't captured** because they only render in a browser: home-loan fees and documents, and the card
   late-fee table.
 - **PII:** phone numbers and emails aren't redacted. Logs are local files with no encryption or retention policy.
-- **Latency:** about 10 s per turn at the median and 14 s at the 90th percentile in the last eval run. Several model calls run in sequence on each turn.
+- **Latency:** about 10 s per turn at the median and 15 s at the 90th percentile in the last eval run. Several model calls run in sequence on each turn.
 - **Criteria:** 20 of 21 were checked against the cited page on 2026-10-20 and carry the evidence. The HDB buyer rule was read from the live page, but the saved copy holds only menus, so it can't be re-read offline. The home-loan minimum age is unverified because no DBS page states it.
 - **Not production-ready:** no authentication, rate limiting or monitoring.
 
@@ -187,7 +197,7 @@ app.py                     entry point and navigation
 app_pages/                 chat (Assistant), banker, evals (Trust scorecard), knowledge, replay (Flight recorder)
 src/pipeline.py            run_turn(): one message in, one reviewed reply out
 src/agents/                orchestrator, input guard, product knowledge, eligibility, compliance, handoff, prompts
-src/rules/                 criteria (the numbers and their evidence), engine, counterfactual search
+src/rules/                 criteria (the numbers and their evidence), engine, counterfactual search, maximum loan
 src/knowledge/             source list, ingest, BM25 retriever
 src/pii.py, defence.py, recorder.py, commitments.py, state.py, llm.py, config.py
 data/kb.json               the search index
@@ -195,5 +205,6 @@ data/sources/              manifest, plain-text snapshots of every page, change 
 evals/                     cases.csv, the runner, the LLM judge, latest results
 tests/                     offline unit tests; tests/evals/ is the DeepEval suite (calls the API)
 scripts/                   ingest, eval case generator, broad-question review, calculator check
-docs/                      assumptions and limitations, calculator check and its evidence, broad-question review
+docs/                      assumptions and limitations, guidelines, calculator check and its evidence, broad-question
+                           review, build log
 ```

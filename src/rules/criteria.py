@@ -12,7 +12,7 @@ Every entry has:
 Values were checked on 2026-10-20 against the live MAS, HDB and DBS pages. Pages change:
 re-run `python scripts/ingest.py` before demo day; data/sources/history.jsonl will show
 any source whose text changed, and every criterion citing it needs re-checking.
-The Evals and Knowledge pages show how many criteria are verified.
+The Knowledge page shows how many criteria are verified.
 
 The LLM never sees these numbers until the engine has computed with them.
 """
@@ -42,6 +42,7 @@ SOURCE_TITLES = {
     _DBS_HDB_LOAN: "DBS HDB Loan",
     _DBS_PRIVATE: "DBS Private Property Home Loan",
     _HDB_FAMILIES: "HDB: Flat Eligibility for Couples and Families",
+    "https://www.dbs.com.sg/personal/marketplace/property/plan/selection": "DBS Home Budget Calculator",
 }
 
 # Regulatory limits (MAS). Apply across all banks.
@@ -219,7 +220,7 @@ PRODUCTS = {
 
 
 def unverified_count() -> tuple[int, int]:
-    """(unverified, total) across MAS and PRODUCTS — surfaced on the Evals and Knowledge pages."""
+    """(unverified, total) across MAS and PRODUCTS — surfaced on the Knowledge page."""
     total = unverified = 0
     for item in MAS.values():
         total += 1

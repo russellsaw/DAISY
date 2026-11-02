@@ -10,8 +10,8 @@ The one component of DBS's reference architecture ("LLM-assisted input guardrail
 Actions:
   block     the message never reaches the agents; a code-written reply says what DAISY can do instead,
             and anything the orchestrator extracted from it is discarded
-  escalate  the customer appears to be in financial distress or vulnerable: route to a banker
-            (fair dealing), lead card marked high priority
+  escalate  the customer appears to be in financial distress or vulnerable: prepare a banker summary marked
+            high priority and tell them how to reach DBS (fair dealing)
   allow     everything else
 
 A guard that blocks real customers is worse than none, so the categories are narrow and the eval suite

@@ -86,8 +86,6 @@ class CustomerProfile:
         """Apply extracted updates; returns the list of fields that changed."""
         changed = []
         updates = dict(updates or {})
-        if "loan_amount" in updates and "home_loan_amount" not in updates:  # pre-split field name
-            updates["home_loan_amount"] = updates.pop("loan_amount")
         if updates.get("commitments"):
             if self._merge_commitments(updates.pop("commitments")):
                 changed.append("commitments")
@@ -172,7 +170,7 @@ class TraceEvent:
 
 @dataclass
 class ConversationState:
-    # Flight recorder (Feature 4): one append-only log per conversation, in recording_dir
+    # Flight recorder: one append-only log per conversation, in recording_dir
     # (default data/conversations/). record=False turns it off.
     conversation_id: str = field(default_factory=lambda: time.strftime("%Y%m%d-%H%M%S-") + uuid.uuid4().hex[:6])
     record: bool = True
@@ -182,10 +180,11 @@ class ConversationState:
     profile: CustomerProfile = field(default_factory=CustomerProfile)
     trace: list[TraceEvent] = field(default_factory=list)
     handoff_card: Optional[dict] = None
-    last_sources: list[dict] = field(default_factory=list)
     last_eligibility: list[dict] = field(default_factory=list)
     last_counterfactuals: list[dict] = field(default_factory=list)
-    # ---- Readback before clearance (Feature 2) ----
+    last_max_loan: Optional[dict] = None     # the last "how much can I borrow?" result (src/rules/max_loan.py)
+    pending_max_loan: bool = False           # that question is waiting on missing details or a readback
+    # ---- Readback before clearance ----
     # readback_profile: what was last read back to the customer, awaiting a yes or a correction.
     # confirmed_profile: the snapshot the customer said yes to. The profile counts as confirmed only
     # while it still equals that snapshot, so any later change (a correction, a contradiction, new
@@ -256,8 +255,10 @@ class ConversationState:
             msgs = msgs[1:]
         return msgs
 
-    def transcript(self, max_turns: int = 20) -> str:
-        return "\n".join(
-            f"{'Customer' if m['role'] == 'user' else 'Assistant'}: {m['content']}"
-            for m in self.recent_history(max_turns)
-        )
+    def transcript(self, max_turns: int = 20, before: str | None = None) -> str:
+        """before: the message being handled now. It's left out if it's the latest, so a prompt that also states it
+        separately doesn't show it twice (the routing model then treats it as old and skips its facts)."""
+        history = self.recent_history(max_turns)
+        if before is not None and history and history[-1]["role"] == "user" and history[-1]["content"] == before:
+            history = history[:-1]
+        return "\n".join(f"{'Customer' if m['role'] == 'user' else 'Assistant'}: {m['content']}" for m in history)

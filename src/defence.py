@@ -3,7 +3,7 @@
 Five slices, in pipeline order. Each gets a status, whether it *acted* (blocked, escalated, grounded,
 withheld, rewrote, replaced, removed something) and a one-line detail:
 
-  input_guard    input guardrail (Feature 5) — PII removed from the message; injection, prompt extraction,
+  input_guard    input guardrail — PII removed from the message; injection, prompt extraction,
                  role-play, fake authority or disparagement requests blocked; distressed customers escalated
   retrieval      retrieval grounding — every number in the answer traced to a cited source, or the
                  answer declined because nothing relevant was retrieved

@@ -9,8 +9,8 @@ load_dotenv(ROOT / ".env")
 
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 
-# Main model does the customer-facing reasoning; fast model handles
-# classification, compliance review and eval judging (cheaper, quicker).
+# Main model does the customer-facing drafting and the eval judging; fast model handles routing,
+# compliance review, the lead card and rewrites (cheaper, quicker).
 MODEL_MAIN = os.getenv("MODEL_MAIN", "claude-sonnet-5-5")
 MODEL_FAST = os.getenv("MODEL_FAST", "claude-haiku-5-5")
 # The eval judge decides pass/fail on behaviour; Haiku produced verdicts that contradicted its own
@@ -24,6 +24,7 @@ RAW_DIR = DATA_DIR / "raw"
 EVAL_CASES = ROOT / "evals" / "cases.csv"
 EVAL_RESULTS_DIR = ROOT / "evals" / "results"
 
+LLM_TIMEOUT_S = float(os.getenv("LLM_TIMEOUT_S", "90"))
 RETRIEVAL_TOP_K = int(os.getenv("RETRIEVAL_TOP_K", "10"))  # 5 missed the right page in the 50-question review
 MAX_HISTORY_TURNS = int(os.getenv("MAX_HISTORY_TURNS", "12"))
 

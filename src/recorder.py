@@ -5,18 +5,18 @@ data/conversations/evals/<run>/<case_id>.jsonl). Every turn appends, in time ord
 
   user_turn       the customer's message (after PII redaction) and what was removed
   routing         orchestrator: intent, extracted parameters, commitments, readback reply, profile after
-  readback        read back / confirmed / corrections (Feature 2)
+  readback        read back / confirmed / corrections
   retrieval       query, product filter, every hit with title, URL, publisher, as-of date, score, cited?
   engine          rules-engine input profile, criteria_version and every product's result
   counterfactual  every counterfactual engine run (lever, candidate, verdict, headroom) and the paths
   draft           the reply as drafted, before review
   compliance      verdict, issues, unsupported numbers, output-filter and lexicon actions
   handoff         the banker lead card
-  defence         which defence layers acted (Feature 3)
+  defence         which defence layers acted
   final           the reply the customer saw, sources, timings
 
-Everything written passes through the PII redactor once more, so an NRIC or card number can't reach
-disk even if some agent detail carried one. Logs are local, git-ignored, and contain customer
+Everything written passes through the PII redactor once more, so an NRIC or card number the redactor recognises
+can't reach disk even if some agent detail carried one. Phone numbers and emails aren't redacted. Logs are local, git-ignored, and contain customer
 conversations: treat them as such.
 """
 from __future__ import annotations
@@ -90,7 +90,7 @@ def record_turn(state, *, started_at: float, user_msg: str, pii_found: list, dra
         for seq, event in enumerate(events):
             event["seq"] = seq
             line = json.dumps(event, ensure_ascii=False, default=str)
-            f.write(pii.redact(line)[0] + "\n")  # last line of defence: nothing identifying reaches disk
+            f.write(pii.redact(line)[0] + "\n")  # last line of defence: no NRIC/FIN or card number the patterns catch
     return path
 
 

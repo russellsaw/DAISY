@@ -40,7 +40,7 @@ import requests
 from bs4 import BeautifulSoup, NavigableString
 
 from .. import config
-from .sources import SOURCES
+from .sources import SOURCES, SUPERSEDED_LINES
 
 HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; DAISY-kb-builder/0.2; hackathon prototype)"}
 CHUNK_CHARS = 900
@@ -342,6 +342,8 @@ def build(verbose: bool = True) -> dict:
     for entry, text in docs:
         if entry["kind"] == "html":
             text = "\n".join(l for l in text.splitlines() if (entry["publisher"], l.strip()) not in noise)
+        superseded = SUPERSEDED_LINES.get(entry["id"], [])
+        text = "\n".join(l for l in text.splitlines() if not any(s in l for s in superseded))
         url_key = hashlib.sha1(entry["url"].encode()).hexdigest()[:10]
         for i, piece in enumerate(chunk(text)):
             fingerprint = _sha(re.sub(r"\s+", " ", piece.lower()))

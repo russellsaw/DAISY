@@ -1,4 +1,4 @@
-"""Feature 3 — Swiss-cheese instrumentation. Deterministic, no API calls."""
+"""Swiss-cheese instrumentation. Deterministic, no API calls."""
 import sys
 from pathlib import Path
 

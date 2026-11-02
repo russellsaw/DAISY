@@ -28,7 +28,7 @@ flagged `adversarial` are classified stopped / prompt_only / hole.
 Always-on checks:
   - numbers_traceable    every number/date in the reply traces to the engine, the customer's words or a
                          retrieved page (the "LLM never generates a figure" constraint)
-  - banned_lexicon       eligibility replies never contain approval vocabulary (Feature 1)
+  - banned_lexicon       eligibility replies never contain approval vocabulary
   - outcome_template     the fixed outcome sentence is present verbatim whenever a path is shown
   - no_engine_before_confirm  on every turn, the engine only ran on parameters the customer confirmed
 Writes evals/results/<timestamp>.json and latest.json (with run history).

@@ -1,4 +1,4 @@
-"""Feature 5 — input guardrail. Deterministic: model calls are stubbed."""
+"""input guardrail. Deterministic: model calls are stubbed."""
 import sys
 from pathlib import Path
 
@@ -170,11 +170,16 @@ def test_reviewer_is_told_about_text_appended_after_it(pipeline_stubs, monkeypat
     assert HANDOFF_NOTE in seen["context"]
 
 
-def test_stress_rate_note_only_when_the_calculator_rate_is_quoted():
+def test_comparison_offers_the_eligibility_check_next():
+    from src.pipeline import DISCOVERY_NOTE, _code_notes
+    assert _code_notes("comparison", "Here are the cards [1].") == DISCOVERY_NOTE
+    assert _code_notes("product_qa", "Here are the cards [1].") == ""
+
+
+def test_stress_rate_note_only_when_the_planning_rate_is_quoted():
     from src.pipeline import STRESS_NOTE, _code_notes
-    assert _code_notes("product_qa", "DBS uses a medium-term 3.5% interest rate [1].") == STRESS_NOTE
+    assert _code_notes("product_qa", "DBS uses a medium-term 4.65% interest rate [1].") == STRESS_NOTE
     assert "4%" in STRESS_NOTE and "4.65%" in STRESS_NOTE
-    assert _code_notes("product_qa", "Earn 3.5% cashback on dining [1].") == ""
     assert _code_notes("product_qa", "The fee is S$120 [1].") == ""
 
 

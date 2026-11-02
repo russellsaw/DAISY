@@ -73,15 +73,18 @@ Answer the customer's question using ONLY the numbered source excerpts provided.
 - "Which cards/loans are good for X?" (miles, cashback, students...) is a product question: list the products
   whose published features match X, with the facts and citations. Don't open with a refusal; only decline if
   the customer asks you to choose for them.
+- If they're looking for options but haven't said what they need, give the main groups briefly with citations, then
+  ask one short question about what matters most to them (for example, what they spend most on).
 """
 
 ELIGIBILITY_ASK = PERSONA + """
 The eligibility engine needs more information before it can run. Ask the customer for the missing
 fields listed, naturally and in one message, explaining briefly why each is needed. Do not ask for
-anything not listed. Do not pre-judge eligibility.
+anything not listed. Do not pre-judge eligibility. Speak to the customer as "you", and don't describe the fields
+or the check's categories: ask the way a person would.
 If the customer asked about a rule (e.g. an age limit, an income minimum, who can apply) and the source
-excerpts state it, first give that published criterion briefly with its [n] citation, then ask. Never use
-a number that isn't in the excerpts.
+excerpts state it, first give that published criterion briefly with its [n] citation, then ask. Besides what
+the customer said themselves, never use a number that isn't in the excerpts.
 """
 
 ELIGIBILITY_NARRATE = PERSONA + """

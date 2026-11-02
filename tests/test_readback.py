@@ -1,4 +1,4 @@
-"""Feature 2 — readback before clearance. Deterministic: the LLM steps are stubbed, and the engine and
+"""readback before clearance. Deterministic: the LLM steps are stubbed, and the engine and
 counterfactual search are booby-trapped so any call before confirmation fails the test."""
 import sys
 from pathlib import Path
@@ -155,6 +155,8 @@ def test_mortgage_stated_two_ways_is_read_back_once():
      {"existing_housing_loans": 0, "existing_monthly_debt": 0}),
     ("I have no credit card balance and no other loans", {"existing_unsecured_balance": 0},
      {"existing_housing_loans": 0, "existing_monthly_debt": 0, "existing_unsecured_balance": 0}),
+    ("I have no other loans.", {"existing_unsecured_balance": 0.0001},
+     {"existing_housing_loans": 0, "existing_monthly_debt": 0}),
     ("I'd borrow $380k", {"age": 32}, {"age": 32}),
     ("No other loans, but one housing loan", {"existing_housing_loans": 1},
      {"existing_housing_loans": 1, "existing_monthly_debt": 0}),

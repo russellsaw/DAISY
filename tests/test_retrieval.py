@@ -42,3 +42,14 @@ def test_citations_grouped_per_page():
     sources, cited = cited_sources("x [1] y [3] z [2] [9]", chunks)
     assert cited == {1, 2, 3, 9}
     assert sources == [{"n": [1, 3], "title": "A", "url": "u1"}, {"n": [2], "title": "B", "url": "u2"}]
+
+
+def test_superseded_rate_is_out_of_the_index_but_kept_in_the_snapshot():
+    import json
+
+    from src import config
+    from src.knowledge import ingest
+    assert "3.5% interest rate" in ingest.read_snapshot("dbs-mortgage-calculator")
+    kb = json.loads(config.KB_PATH.read_text())
+    assert not any("3.5% interest rate" in c["text"] for c in kb["chunks"])
+    assert any("4.65%" in c["text"] and c["doc_id"] == "dbs-home-budget-calculator" for c in kb["chunks"])

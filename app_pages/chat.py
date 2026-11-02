@@ -13,16 +13,6 @@ from src.rules.counterfactual import fmt_date
 from src.ui import md_safe
 
 AVATAR = "static/daisy-mark.svg"
-AGENT_ICONS = {
-    "PII guard": ":material/shield_lock:",
-    "Orchestrator": ":material/alt_route:",
-    "Product Knowledge": ":material/menu_book:",
-    "Eligibility": ":material/calculate:",
-    "Boundary": ":material/front_hand:",
-    "Handoff": ":material/support_agent:",
-    "Compliance": ":material/verified_user:",
-    "Drafting": ":material/edit_note:",
-}
 # Plain names for each step of the pipeline, as the customer sees them (trace data keeps the internal names).
 STEP_NAMES = {
     "PII guard": "Privacy check",
@@ -70,9 +60,11 @@ SUGGESTIONS = {
     ":material/home: Can I get an HDB loan?":
         "I'm 32, a PR earning $7k a month. Can I get a home loan for a $550k HDB flat? "
         "I'd borrow $380k over 25 years and have no other loans.",
-    ":material/credit_card: Credit card annual fees": "Is there an annual fee on DBS credit cards?",
+    ":material/calculate: How much can I borrow?": "How much can I borrow for a home?",
+    ":material/search: Find a card for my spending":
+        "I'm looking for a DBS credit card. What options are there for different kinds of spending?",
     ":material/payments: Cashline or personal loan?": "How does Cashline differ from a personal loan?",
-    ":material/event_busy: Fees for repaying early": "Is there a fee if I repay my DBS personal loan early?",
+    ":material/credit_card: Credit card annual fees": "Is there an annual fee on DBS credit cards?",
 }
 
 
@@ -91,18 +83,6 @@ if "turns" not in st.session_state:
     st.session_state.turns = []  # list of {"user": str, "result": TurnResult, "seconds": float}
 
 state: ConversationState = st.session_state.state
-
-
-def render_trace(result, label: str) -> None:
-    with st.expander(label, type="compact"):
-        for ev in result.trace:
-            with st.expander(step_name(ev.agent), type="step", icon=AGENT_ICONS.get(ev.agent)):
-                st.caption(md_safe(ev.summary))
-                if ev.detail:
-                    st.json(ev.detail, expanded=False)
-        if result.compliance.get("original_draft"):
-            st.caption("First draft, before review")
-            st.text(result.compliance["original_draft"])
 
 
 def render_assistant(result, seconds: float | None) -> None:
@@ -125,20 +105,20 @@ def render_assistant(result, seconds: float | None) -> None:
             ns = ns if isinstance(ns, list) else ([ns] if ns else [])
             return ("".join(f"[{n}]" for n in ns) + " " if ns else "") + f"[{src['title']}]({src['url']})"
         st.caption(":material/link: Sources: " + ", ".join(label(src) for src in result.sources))
-    took = f" ({seconds:.0f} seconds)" if seconds else ""
-    render_trace(result, f"How this reply was checked{took}")
+    if seconds:
+        st.caption(f":material/schedule: Checked in {seconds:.0f} seconds")
 
 
 # ---------------- Sidebar: live customer profile, eligibility, lead card ----------------
 with st.sidebar:
-    st.caption("DAISY is an AI prototype, not a DBS service. It answers about DBS home loans, credit cards and "
-               "personal loans. Product information only, not financial advice.")
+    st.caption("DAISY is an AI prototype built for the DBS brief, not a live DBS service. It answers about DBS home "
+               "loans, credit cards and personal loans. Product information only, not financial advice.")
 
     kb = retriever.load()
     if kb.ready:
-        built = kb.meta.get("built_on")
-        st.caption(f":material/library_books: Based on {len(kb.meta.get('documents', []))} DBS, MAS and HDB pages"
-                   + (f", updated {fmt_date(built)}." if built else "."))
+        saved = min((c["fetched_at"][:10] for c in kb.chunks if c.get("fetched_at")), default=None)
+        st.caption(f":material/library_books: Based on {len(kb.meta.get('documents', []))} DBS, POSB, MAS and HDB pages"
+                   + (f", saved on or after {fmt_date(saved)}." if saved else "."))
     else:
         st.error("Knowledge base missing. Run `python scripts/ingest.py`.", icon=":material/error:")
 
@@ -183,6 +163,14 @@ with st.sidebar:
             st.markdown(f"**{r['product_name']}**")
             st.badge(label, color=color, icon=icon)
 
+    if state.last_max_loan and state.is_confirmed():
+        st.subheader("Maximum home loan", anchor=False)
+        st.caption("Indicative only. This isn't a loan approval.")
+        for at, label in ((state.last_max_loan["at_floor"], "At the MAS floor"),
+                          (state.last_max_loan["at_planner"], "At DBS's planning rate")):
+            if at["max_loan"] is not None:
+                st.markdown(md_safe(f":gray[{label} ({at['rate'] * 100:g}%)]  \n**S${at['max_loan']:,.0f}**"))
+
     if state.handoff_card:
         st.caption(":material/support_agent: A summary is ready for a DBS banker. In this prototype it stays on the "
                    "Banker view page and nothing is sent to DBS.")
@@ -204,7 +192,8 @@ if not st.session_state.turns:
     st.markdown(f"##### {config.ASSISTANT_TAGLINE}")
     st.markdown("Ask me about DBS home loans, credit cards and personal loans.")
     st.caption("I answer from DBS's published information and can check whether you meet the basic criteria. "
-               "Every answer is checked before you see it. This isn't financial advice or a loan approval.")
+               "Replies are checked before you see them, by a compliance review or by code. This isn't financial advice "
+               "or a loan approval.")
 
 for turn in st.session_state.turns:
     with st.chat_message("user"):
@@ -235,8 +224,7 @@ if prompt:
                 if threading.get_ident() != owner:  # background threads can't draw
                     return
                 status.update(label=f":shimmer[{step_name(ev.agent)}]")
-                with st.status(step_name(ev.agent), type="step", state="complete"):
-                    st.caption(md_safe(ev.summary))
+                st.status(step_name(ev.agent), type="step", state="complete")
 
             state.listener = on_event
             n_messages = len(state.messages)

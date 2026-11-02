@@ -122,6 +122,17 @@ def test_recent_history_starts_with_user():
     assert hist[0]["role"] == "user" and hist[-1]["content"] == "10"
 
 
+def test_transcript_leaves_out_the_message_being_handled():
+    from src.state import ConversationState
+
+    st = ConversationState()
+    st.messages = [{"role": "user", "content": "first"}, {"role": "assistant", "content": "reply"},
+                   {"role": "user", "content": "second"}]
+    assert "second" in st.transcript()
+    assert "second" not in st.transcript(before="second") and "reply" in st.transcript(before="second")
+    assert "second" in st.transcript(before="something else")
+
+
 def test_schemas_stay_within_structured_output_limits():
     """The API rejects schemas with too many union-typed (nullable) parameters (17 failed every request)."""
     from evals.judge import SCHEMA as JUDGE

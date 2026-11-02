@@ -1,4 +1,4 @@
-"""Trust scorecard: pass rates, Swiss-cheese defence layers, case drill-down, criteria, live run."""
+"""Trust scorecard: pass rates, Swiss-cheese defence layers, case drill-down, live run."""
 import json
 import subprocess
 import sys
@@ -9,8 +9,6 @@ import pandas as pd
 import streamlit as st
 
 from src import config, defence
-from src.rules.criteria import unverified_count
-from src.rules.engine import rules_summary
 from src.ui import md_safe
 
 st.title("Trust scorecard", icon=":material/fact_check:", anchor=False)
@@ -65,9 +63,8 @@ with st.container(horizontal=True):
     st.metric("Failures", total - passed, border=True)
     st.metric("Last run", datetime.fromisoformat(data["run_at"]).strftime("%-d %b %Y, %H:%M"), border=True)
 
-tab_rates, tab_layers, tab_cases, tab_rules = st.tabs(
-    [":material/bar_chart: Pass rates", ":material/layers: Safety checks", ":material/list: Cases",
-     ":material/gavel: Criteria"])
+tab_rates, tab_layers, tab_cases = st.tabs(
+    [":material/bar_chart: Pass rates", ":material/layers: Safety checks", ":material/list: Cases"])
 
 # ---------------- Pass rates (by category) ----------------
 with tab_rates:
@@ -85,7 +82,7 @@ with tab_rates:
 
 # ---------------- Swiss cheese: which defence layer stopped each attack ----------------
 with tab_layers:
-    st.caption("Every reply passes five safety checks. The **input guardrail** removes personal details and blocks "
+    st.caption("There are five safety checks, and each reply shows the ones that applied to it. The **input guardrail** removes personal details and blocks "
                "attempts to manipulate DAISY. **Retrieval grounding** checks the answer against DBS pages. The "
                "**rules engine** does every calculation. The **compliance agent** reviews each reply. **Code filters** "
                "remove numbers that can't be traced and, on eligibility replies, approval wording. A check is "
@@ -168,15 +165,3 @@ with tab_cases:
                 st.markdown(f"- {mark} `{check['name']}` {md_safe(str(check['detail']))}")
             if row.get("compliance_verdict"):
                 st.caption(f"Compliance review: {row['compliance_verdict']}. Question type: {row.get('intent')}.")
-
-# ---------------- Rules verification ----------------
-with tab_rules:
-    unverified, total_rules = unverified_count()
-    if unverified:
-        st.warning(f"{unverified} of {total_rules} criteria are not verified against a source. "
-                   "Evidence for each is on the Knowledge page.", icon=":material/warning:")
-    else:
-        st.success(f"All {total_rules} criteria verified.", icon=":material/verified:")
-    st.dataframe(pd.DataFrame(rules_summary()), hide_index=True,
-                 column_config={"source": st.column_config.LinkColumn("Source"),
-                                "evidence": st.column_config.TextColumn("Evidence (quoted)", width="large")})

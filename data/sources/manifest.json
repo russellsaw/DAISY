@@ -707,6 +707,24 @@
   "last_changed": "2026-10-20T17:51:17",
   "error": null
  },
+ "dbs-home-budget-calculator": {
+  "id": "dbs-home-budget-calculator",
+  "url": "https://www.dbs.com.sg/personal/marketplace/property/plan/selection",
+  "title": "DBS Home Budget Calculator",
+  "publisher": "DBS",
+  "products": [
+   "home_loan"
+  ],
+  "kind": "txt",
+  "origin": "manual",
+  "status": "thin",
+  "fetched_at": "2026-11-02T18:13:34",
+  "last_good_fetch": "2026-11-02T18:13:34",
+  "sha256": "030e4f45cd66d0cdb50521611a1692c3a845cec61b16a6c82c61a2f11d4f438c",
+  "chars": 708,
+  "last_changed": "2026-11-02T18:13:34",
+  "error": null
+ },
  "dbs-home-loan-glossary": {
   "id": "dbs-home-loan-glossary",
   "url": "https://www.dbs.com.sg/personal/articles/nav/my-home/home-loan-glossary",

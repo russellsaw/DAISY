@@ -27,19 +27,21 @@ HANDOFF_REQUEST_REPLY = (
     "I can't promise an outcome, approval or timing."
 )
 # What really happens to a handoff. Written by code and appended after review, so no model can promise more.
-HANDOFF_NOTE = ("This is a prototype, so the summary stays on the Banker page: nothing is sent to DBS and no one "
+HANDOFF_NOTE = ("This is a prototype, so the summary stays on the Banker view page: nothing is sent to DBS and no one "
                 "will contact you automatically. To speak to someone now, please contact DBS directly.")
 
-# Three medium-term rates a customer can come across: the saved DBS page's 3.5%, DBS's planning tools' current
-# 4.65%, and the MAS floor the eligibility check uses. The maths is the same, so the rate is what moves the answer.
+# Two medium-term rates a customer can come across: DBS's planning tools' current 4.65%, and the MAS floor the
+# eligibility check uses. The maths is the same, so the rate is what moves the answer.
 _FLOOR = f"{MAS['stress_rate']['value']:.0%}"
 _PLANNER = f"{DBS_PLANNER_RATE['value']:.2%}"
 _TOOLS = f"[planning tools]({DBS_PLANNER_RATE['source']})"  # a link, so the customer can check the figure
-_STRESS_MENTION = re.compile(r"3\.5\s*%", re.IGNORECASE)
-_STRESS_CONTEXT = re.compile(r"medium[- ]term|calculator|stress|maximum loan", re.IGNORECASE)
-STRESS_NOTE = (f"A note on rates: 3.5% is what the DBS page I have quotes, but DBS's {_TOOLS} currently use "
-               f"{_PLANNER}. MAS sets a floor of {_FLOOR} for residential property loans, and the eligibility check "
-               "here uses that floor, so these can give different figures.")
+_STRESS_MENTION = re.compile(r"4\.65\s*%")
+STRESS_NOTE = (f"A note on rates: {_PLANNER} is what DBS's {_TOOLS} currently assume. MAS sets a floor of {_FLOOR} for "
+               "residential property loans, and the eligibility check here uses that floor, so the two can give "
+               "different figures.")
+# After a shortlist or comparison, the natural next step.
+DISCOVERY_NOTE = ("Next step: if you tell me your age, residency and monthly income, I can run an indicative check of "
+                  "whether you meet the general entry criteria.")
 HOME_CHECK_NOTE = (f"A note on this check: it uses the {_FLOOR} floor MAS sets for residential property loans. DBS's own "
                    f"{_TOOLS} currently assume {_PLANNER}, which can give a lower maximum loan, so a banker's "
                    "figure may differ.")
@@ -52,8 +54,10 @@ def _code_notes(intent: str, reply: str, home_check: bool = False) -> str:
         notes.append(HANDOFF_NOTE)
     if home_check:
         notes.append(HOME_CHECK_NOTE)
-    elif _STRESS_MENTION.search(reply) and _STRESS_CONTEXT.search(reply):
+    elif _STRESS_MENTION.search(reply):
         notes.append(STRESS_NOTE)
+    if intent == "comparison":
+        notes.append(DISCOVERY_NOTE)
     return "\n\n".join(notes)
 
 
@@ -77,13 +81,14 @@ class TurnResult:
     counterfactuals: list = field(default_factory=list)  # "not now, but when" results, one per failing product
     sources_text: str = ""  # what the drafting agent was grounded on (for the traceability eval)
     computations: dict = field(default_factory=dict)  # engine numbers the reply may use
+    max_loan: dict | None = None  # the "how much can I borrow?" result, when this turn ran it
     readback: bool = False      # this turn read the parameters back (no engine call)
     engine_ran: bool = False    # the rules engine ran this turn
     confirmed: bool = False     # the profile equals what the customer said yes to (after this turn)
     corrections: list = field(default_factory=list)  # values the customer corrected this turn
     defence: dict = field(default_factory=dict)  # which defence layer acted (src/defence.py)
     draft: str = ""             # the reply as drafted, before review (flight recorder)
-    guard: dict = field(default_factory=dict)  # input guardrail decision (Feature 5)
+    guard: dict = field(default_factory=dict)  # input guardrail decision
     log_path: str = ""          # where this conversation's flight-recorder log is
 
 
@@ -93,11 +98,20 @@ _DRAFT_AGENT = {"product_qa": "Product Knowledge", "comparison": "Product Knowle
                 "blocked": "Input guardrail"}
 
 
+def _wants_max_loan(state: ConversationState, decision: dict, products: list[str], changed: list[str]) -> bool:
+    """A new "how much can I borrow?", or one already waiting on details, unless they've moved on: they've now named
+    a loan amount to check, or they're asking about a different product."""
+    if decision.get("asks_max_loan"):
+        return not products or "home_loan" in products
+    if state.pending_max_loan and ("home_loan_amount" in changed or (products and "home_loan" not in products)):
+        state.pending_max_loan = False
+    return state.pending_max_loan
+
+
 def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
     started_at = time.time()
     state.turn_count += 1
     state.trace = []
-    state.last_sources = []
     user_msg, pii_found = pii.redact(user_msg)
     if pii_found:
         state.add_trace("PII guard", f"removed {', '.join(pii_found)} before any agent saw the message")
@@ -118,7 +132,7 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
 
     was_pending = state.pending_readback
     reference = state.readback_profile if was_pending else state.confirmed_profile
-    # Input guardrail (Feature 5) runs in parallel with the orchestrator, so it adds no latency. If it
+    # Input guardrail runs in parallel with the orchestrator, so it adds no latency. If it
     # blocks, everything the orchestrator extracted from the message is thrown away.
     profile_before = copy.deepcopy(state.profile)
     guard_job = _POOL.submit(input_guard.check, user_msg)
@@ -143,7 +157,7 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
     else:
         state.add_trace("Input guardrail", f"allowed ({guard['source']})", guard)
 
-    # ---- Readback before clearance (Feature 2) ----
+    # ---- Readback before clearance ----
     changed = decision.get("profile_changed") or []
     corrections = state.log_corrections(reference) if changed else []
     if corrections:
@@ -165,6 +179,9 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
         # A confirmed fact changed later (e.g. a contradicted end date): re-confirm before any result.
         intent, products = "eligibility", products or state.pending_products
 
+    if intent != "eligibility" and not state.pending_readback:
+        state.pending_max_loan = False
+
     try:
         if intent in ("product_qa", "comparison"):
             out = product_knowledge.answer(state, user_msg, products, decision.get("search_query", ""))
@@ -179,6 +196,12 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
         elif intent == "eligibility" and deterministic_reply:
             draft = deterministic_reply
             out = {"engine_ran": False}
+
+        elif intent == "eligibility" and _wants_max_loan(state, decision, products, changed):
+            out = eligibility.assess_max_loan(state, user_msg, search_query=decision.get("search_query", ""))
+            draft, computations = out["draft"], out["computations"]
+            sources = out.get("sources", [])
+            sources_text = out.get("excerpts", "")
 
         elif intent == "eligibility":
             out = eligibility.assess(state, user_msg, products, search_query=decision.get("search_query", ""))
@@ -229,16 +252,18 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
     # appended after review, so no model can alter or omit them. The reviewer sees them, so it doesn't
     # write them into the reply as well. Not shown if review replaced the reply.
     outcome = counterfactual.outcome_block(cfs) if cfs else ""
+    home_check = bool(out.get("engine_ran")) and any(r["product"] == "home_loan" for r in out.get("results", []))
     reviewed = compliance.review(state, user_msg, intent, draft, sources_text=sources_text,
                                  computations=computations, injection_suspected=injection,
-                                 deterministic=is_readback or draft == WHAT_TO_CHANGE_REPLY or intent == "blocked",
+                                 deterministic=(is_readback or draft == WHAT_TO_CHANGE_REPLY or intent == "blocked"
+                                                or bool(out.get("code_written"))),
                                  appended="\n\n".join(x for x in (outcome, HANDOFF_NOTE if intent == "handoff_request"
-                                                                   else "") if x))
+                                                                   else "", HOME_CHECK_NOTE if home_check else "") if x))
     final = reviewed["final"]
     if outcome and final != compliance.HANDOFF_FALLBACK:
         final = final.rstrip() + "\n\n" + outcome
-    home_check = bool(out.get("engine_ran")) and any(r["product"] == "home_loan" for r in out.get("results", []))
-    notes = _code_notes(intent, final, home_check) if final != compliance.HANDOFF_FALLBACK else ""
+    notes = (_code_notes(intent, final, home_check)
+             if final != compliance.HANDOFF_FALLBACK and not out.get("code_written") else "")
     if notes:
         final = final.rstrip() + "\n\n" + notes
         sources_text = "\n\n".join(x for x in (sources_text, notes) if x)  # so its numbers count as traced
@@ -260,7 +285,6 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
     state.add_trace("Defence layers", ", ".join(f"{k}={v['status']}" for k, v in layers.items()), layers)
 
     state.messages.append({"role": "assistant", "content": final})
-    state.last_sources = sources
     result = TurnResult(
         response=final,
         intent=intent,
@@ -273,6 +297,7 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
         counterfactuals=cfs,
         sources_text=sources_text,
         computations=computations,
+        max_loan=out.get("max_loan"),
         readback=is_readback,
         engine_ran=bool(intent == "eligibility" and out.get("engine_ran")),
         confirmed=state.is_confirmed(),

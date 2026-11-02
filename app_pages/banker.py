@@ -1,4 +1,4 @@
-"""Banker page: the lead cards DAISY prepares, for bank staff rather than the customer."""
+"""Banker view: the lead cards DAISY prepares, for bank staff rather than the customer."""
 import streamlit as st
 
 from src import recorder
@@ -81,6 +81,13 @@ with right:
             st.caption(md_safe(row["note"]))
     if not card.get("eligibility_snapshot"):
         st.caption("No eligibility check ran in this conversation.")
+
+    if card.get("max_loan"):
+        loan = card["max_loan"]
+        st.markdown(md_safe(f"**Maximum home loan over {loan['tenure_years']} years**  \n"
+                            f"S${loan['at_floor']:,.0f} at the MAS floor, S${loan['at_planner_rate']:,.0f} at DBS's "
+                            "planning rate") if loan["at_floor"] and loan["at_planner_rate"]
+                    else "**Maximum home loan**  \nNo amount met today's criteria")
 
     st.subheader("Customer details", anchor=False)
     profile = card.get("profile") or {}

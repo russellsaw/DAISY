@@ -271,7 +271,6 @@ def search(p: CustomerProfile, product: str, *, today: date | None = None,
             borderline.append(near)
 
     if not paths:  # pairs, only when no single lever works; never three
-        fixed = [lv for lv in levers if lv.steps is None]
         for a, b in itertools.combinations(levers, 2):
             first, second = (a, b) if a.steps is None else (b, a)
             if first.steps is not None:
@@ -282,7 +281,6 @@ def search(p: CustomerProfile, product: str, *, today: date | None = None,
                 paths.append(path)
             elif near:
                 borderline.append(near)
-        del fixed
 
     paths.sort(key=lambda x: 0 if x["lever_kind"] == "dated" else 1)  # dated first, then what-ifs
     return {

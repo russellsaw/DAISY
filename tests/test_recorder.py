@@ -1,4 +1,4 @@
-"""Feature 4 — flight recorder. Deterministic: LLM steps stubbed; logs go to a temp dir (conftest)."""
+"""flight recorder. Deterministic: LLM steps stubbed; logs go to a temp dir (conftest)."""
 import sys
 from pathlib import Path
 

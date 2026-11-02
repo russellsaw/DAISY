@@ -68,10 +68,6 @@ def _mentions(text: str) -> set[tuple[str, bool]]:
             | {(n, True) for n in _PCT_RANGE.findall(text)})
 
 
-def _numbers(text: str) -> set[str]:
-    return {n for n, _ in _mentions(text)}
-
-
 def unsupported_numbers(draft: str, allowed_text: str, computations: dict, profile: dict, user_text: str) -> list[str]:
     mentions = _mentions(allowed_text) | _mentions(user_text)
     allowed = {n for n, _ in mentions}

@@ -136,12 +136,6 @@ def test_home_loan_reduced_ltv_past_65():
     assert r.status == "not_eligible"  # 700k > 55% of 1m
 
 
-def test_profile_accepts_legacy_loan_amount():
-    p = CustomerProfile()
-    p.update({"loan_amount": 380000})
-    assert p.home_loan_amount == 380000.0
-
-
 def test_every_verified_criterion_has_evidence():
     for key, item in MAS.items():
         if item["verified"]:
