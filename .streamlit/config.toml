@@ -1,8 +1,8 @@
 # DAISY ("DBS AI, Straight with You"): DBS colours and design language. DBS red (#FF3333) for actions and
 # accents, black (#000000) type on white, light grey surfaces, one clean sans-serif. Light only: a single
 # [theme] section locks the look, so there is no dark mode to switch to.
-# Small red text (links, red badges) uses #CC2929, a shade of the same red: #FF3333 on white is about 3.4:1,
-# below the 4.5:1 small text needs; #CC2929 is about 5.4:1. No DBS logo or trademarked assets are used.
+# Small red text (links, red badges) uses #DC1F1F: #FF3333 on white is about 3.6:1, below the 4.5:1 small text needs;
+# #DC1F1F is about 4.9:1 on white and 4.6:1 on the red-tinted surfaces. No DBS logo or trademarked assets are used.
 
 [theme]
 base = "light"
@@ -19,26 +19,26 @@ metricValueFontSize = "1.9rem"
 metricValueFontWeight = 600
 primaryColor = "#FF3333"
 backgroundColor = "#FFFFFF"
-secondaryBackgroundColor = "#F4F5F7"
+secondaryBackgroundColor = "#FFF5F5"
 textColor = "#000000"
-borderColor = "#E3E5EA"
-linkColor = "#CC2929"
-codeBackgroundColor = "#F4F5F7"
-redColor = "#CC2929"
+borderColor = "#F5DADA"
+linkColor = "#DC1F1F"
+codeBackgroundColor = "#FFF5F5"
+redColor = "#DC1F1F"
 greenColor = "#0F8A5F"
 orangeColor = "#C2410C"
 blueColor = "#1D4ED8"
-dataframeHeaderBackgroundColor = "#F4F5F7"
+dataframeHeaderBackgroundColor = "#FFF5F5"
 chartCategoricalColors = ["#FF3333", "#000000", "#0E9F9A", "#F59E0B", "#6366F1", "#64748B", "#DB2777"]
 
 [theme.sidebar]
-backgroundColor = "#FAFAFB"
-secondaryBackgroundColor = "#F0F1F4"
-codeBackgroundColor = "#F0F1F4"
+backgroundColor = "#FFF5F5"
+secondaryBackgroundColor = "#FFEAEA"
+codeBackgroundColor = "#FFEAEA"
 textColor = "#000000"
-borderColor = "#E3E5EA"
+borderColor = "#F5DADA"
 primaryColor = "#FF3333"
-linkColor = "#CC2929"
+linkColor = "#DC1F1F"
 
 [client]
 toolbarMode = "minimal"

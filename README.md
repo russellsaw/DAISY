@@ -121,7 +121,7 @@ Design decisions worth knowing:
 
 | Measure | Result | Date |
 |---|---|---|
-| Eval suite (`evals/`) | **136/136 passed** in one run. 20 attacks: 20 stopped, 0 got through. No ordinary question was blocked | 2026-11-02 |
+| Eval suite (`evals/`) | **136/136 passed** on the final code. 20 attacks: 20 stopped, 0 got through. No ordinary question was blocked | 2026-11-02 |
 | DeepEval RAG metrics (76 questions, Claude Sonnet as judge) | **74/76 passed.** Faithfulness 76/76 (mean 0.99), Answer Relevancy 75/76 (0.96), Contextual Recall 18/19 (0.97) | 2026-11-02 |
 | Helpfulness (50 broad questions, rated by a reviewer model; not re-run since) | good answers 27 → 39–40 after fixes, knowledge gaps 12 → 2–4, unsafe 0 | 2026-10-25 |
 | Offline unit tests | 163 passed | 2026-11-02 |
@@ -132,7 +132,8 @@ can act on an attack the model would have refused anyway.
 
 The two DeepEval failures, which we left in rather than lowering a threshold: b26 (the judge marked down the as-of date
 and disclaimers that DAISY's rules require), and gen-07 (DAISY gave the correct steps for the mobile app when the expected
-answer was the web route).
+answer was the web route). DeepEval ran shortly before the last change, a code-written note on rates that doesn't alter what
+the model writes.
 
 Model-written replies vary between runs, so treat one or two eval cases either way as noise. See
 [`docs/ASSUMPTIONS_AND_LIMITATIONS.md`](docs/ASSUMPTIONS_AND_LIMITATIONS.md) §13 for how the suite works and what it can't tell you.
@@ -162,7 +163,7 @@ Plain `pytest` skips `tests/evals/`.
 - **Some DBS pages aren't captured** because they only render in a browser: home-loan fees and documents, and the card
   late-fee table.
 - **PII:** phone numbers and emails aren't redacted. Logs are local files with no encryption or retention policy.
-- **Latency:** about 10 s per turn at the median and 16 s at the 90th percentile in the last eval run. Several model calls run in sequence on each turn.
+- **Latency:** about 10 s per turn at the median and 14 s at the 90th percentile in the last eval run. Several model calls run in sequence on each turn.
 - **Criteria:** 20 of 21 were checked against the cited page on 2026-10-20 and carry the evidence. The HDB buyer rule was read from the live page, but the saved copy holds only menus, so it can't be re-read offline. The home-loan minimum age is unverified because no DBS page states it.
 - **Not production-ready:** no authentication, rate limiting or monitoring.
 

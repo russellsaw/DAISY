@@ -200,7 +200,7 @@ if not config.ANTHROPIC_API_KEY:
              "restart the app.", icon=":material/key:")
 
 if not st.session_state.turns:
-    st.title(f"{config.ASSISTANT_NAME}", anchor=False)
+    st.title(f":primary[{config.ASSISTANT_NAME}]", anchor=False)
     st.markdown(f"##### {config.ASSISTANT_TAGLINE}")
     st.markdown("Ask me about DBS home loans, credit cards and personal loans.")
     st.caption("I answer from DBS's published information and can check whether you meet the basic criteria. "

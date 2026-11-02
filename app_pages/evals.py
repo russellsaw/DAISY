@@ -18,7 +18,7 @@ st.caption("How DAISY did in the last full run of our test conversations, includ
            "is run by hand, not automatically, and failures stay visible. Model-written replies vary, so a result can "
            "move by a case or two between runs.")
 
-PASS_COLOR, FAIL_COLOR = "#0F8A5F", "#CC2929"  # green for a pass, red only for a failure
+PASS_COLOR, FAIL_COLOR = "#0F8A5F", "#DC1F1F"  # green for a pass, red only for a failure
 
 latest = config.EVAL_RESULTS_DIR / "latest.json"
 
