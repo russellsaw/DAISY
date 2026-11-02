@@ -22,6 +22,18 @@ def _luhn_ok(digits: str) -> bool:
     return total % 10 == 0
 
 
+def redact_values(value):
+    """Redact every string inside a JSON-like value. Numbers and structure are left alone, so a long number
+    can't be mistaken for a card and leave the line unreadable."""
+    if isinstance(value, str):
+        return redact(value)[0]
+    if isinstance(value, dict):
+        return {k: redact_values(v) for k, v in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [redact_values(v) for v in value]
+    return value
+
+
 def redact(text: str) -> tuple[str, list[str]]:
     """Return (redacted_text, kinds_found)."""
     found: list[str] = []

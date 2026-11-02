@@ -1,4 +1,5 @@
 """Assistant page: the customer conversation, the live profile and the agent timeline."""
+import copy
 import sys
 import threading
 import time
@@ -163,7 +164,8 @@ with st.sidebar:
             st.markdown(f"**{r['product_name']}**")
             st.badge(label, color=color, icon=icon)
 
-    if state.last_max_loan and state.is_confirmed():
+    # Only while the details still match what it was worked out from.
+    if state.last_max_loan and state.last_max_loan["profile"] == state.profile.to_dict() and state.is_confirmed():
         st.subheader("Maximum home loan", anchor=False)
         st.caption("Indicative only. This isn't a loan approval.")
         for at, label in ((state.last_max_loan["at_floor"], "At the MAS floor"),
@@ -207,7 +209,9 @@ if st.session_state.turns and state.pending_readback:
         prompt = "Yes, that's right."
 if not st.session_state.turns:
     suggestions = st.empty()
-    picked = suggestions.pills("Try asking", list(SUGGESTIONS), label_visibility="collapsed")
+    # A new key after a failed turn, so the old pick doesn't fire again and override what's typed next.
+    picked = suggestions.pills("Try asking", list(SUGGESTIONS), label_visibility="collapsed",
+                               key=f"suggestion_{st.session_state.get('failed_turns', 0)}")
     if picked:
         prompt = SUGGESTIONS[picked]
     if prompt:
@@ -226,13 +230,14 @@ if prompt:
                 status.update(label=f":shimmer[{step_name(ev.agent)}]")
                 st.status(step_name(ev.agent), type="step", state="complete")
 
+            before_turn = copy.deepcopy(state)  # a failed turn must leave nothing behind: details, readback, count
             state.listener = on_event
-            n_messages = len(state.messages)
             started = time.time()
             try:
                 result = run_turn(state, prompt)
             except Exception as exc:  # noqa: BLE001
-                del state.messages[n_messages:]  # don't leave an unanswered user turn in the history
+                st.session_state.state = before_turn
+                st.session_state.failed_turns = st.session_state.get("failed_turns", 0) + 1
                 status.update(label="Something went wrong", state="error")
                 st.error("Sorry, something went wrong. Please try again.", icon=":material/error:")
                 print(f"run_turn failed: {exc!r}", file=sys.stderr)  # details for the operator, not the customer

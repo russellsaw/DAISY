@@ -53,3 +53,10 @@ def test_superseded_rate_is_out_of_the_index_but_kept_in_the_snapshot():
     kb = json.loads(config.KB_PATH.read_text())
     assert not any("3.5% interest rate" in c["text"] for c in kb["chunks"])
     assert any("4.65%" in c["text"] and c["doc_id"] == "dbs-home-budget-calculator" for c in kb["chunks"])
+
+
+def test_singular_and_plural_become_the_same_word():
+    from src.knowledge.retriever import _stem
+    for one, many in [("rate", "rates"), ("mile", "miles"), ("home", "homes"), ("balance", "balances"),
+                      ("purchase", "purchases"), ("branch", "branches"), ("card", "cards"), ("fee", "fees")]:
+        assert _stem(one) == _stem(many), (one, many)

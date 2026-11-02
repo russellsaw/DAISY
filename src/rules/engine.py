@@ -225,8 +225,8 @@ def check_home_loan(p: CustomerProfile, stress_rate: float | None = None) -> Eli
     ok = _age_check(p, "home_loan", result)
     ptype = p.property_type if p.property_type in ("hdb", "ec", "private") else "private"
     existing_property = p.property_loan_monthly()
-    # A stated mortgage repayment means at least one housing loan, even if the count wasn't given.
-    n_loans = min(p.existing_housing_loans if p.existing_housing_loans is not None else int(existing_property > 0), 2)
+    # A stated mortgage repayment means at least one housing loan, whatever the count says.
+    n_loans = min(max(p.existing_housing_loans or 0, int(existing_property > 0)), 2)
     existing_debt = p.total_monthly_debt()
     loan = p.home_loan_amount
 
@@ -257,6 +257,13 @@ def check_home_loan(p: CustomerProfile, stress_rate: float | None = None) -> Eli
     result.computations["max_tenure_years"] = max_tenure
     if not _check(result, "max_tenure", p.tenure_years, max_tenure, "max", p.tenure_years <= max_tenure):
         result.reasons.append(f"Tenure {p.tenure_years}y exceeds the maximum of {max_tenure}y for {ptype.upper()}.")
+        ok = False
+
+    if not _check(result, "min_tenure", p.tenure_years, 1, "min", p.tenure_years >= 1):
+        result.reasons.append("The loan tenure must be at least 1 year.")
+        ok = False
+    if not _check(result, "loan_amount", loan, 1, "min", loan >= 1):
+        result.reasons.append("The loan amount must be more than zero.")
         ok = False
 
     # --- LTV ---

@@ -6,7 +6,7 @@ from datetime import date
 
 from .. import commitments as commitment_rules
 from .. import llm
-from ..state import PROFILE_FIELDS, ConversationState
+from ..state import PROFILE_FIELDS, ConversationState, CustomerProfile, is_property_loan
 from . import prompts
 
 INTENTS = ["product_qa", "comparison", "eligibility", "advice_seeking",
@@ -116,11 +116,18 @@ _NO_OTHER_LOANS = re.compile(r"\bno (other |existing |outstanding )?(loans?|debt
 _CARD_BALANCE = re.compile(r"\b(cards?|unsecured|credit lines?|cashline)\b", re.IGNORECASE)
 
 
-def _apply_no_other_loans(updates: dict, user_msg: str) -> dict:
+def _apply_no_other_loans(updates: dict, user_msg: str, profile: CustomerProfile, commitments: list[dict]) -> dict:
+    """"No OTHER loans" says nothing about a loan already stated, so it only fills what's still unknown."""
     if not _NO_OTHER_LOANS.search(user_msg):
         return updates
-    updates = {"existing_housing_loans": 0, "existing_monthly_debt": 0, **updates}
-    if not _CARD_BALANCE.search(user_msg):
+    updates = dict(updates)
+    has_mortgage = any(is_property_loan(c.get("kind")) for c in [*commitments, *profile.commitments])
+    if profile.existing_housing_loans is None and not has_mortgage:
+        updates.setdefault("existing_housing_loans", 0)
+    if profile.existing_monthly_debt is None:
+        updates.setdefault("existing_monthly_debt", 0)
+    # The model tends to record a S$0 card balance here. A real balance it read stays.
+    if not _CARD_BALANCE.search(user_msg) and (updates.get("existing_unsecured_balance") or 0) < 1:
         updates.pop("existing_unsecured_balance", None)
     return updates
 
@@ -130,14 +137,21 @@ def _apply_no_other_loans(updates: dict, user_msg: str) -> dict:
 _EC = re.compile(r"\bEC\b|executive condo", re.IGNORECASE)
 _HDB = re.compile(r"\bhdb\b", re.IGNORECASE)
 _PRIVATE = re.compile(r"\b(condo|condominium|landed|bungalow|private (property|home|house|apartment))\b", re.IGNORECASE)
-_PRICE = re.compile(r"\$\s?(\d[\d,]*(?:\.\d+)?)\s*(k|m|mil|million)?\s+(?:\w+\s+){0,2}?"
+# A price only when the amount directly describes the property ("a $550k resale HDB flat"), not "$3,000 on my condo".
+_PRICE = re.compile(r"\$\s?(\d[\d,]*(?:\.\d+)?)\s*(k|m|mil|million)?\s+"
+                    r"(?:(?:new|resale|bto|private|freehold|leasehold|hdb)\s+){0,2}"
                     r"(hdb|flat|condo|condominium|property|home|house|apartment|ec)\b", re.IGNORECASE)
-_TENURE = re.compile(r"\bover\s+(\d{1,2})\s*(?:years?|yrs?)\b|\b(\d{1,2})[- ](?:years?|yr)\s+(?:loan|tenure)\b|"
-                     r"\btenure of\s+(\d{1,2})\b", re.IGNORECASE)
+# Not "for over 10 years" (work history) or "over 30 years old".
+_TENURE = re.compile(r"(?<!for )\bover\s+(\d{1,2})\s*(?:years?|yrs?)\b(?!\s+(?:old|ago|of))|"
+                     r"\b(\d{1,2})[- ](?:years?|yr)\s+(?:loan|tenure)\b|\btenure of\s+(\d{1,2})\b", re.IGNORECASE)
+_WHAT_IF = re.compile(r"\b(what if|if i|suppose|assume|assuming|let'?s say|imagine)\b", re.IGNORECASE)
 _MULTIPLIER = {"k": 1_000, "m": 1_000_000, "mil": 1_000_000, "million": 1_000_000}
 
 
-def _apply_stated_property(updates: dict, user_msg: str) -> dict:
+def _apply_stated_property(updates: dict, user_msg: str, profile: CustomerProfile) -> dict:
+    """Only fills gaps: a value the model read this turn, or one already on the profile, always wins."""
+    if _WHAT_IF.search(user_msg):
+        return updates  # a hypothetical isn't a fact about the customer
     found = {}
     if _EC.search(user_msg):
         found["property_type"] = "ec"
@@ -149,7 +163,7 @@ def _apply_stated_property(updates: dict, user_msg: str) -> dict:
         found["property_price"] = float(price[1].replace(",", "")) * _MULTIPLIER.get((price[2] or "").lower(), 1)
     if tenure := _TENURE.search(user_msg):
         found["tenure_years"] = int(next(g for g in tenure.groups() if g))
-    return {**found, **updates}
+    return {**{k: v for k, v in found.items() if getattr(profile, k) is None and v}, **updates}
 
 
 def route(state: ConversationState, user_msg: str, today: date | None = None) -> dict:
@@ -159,10 +173,10 @@ def route(state: ConversationState, user_msg: str, today: date | None = None) ->
         f"Latest customer message:\n{user_msg}"
     )
     decision = llm.structured(prompts.ORCHESTRATOR, context, ROUTE_SCHEMA)
-    updates = _apply_no_other_loans(dict(decision.get("profile_updates") or {}), user_msg)
-    if decision.get("intent") == "eligibility":
-        updates = _apply_stated_property(updates, user_msg)
     resolved = [commitment_rules.resolve(c, user_msg, today or date.today()) for c in decision.get("commitments") or []]
+    updates = _apply_no_other_loans(dict(decision.get("profile_updates") or {}), user_msg, state.profile, resolved)
+    if decision.get("intent") == "eligibility":
+        updates = _apply_stated_property(updates, user_msg, state.profile)
     if resolved:
         updates["commitments"] = resolved
     decision["commitments_resolved"] = resolved

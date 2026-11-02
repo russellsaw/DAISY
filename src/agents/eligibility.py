@@ -8,6 +8,7 @@ The LLM extracts nothing here (the orchestrator did that). In order:
 from __future__ import annotations
 
 import json
+import re
 from datetime import date
 
 from .. import config, llm
@@ -22,6 +23,11 @@ from . import product_knowledge, prompts
 DEFAULT_PRODUCTS = ["personal_loan", "credit_card", "home_loan"]
 
 
+def _no_quote(description: str) -> str:
+    """The lever without the customer's words about its end date, which can contain the date."""
+    return re.sub(r" \(you told us: [^)]*\)", "", description)
+
+
 def _for_narration(cf: dict) -> dict:
     """What the narrating LLM may see of a counterfactual: the rule, the working, the levers.
     Dates and outcome wording are deliberately left out — code writes those."""
@@ -32,10 +38,11 @@ def _for_narration(cf: dict) -> dict:
         "binding_rule": cf["binding_label"],
         "current_value": cf["current_value"], "threshold": cf["threshold"], "gap": cf["gap"],
         "other_failing_rules": [r for r in cf["failing_rules"] if r != cf["binding_rule"]],
-        "levers": [{"kind": x["lever_kind"], "change": x["description"].split(" (you told us")[0],
+        "levers": [{"kind": x["lever_kind"], "change": _no_quote(x["description"]),
                     "binding_rule_value_after": (after(x) or {}).get("value"), "headroom": x["headroom"]}
                    for x in cf["paths"]],
-        "borderline_levers": [{"change": x["description"], "headroom": x["headroom"]} for x in cf["borderline"]],
+        "borderline_levers": [{"change": _no_quote(x["description"]), "headroom": x["headroom"]}
+                              for x in cf["borderline"]],
         "no_path": not cf["paths"],
     }
 
@@ -89,8 +96,10 @@ def readback_text(profile: CustomerProfile, products: list[str] | None = None, m
     if "personal_loan_amount" in d:
         lines.append(f"Personal loan: {money(d['personal_loan_amount'])}")
     if max_loan_check and "tenure_years" not in d:
-        lines.append(f"Tenure: not given, so I'll use {max_loan.default_tenure(profile)} years, the longest that keeps "
-                     "the full loan-to-value limit")
+        tenure = max_loan.default_tenure(profile)
+        lines.append(f"Tenure: not given, so I'll use {tenure} years, "
+                     + ("the longest that keeps the full loan-to-value limit" if max_loan.keeps_full_ltv(profile, tenure)
+                        else "the shortest available (the lower loan-to-value limit applies at your age)"))
     elif max_loan_check and "home_loan_amount" not in d:
         lines.append(f"Tenure: {d['tenure_years']} years")
     body = "\n".join(f"- {line}" for line in lines)
@@ -103,6 +112,9 @@ def readback_numbers(profile: CustomerProfile) -> dict:
     out = {}
     for i, c in enumerate(profile.commitments):
         out[f"commitment.{i}.monthly"] = c.get("monthly")
+        # The readback prints the customer's own words about the end date, on later turns too.
+        for j, number in enumerate(re.findall(r"\d+(?:\.\d+)?", (c.get("end_quote") or "").replace(",", ""))):
+            out[f"commitment.{i}.quote.{j}"] = float(number)
         if c.get("end_date"):
             d = date.fromisoformat(c["end_date"])
             out[f"commitment.{i}.end.y"], out[f"commitment.{i}.end.d"] = d.year, d.day
@@ -174,7 +186,8 @@ def assess(state: ConversationState, user_msg: str, products: list[str], today: 
     # 2. Readback before clearance: no engine call — forward or counterfactual — until the customer
     #    has said yes to exactly these parameters.
     if not state.is_confirmed():
-        state.start_readback(ready)
+        # Keep a product the customer named but hasn't given details for, so the result can say it wasn't checked.
+        state.start_readback(keys if products else ready)
         state.last_counterfactuals, state.last_eligibility = [], []
         state.add_trace("Readback", f"read back the parameters for {', '.join(ready)}; engine waits for a yes",
                         state.readback_profile)

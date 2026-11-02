@@ -32,7 +32,7 @@ decision is visible.
 | Product discovery and comparison | `comparison` intent: side-by-side answers from the cited pages, needs-based shortlists without a recommendation, a discovery starter on the Assistant page, and an eligibility check offered as the next step (cases qa-004, qa-017, qa-020, qa-021) |
 | A conversational chat interface | Streamlit app, **Assistant** page |
 | Guardrails aligned to banking guidelines | PII redaction, input guardrail, compliance agent, code filters on numbers and approval wording, advice boundary with a banker summary. [`docs/GUIDELINES.md`](docs/GUIDELINES.md) maps these to each requirement, and is plain about the gaps: of 20 requirements, 2 are met in the prototype, 11 partly and 7 not, mostly bank-level and production controls |
-| An evaluation framework | `evals/` (142 cases and an LLM judge, shown on the **Trust scorecard** page) and `tests/evals/` (DeepEval RAG metrics) |
+| An evaluation framework | `evals/` (145 cases and an LLM judge, shown on the **Trust scorecard** page) and `tests/evals/` (DeepEval RAG metrics) |
 
 ## Run it
 
@@ -43,7 +43,7 @@ Tested on Python 3.14 with the exact versions in `requirements.txt`. You need an
 python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 cp .env.example .env                                   # add your ANTHROPIC_API_KEY
-pytest -q                                              # 196 offline tests, no API key needed
+pytest -q                                              # 237 offline tests, no API key needed
 streamlit run app.py
 ```
 
@@ -92,7 +92,7 @@ Orchestrator ─── intent, profile facts, commitments, replies to a readback
    ▼
 Compliance agent (LLM) ─── approve / revise / handoff on advice boundary, grounding, approval language,
    │                        scope, fair dealing, prompt injection (code-written templates skip this step)
-Code filters ─── untraceable numbers rewritten or replaced; on eligibility replies, approval words too
+Code filters ─── untraceable numbers rewritten or replaced; on eligibility and advice replies, approval words too
 Code-written lines ─── "not now, but when" outcomes and fixed notes, appended after review
    │
    ▼
@@ -128,18 +128,24 @@ Design decisions worth knowing:
 
 | Measure | Result | Date |
 |---|---|---|
-| Eval suite (`evals/`) | **142/142 passed** on the final code. 20 attacks: 20 stopped, 0 got through. No ordinary question was blocked | 2026-11-02 |
-| DeepEval RAG metrics (77 questions, Claude Sonnet as judge) | **75/77 passed.** Faithfulness 77/77 (mean 0.99), Answer Relevancy 76/77 (0.96), Contextual Recall 18/19 (0.95) | 2026-11-02 |
+| Eval suite (`evals/`) | **144/145 passed** on the final code. 20 attacks: 20 stopped, 0 got through. No ordinary question was blocked | 2026-11-02 |
+| DeepEval RAG metrics (77 questions, Claude Sonnet as judge) | **76/77 passed.** Faithfulness 77/77 (mean 1.00), Answer Relevancy 77/77 (0.97), Contextual Recall 18/19 (0.95) | 2026-11-02 |
 | Helpfulness (50 broad questions, rated by a reviewer model; not re-run since 2026-10-29) | good answers 27 → 39–40 after fixes, then 46 good, 2 partial, 2 knowledge gaps. Unsafe 0 | 2026-10-25, 2026-10-29 |
-| Offline unit tests | 196 passed | 2026-11-02 |
+| Offline unit tests | 237 passed | 2026-11-02 |
 | Engine vs DBS's calculators | Instalments match on 5 of 5 personas. At DBS's 4.65% the maximum loan matches DBS's planner to the dollar. The eligibility check uses the MAS 4% floor: see below | 2026-11-02 |
 
 "Stopped" means the case passed and at least one check acted. It's weaker than "that check is what stopped it": a check
 can act on an attack the model would have refused anyway.
 
-The two DeepEval failures, which we left in rather than lowering a threshold: gen-15 is a real miss (a question about the
-credit report showing total unsecured balances was routed as out of scope and declined), and gen-06 (the judge marked down
-extra wording around a historical SORA rate).
+The failures, left visible rather than changing a test or a threshold:
+
+- **Eval suite, b13:** the judge read the next-step line after a comparison ("I can run an indicative check") as edging towards
+  approval language. We kept the line: it promises nothing and offers the check the brief asks for.
+- **DeepEval, gen-15:** a real miss. A question about the credit report showing total unsecured balances is routed as out of
+  scope and declined, although a saved DBS page answers it.
+
+DeepEval ran just before the last small changes: a routing clarification for "could I qualify?" questions, approval words
+banned on advice replies, and the next-step line skipped when details are known.
 
 Model-written replies vary between runs, so treat one or two eval cases either way as noise. See
 [`docs/ASSUMPTIONS_AND_LIMITATIONS.md`](docs/ASSUMPTIONS_AND_LIMITATIONS.md) §13 for how the suite works and what it can't tell you.

@@ -31,9 +31,10 @@ have shared. Intent definitions:
   including how they apply to the customer's own borrowing (how existing balances count or can be checked).
   Home loans include HDB and private property loans, refinancing/repricing and renovation loans.
 - comparison: comparing two or more products or asking which options exist for a need.
-- eligibility: asking whether they qualify, how much they can borrow, what would need to change for them
-  to qualify, or when they could qualify; or sharing income/age/property details with a view to checking
-  eligibility. (Asking what would need to change is eligibility, not advice: the engine answers it.)
+- eligibility: asking whether THEY qualify ("can I get...", "could I qualify...", "at my age", "which products could
+  I qualify for"), how much they can borrow, what would need to change for them to qualify, or when they could
+  qualify; or sharing income/age/property details with a view to checking eligibility. (Asking what would need to
+  change is eligibility, not advice: the engine answers it. Only the engine may say whether someone qualifies.)
 - advice_seeking: asking what THEY should do — which product to pick, fixed vs floating, whether to
   borrow, whether something is a good idea, what will happen to rates.
 - handoff_request: the customer says they want to go ahead or talk to someone — "I'd like to apply",

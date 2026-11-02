@@ -259,3 +259,44 @@ def test_forward_looking_promise_is_swapped_not_thrown_away(monkeypatch):
     assert result.compliance["lexicon"]["action"] == "substituted"
     assert "you would meet today's criteria" in result.response and "TDSR is above the cap" in result.response
     assert compliance.banned_phrases(result.response) == []
+
+
+def test_a_pair_of_cleared_debts_removes_the_right_two():
+    from src.rules.counterfactual import _levers
+    today = date(2026, 11, 2)
+    p = CustomerProfile(age=32, residency="pr", monthly_income=5000, property_type="private", property_price=1_000_000,
+                        home_loan_amount=500_000, tenure_years=30,
+                        commitments=[{"kind": "car", "monthly": 1500.0}, {"kind": "student", "monthly": 200.0},
+                                     {"kind": "renovation", "monthly": 1500.0}])
+    levers = {lv.name: lv for lv in _levers(p, "home_loan", today)}
+    q = levers["commitment_cleared:student"].apply(levers["commitment_cleared:car"].apply(p))
+    assert [c["kind"] for c in q.commitments] == ["renovation"]
+
+
+def test_a_pair_of_dated_debts_ages_the_customer_once():
+    from src.rules.counterfactual import _levers
+    today = date(2026, 11, 2)
+    p = CustomerProfile(age=32, residency="pr", monthly_income=5000, property_type="private", property_price=1_000_000,
+                        home_loan_amount=500_000, tenure_years=30,
+                        commitments=[{"kind": "car", "monthly": 900.0, "end_date": "2028-01-31", "end_quote": "x"},
+                                     {"kind": "bike", "monthly": 900.0, "end_date": "2030-01-31", "end_quote": "y"}])
+    levers = {lv.name: lv for lv in _levers(p, "home_loan", today)}
+    q = levers["commitment_ends:bike"].apply(levers["commitment_ends:car"].apply(p))
+    assert q.age == 36 and q.commitments == []
+
+
+@pytest.mark.parametrize("quote,months", [("ends in 2 years", 24), ("in two years", 24), ("in 1 year", 12),
+                                          ("in a year", 12), ("in 18 months", 18), ("in half a year", 6)])
+def test_end_stated_in_years_gets_a_date(quote, months):
+    item = dict(EMPTY, kind="car loan", monthly_payment=600, end_quote=quote, ends_in_months=months)
+    assert resolve(item, f"car loan S$600, {quote}", TODAY)["end_date"]
+
+
+def test_a_past_end_clears_an_older_date():
+    item = dict(EMPTY, kind="car loan", monthly_payment=600, end_quote="it ended in 2025", end_year=2025)
+    assert resolve(item, "actually it ended in 2025", TODAY)["end_date"] is None
+
+
+def test_an_impossible_year_does_not_crash():
+    item = dict(EMPTY, kind="car loan", monthly_payment=600, end_quote="ends in 20000", end_year=20000)
+    assert "end_date" not in resolve(item, "car loan ends in 20000", TODAY)

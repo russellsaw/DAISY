@@ -162,7 +162,41 @@ def test_mortgage_stated_two_ways_is_read_back_once():
      {"existing_housing_loans": 1, "existing_monthly_debt": 0}),
 ])
 def test_no_other_loans_is_recorded_as_stated(msg, updates, expected):
-    assert orchestrator._apply_no_other_loans(updates, msg) == expected
+    assert orchestrator._apply_no_other_loans(updates, msg, CustomerProfile(), []) == expected
+
+
+def test_no_other_loans_keeps_a_mortgage_stated_in_the_same_message():
+    out = orchestrator._apply_no_other_loans({}, "I have a home loan of $1500 a month and no other loans",
+                                             CustomerProfile(), [{"kind": "home loan", "monthly": 1500}])
+    assert "existing_housing_loans" not in out and out["existing_monthly_debt"] == 0
+
+
+def test_no_other_loans_keeps_debts_stated_earlier():
+    p = CustomerProfile(existing_housing_loans=1, existing_monthly_debt=800)
+    assert orchestrator._apply_no_other_loans({}, "I have no other loans", p, []) == {}
+
+
+def test_no_other_loans_keeps_a_real_balance():
+    out = orchestrator._apply_no_other_loans({"existing_unsecured_balance": 5000}, "$5000 owing, no other loans",
+                                             CustomerProfile(), [])
+    assert out["existing_unsecured_balance"] == 5000
+
+
+def test_yes_only_confirms_what_was_read_back(bot):
+    send, state, calls = bot
+    send("details", PERSONA)
+    state.profile.update({"monthly_income": 9000})  # e.g. left behind by a failed turn: never read back
+    r = send("yes")
+    assert r.readback and not r.engine_ran and not state.is_confirmed()
+    assert calls["engine"] == 0 and "S$9,000" in r.response
+
+
+def test_later_readback_keeps_the_numbers_in_the_customer_s_own_words(bot):
+    send, state, calls = bot
+    car = {"kind": "car loan", "monthly": 600, "end_date": "2029-11-20", "end_quote": "ending in 36 months"}
+    send("details", {**PERSONA, "commitments": [car]})
+    r = send("Sorry, it's $6,500 a month", {"monthly_income": 6500}, reply="correct")
+    assert r.readback and "ending in 36 months" in r.response and r.compliance["output_filter"]["action"] is None
 
 
 def test_home_loan_result_carries_the_rate_note_and_its_numbers_trace(bot):

@@ -51,6 +51,8 @@ RULE_LABELS = {
     "max_tenure": "maximum loan tenure",
     "hdb_buyer_residency": "HDB buyer residency rule",
     "assessable_income": "assessable income",
+    "min_tenure": "minimum loan tenure",
+    "loan_amount": "loan amount",
 }
 
 
@@ -69,12 +71,13 @@ def fmt_date(d: date | str) -> str:
     return f"{d.day} {d.strftime('%b %Y')}"
 
 
-def _aged(p: CustomerProfile, when: date, today: date) -> CustomerProfile:
+def _aged(p: CustomerProfile, when: date, today: date, age_today: int | None = None) -> CustomerProfile:
     """The profile as of `when`. Birthdays are unknown, so age is rounded UP (conservative for the
-    age-65 LTV rule and maximum ages)."""
+    age-65 LTV rule and maximum ages). Counted from today's age, so a pair of dated levers doesn't age them twice."""
     q = copy.deepcopy(p)
-    if when > today and q.age is not None:
-        q.age = q.age + math.ceil((when - today).days / 365.25)
+    age_today = p.age if age_today is None else age_today
+    if when > today and age_today is not None:
+        q.age = max(q.age or 0, age_today + math.ceil((when - today).days / 365.25))
     return q
 
 
@@ -83,16 +86,17 @@ def _aged(p: CustomerProfile, when: date, today: date) -> CustomerProfile:
 def _levers(p: CustomerProfile, product: str, today: date) -> list[Lever]:
     levers: list[Lever] = []
 
-    for i, c in enumerate(p.commitments):
-        def remove(q, i=i):
+    for c in p.commitments:
+        # By kind, not position: in a pair, the second lever runs on a list the first has already shortened.
+        def remove(q, kind=c["kind"]):
             q = copy.deepcopy(q)
-            q.commitments = [x for j, x in enumerate(q.commitments) if j != i]
+            q.commitments = [x for x in q.commitments if x["kind"] != kind]
             return q
         label = f"your {c['kind']} (S${c['monthly']:,.0f}/month)"
         if c.get("end_date"):
             end = date.fromisoformat(c["end_date"])
             levers.append(Lever("dated", f"commitment_ends:{c['kind']}",
-                                apply=lambda q, f=remove, end=end: _aged(f(q), end, today),
+                                apply=lambda q, f=remove, end=end: _aged(f(q), end, today, p.age),
                                 describe=lambda q, label=label, quote=c.get("end_quote"):
                                     f"{label} has ended" + (f" (you told us: \u201c{quote}\u201d)" if quote else ""),
                                 when=end))

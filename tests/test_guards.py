@@ -49,6 +49,48 @@ def test_engine_ratio_counts_as_a_percentage():
     assert unsupported_numbers("MSR is 28.7%.", "", {"msr": 0.28654}, {}, "") == []
 
 
+def test_profile_values_do_not_launder_invented_figures():
+    assert unsupported_numbers("Rates start from 3% p.a.", "", {}, {"age": 32}, "") == ["3%"]
+    assert unsupported_numbers("Rates start from 25% p.a.", "", {}, {"tenure_years": 25}, "") == ["25%"]
+    assert unsupported_numbers("The fee is S$120.", "", {}, {"tenure_years": 10}, "") == ["120"]
+
+
+def test_income_may_be_quoted_monthly_or_yearly():
+    assert unsupported_numbers("That's S$84,000 a year.", "", {}, {"monthly_income": 7000.0}, "") == []
+    assert unsupported_numbers("A gap of 3.3 points, or 3.3%.", "", {"cf.headroom_pp": 3.3}, {}, "") == []
+
+
+# ---------------- engine and profile inputs ----------------
+
+def test_only_real_property_loans_count_as_mortgages():
+    from src.state import is_property_loan
+    for kind in ("home loan", "mortgage", "HDB loan", "housing loan", "investment property loan"):
+        assert is_property_loan(kind), kind
+    for kind in ("flat rate personal loan", "home appliance instalment", "inflation loan", "home renovation loan",
+                 "car loan"):
+        assert not is_property_loan(kind), kind
+
+
+def test_impossible_values_are_refused():
+    from src.state import CustomerProfile
+    p = CustomerProfile()
+    assert p.update({"tenure_years": 0, "age": 0, "home_loan_amount": -5, "existing_housing_loans": 0}) == \
+        ["existing_housing_loans"]
+
+
+def test_conversation_ids_do_not_look_like_card_numbers():
+    from src.state import ConversationState
+    for _ in range(50):
+        cid = ConversationState().conversation_id
+        assert pii.redact(cid) == (cid, [])
+
+
+def test_redacting_a_log_event_keeps_it_valid_and_leaves_numbers_alone():
+    event = {"n": 4111111111111111, "text": "card 4111 1111 1111 1111", "nested": [{"nric": "S1234567A"}]}
+    out = pii.redact_values(event)
+    assert out["n"] == 4111111111111111 and "4111" not in out["text"] and "S1234567A" not in str(out)
+
+
 # ---------------- PII guard ----------------
 
 def test_nric_and_card_removed():

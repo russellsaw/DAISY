@@ -31,7 +31,7 @@ _PATTERNS: list[tuple[str, re.Pattern]] = [
         r"\b(system|initial|hidden)\s+prompt\b|"
         r"\byour\s+(system|initial|hidden|original)\s+(instructions?|message)\b|"
         r"\b(repeat|print|reveal|show|output|recite)\b[^.?!]{0,40}\b(your\s+(prompt|instructions|rules|guidelines)"
-        r"\b(?!\s+(for|on|about|regarding))|the\s+prompt\b)|"
+        r"\b(?!\s+(for|on|about|regarding))|the\s+prompt\b(?=\s*(?:[.?!]|$)))|"
         r"\bwhat\s+(are|were)\s+your\s+(instructions|rules)\b(?!\s+(for|on|about|regarding))", re.I)),
     ("instruction_override", re.compile(
         r"\b(ignore|disregard|forget|override|bypass)\s+(all\s+|any\s+|of\s+)*(your|the|previous|prior|above|"
@@ -47,9 +47,10 @@ _PATTERNS: list[tuple[str, re.Pattern]] = [
         r"^\s*\[\s*(system|admin|developer|operator)\b[^\]]*\]|"
         r"^\s*(system|admin|developer|operator)\s+(note|message|override)\s*:|"
         r"^\s*(?-i:SYSTEM|ADMIN|DEVELOPER|OPERATOR)\s*:|"
-        r"\b(compliance|guardrails?|safety|review)\b[^.?!]{0,20}\b(is|are|has been|have been)\s+(disabled|turned off|"
+        r"\b(compliance|guardrails?|safety)\b[^.?!]{0,20}\b(is|are|has been|have been)\s+(disabled|turned off|"
         r"suspended|waived)\b|\b((you\s+are|you're)\s+now|the assistant is(\s+now)?)\s+(authori[sz]ed|permitted|allowed)\s+to\b|"
-        r"\bmessage\s+from\s+(dbs\s+)?(compliance|management|the bank|admin)\b", re.I | re.M)),
+        r"\b(here'?s|this is|forwarding)\s+a\s+message\s+from\s+(dbs\s+)?(compliance|management|the bank|admin)\b",
+        re.I | re.M)),
 ]
 
 BLOCKING = {"system_prompt_extraction", "instruction_override", "role_play_override", "fake_authority",

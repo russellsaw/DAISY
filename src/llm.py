@@ -137,4 +137,7 @@ def chat(system: str, history: list[dict], *, model: str | None = None, max_toke
          effort: str = "low") -> str:
     """Plain conversational completion over a message history."""
     response = complete(system, history, model=model, max_tokens=max_tokens, effort=effort)
-    return text_of(response)
+    text = text_of(response)
+    if response.stop_reason == "max_tokens" or not text:  # thinking counts against max_tokens
+        raise Refusal(f"reply {'cut off at max_tokens' if text else 'came back empty'}")  # becomes the banker handoff
+    return text

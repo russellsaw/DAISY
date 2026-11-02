@@ -85,7 +85,7 @@ with tab_layers:
     st.caption("There are five safety checks, and each reply shows the ones that applied to it. The **input guardrail** removes personal details and blocks "
                "attempts to manipulate DAISY. **Retrieval grounding** checks the answer against DBS pages. The "
                "**rules engine** does every calculation. The **compliance agent** reviews each reply. **Code filters** "
-               "remove numbers that can't be traced and, on eligibility replies, approval wording. A check is "
+               "remove numbers that can't be traced and, on eligibility and advice replies, approval wording. A check is "
                "highlighted when it stepped in, which includes routine work such as holding the calculation until "
                "details are confirmed, so an attack marked stopped may also have been refused by the model anyway.")
     if "defence" not in df.columns:

@@ -31,13 +31,13 @@ PROFILE_FIELDS: dict[str, tuple[str, str]] = {
     "commitments": ("Existing commitments", "Itemised monthly commitments (car loan, student loan, ...), each with an end date only if the customer stated one."),
 }
 
-# Commitments that are property loans count towards MSR as well as TDSR. A renovation loan is not a property loan.
-_PROPERTY_LOAN = re.compile(r"home|mortgage|housing|hdb|property|condo|flat", re.IGNORECASE)
+# Commitments that are property loans count towards MSR as well as TDSR. Whole words only: a "flat rate personal loan"
+# or a "home renovation loan" is not one.
+_PROPERTY_LOAN = re.compile(r"\bmortgage\b|\b(home|housing|hdb|property|condo|flat)\s+loan\b", re.IGNORECASE)
 
 
 def is_property_loan(kind: str | None) -> bool:
-    kind = kind or ""
-    return bool(_PROPERTY_LOAN.search(kind)) and "renovation" not in kind.lower()
+    return bool(_PROPERTY_LOAN.search(kind or ""))
 
 
 RESIDENCY_ALIASES = {
@@ -102,11 +102,15 @@ class CustomerProfile:
                     value = int(value)
                 except (TypeError, ValueError):
                     continue
+                if value < 0 or (key != "existing_housing_loans" and value == 0):  # no age or tenure of 0
+                    continue
             if key in ("monthly_income", "existing_monthly_debt", "existing_property_loan_monthly", "property_price",
                        "home_loan_amount", "personal_loan_amount", "existing_unsecured_balance"):
                 try:
                     value = float(value)
                 except (TypeError, ValueError):
+                    continue
+                if value < 0:
                     continue
             if getattr(self, key) != value:
                 setattr(self, key, value)
@@ -172,7 +176,8 @@ class TraceEvent:
 class ConversationState:
     # Flight recorder: one append-only log per conversation, in recording_dir
     # (default data/conversations/). record=False turns it off.
-    conversation_id: str = field(default_factory=lambda: time.strftime("%Y%m%d-%H%M%S-") + uuid.uuid4().hex[:6])
+    # The "T" matters: date and time joined by a hyphen look like a card number to the PII guard.
+    conversation_id: str = field(default_factory=lambda: time.strftime("%Y%m%dT%H%M%S-") + uuid.uuid4().hex[:6])
     record: bool = True
     recording_dir: Optional[str] = None
     turn_count: int = 0

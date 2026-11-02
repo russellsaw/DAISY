@@ -54,7 +54,7 @@ def build_card(state: ConversationState, trigger: str) -> dict:
         card["assessed_on"] = cfs[0]["assessed_on"]
         card["criteria_version"] = cfs[0]["criteria_version"]
         card["banker_note"] = "re-run criteria before contacting"
-    if state.last_max_loan:
+    if state.last_max_loan and state.last_max_loan["profile"] == state.profile.to_dict():
         card["max_loan"] = {"at_floor": state.last_max_loan["at_floor"].get("max_loan"),
                             "at_planner_rate": state.last_max_loan["at_planner"].get("max_loan"),
                             "tenure_years": state.last_max_loan["tenure_years"]}

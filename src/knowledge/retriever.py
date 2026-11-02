@@ -45,7 +45,10 @@ def _stem(token: str) -> str:
         return _NORMAL[token]
     if len(token) <= 3 or not token.isalpha():
         return token
-    for suffix, keep in (("ies", "y"), ("sses", "ss"), ("ing", ""), ("ed", ""), ("es", ""), ("s", "")):
+    # "es" only after a sibilant (branches, boxes). Otherwise just the "s": rates -> rate, miles -> mile.
+    if token.endswith(("ches", "shes", "xes", "zes")):
+        return token[:-2]
+    for suffix, keep in (("ies", "y"), ("sses", "ss"), ("ing", ""), ("ed", ""), ("s", "")):
         if token.endswith(suffix) and len(token) - len(suffix) >= 3 and not token.endswith(("ss", "us", "is")):
             return _NORMAL.get(token[: -len(suffix)] + keep, token[: -len(suffix)] + keep)
     return token

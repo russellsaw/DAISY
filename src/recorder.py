@@ -89,8 +89,9 @@ def record_turn(state, *, started_at: float, user_msg: str, pii_found: list, dra
     with path.open("a", encoding="utf-8") as f:
         for seq, event in enumerate(events):
             event["seq"] = seq
-            line = json.dumps(event, ensure_ascii=False, default=str)
-            f.write(pii.redact(line)[0] + "\n")  # last line of defence: no NRIC/FIN or card number the patterns catch
+            # Last line of defence: no NRIC/FIN or card number the patterns catch.
+            f.write(json.dumps(pii.redact_values(event), ensure_ascii=False,
+                               default=lambda o: pii.redact(str(o))[0]) + "\n")
     return path
 
 

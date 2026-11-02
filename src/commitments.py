@@ -33,6 +33,17 @@ def add_months(d: date, months: int) -> date:
     return date(year, month, min(d.day, calendar.monthrange(year, month)[1]))
 
 
+def _states_months(quote: str, months: int) -> bool:
+    """Does the quote say this many months: "18 months", "two years" (the model converts years to months)?"""
+    if str(months) in quote or any(w in quote for w, v in _NUMBER_WORDS.items() if v == months):
+        return True
+    if months % 12 == 0:
+        years = months // 12
+        names = [str(years)] + [w for w, v in _NUMBER_WORDS.items() if v == years] + (["a"] if years == 1 else [])
+        return any(re.search(rf"\b{re.escape(name)}\s+years?\b", quote) for name in names)
+    return months == 6 and "half a year" in quote
+
+
 def resolve(item: dict, user_msg: str, today: date) -> dict:
     """Extraction item -> profile commitment update. See module docstring for the rules."""
     out: dict = {"kind": item.get("kind") or "commitment", "monthly": item.get("monthly_payment")}
@@ -50,19 +61,19 @@ def resolve(item: dict, user_msg: str, today: date) -> dict:
     end: date | None = None
     n = item.get("ends_in_months")
     year = item.get("end_year")
-    if n and 1 <= int(n) <= 600 and (str(int(n)) in quote or
-                                     any(w in quote for w, v in _NUMBER_WORDS.items() if v == int(n)) or
-                                     (int(n) == 12 and re.search(r"\ba year\b", quote)) or
-                                     (int(n) == 6 and "half a year" in quote)):
+    if n and 1 <= int(n) <= 600 and _states_months(quote, int(n)):
         end = add_months(today, int(n))
-    elif year and str(int(year)) in quote:
+    elif year and 1900 <= int(year) <= 9999 and str(int(year)) in quote:
         month = int(item.get("end_month") or 12)
         if not 1 <= month <= 12:
             return out
         last_day = calendar.monthrange(int(year), month)[1]
         day = int(item.get("end_day") or last_day)  # month-only -> last day of that month (never earlier)
         end = date(int(year), month, min(max(day, 1), last_day))
-    if end is None or end <= today:
+    if end is None:
+        return out  # the numbers don't match the quote: an unreliable extraction changes nothing
+    if end <= today:
+        out.update(end_date=None, end_quote=item.get("end_quote"))  # "it ended in 2025": don't keep an older date
         return out
     out.update(end_date=end.isoformat(), end_quote=item.get("end_quote"))
     return out

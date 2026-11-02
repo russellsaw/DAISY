@@ -47,7 +47,7 @@ HOME_CHECK_NOTE = (f"A note on this check: it uses the {_FLOOR} floor MAS sets f
                    "figure may differ.")
 
 
-def _code_notes(intent: str, reply: str, home_check: bool = False) -> str:
+def _code_notes(intent: str, reply: str, home_check: bool = False, details_known: bool = False) -> str:
     """Code-written lines that follow a reply: what the customer should know whatever the model wrote."""
     notes = []
     if intent == "handoff_request":
@@ -56,7 +56,7 @@ def _code_notes(intent: str, reply: str, home_check: bool = False) -> str:
         notes.append(HOME_CHECK_NOTE)
     elif _STRESS_MENTION.search(reply):
         notes.append(STRESS_NOTE)
-    if intent == "comparison":
+    if intent == "comparison" and not details_known:  # don't ask for what they've already given
         notes.append(DISCOVERY_NOTE)
     return "\n\n".join(notes)
 
@@ -163,23 +163,28 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
     if corrections:
         state.add_trace("Readback", "customer corrected " + ", ".join(c["field"] for c in corrections), corrections)
     deterministic_reply = None
-    if intent == "blocked":
-        pass  # a blocked message can't confirm, correct or change anything
+    if intent == "blocked" or guard["action"] == "escalate":
+        pass  # a blocked message can't confirm, correct or change anything; distress goes to a banker summary first
     elif was_pending:
-        if changed:  # a correction: read everything back again before anything runs
-            intent, products = "eligibility", state.pending_products
+        if changed and intent not in ("handoff_request", "advice_seeking"):
+            intent, products = "eligibility", state.pending_products  # a correction: read everything back again
+        elif changed:
+            pass  # they also asked for a banker or for advice: answer that, and the readback lapses below
         elif decision.get("readback_reply") == "confirm" or _YES.match(user_msg):
-            state.confirm()
-            state.add_trace("Readback", "customer said yes: parameters confirmed, engine may run",
-                            state.confirmed_profile)
+            if state.profile.to_dict() == state.readback_profile:  # a yes only counts for what they actually saw
+                state.confirm()
+                state.add_trace("Readback", "customer said yes: parameters confirmed, engine may run",
+                                state.confirmed_profile)
             intent, products = "eligibility", state.pending_products
         elif decision.get("readback_reply") == "correct":
             intent, deterministic_reply = "eligibility", WHAT_TO_CHANGE_REPLY
-    elif changed and state.confirmed_profile is not None and not state.is_confirmed():
+    elif (changed and state.confirmed_profile is not None and not state.is_confirmed()
+          and intent not in ("handoff_request", "advice_seeking", "product_qa", "comparison")):
         # A confirmed fact changed later (e.g. a contradicted end date): re-confirm before any result.
+        # A question or a banker request in the same message is still answered; no result is shown either way.
         intent, products = "eligibility", products or state.pending_products
 
-    if intent != "eligibility" and not state.pending_readback:
+    if intent not in ("eligibility", "blocked") and not state.pending_readback:
         state.pending_max_loan = False
 
     try:
@@ -242,7 +247,7 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
             draft = compliance.HANDOFF_FALLBACK
 
         else:  # chit_chat
-            draft = llm.chat(prompts.CHIT_CHAT, state.recent_history(4), model=config.MODEL_FAST, max_tokens=800)
+            draft = llm.chat(prompts.CHIT_CHAT, state.recent_history(4), model=config.MODEL_FAST, max_tokens=1500)
     except llm.Refusal as exc:
         draft = compliance.HANDOFF_FALLBACK
         state.add_trace("Drafting", f"model declined to draft a reply ({exc}); using the banker handoff")
@@ -252,7 +257,8 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
     # appended after review, so no model can alter or omit them. The reviewer sees them, so it doesn't
     # write them into the reply as well. Not shown if review replaced the reply.
     outcome = counterfactual.outcome_block(cfs) if cfs else ""
-    home_check = bool(out.get("engine_ran")) and any(r["product"] == "home_loan" for r in out.get("results", []))
+    home_check = bool(out.get("engine_ran")) and any(r["product"] == "home_loan" and r["status"] != "need_more_info"
+                                                     for r in out.get("results", []))
     reviewed = compliance.review(state, user_msg, intent, draft, sources_text=sources_text,
                                  computations=computations, injection_suspected=injection,
                                  deterministic=(is_readback or draft == WHAT_TO_CHANGE_REPLY or intent == "blocked"
@@ -262,7 +268,8 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
     final = reviewed["final"]
     if outcome and final != compliance.HANDOFF_FALLBACK:
         final = final.rstrip() + "\n\n" + outcome
-    notes = (_code_notes(intent, final, home_check)
+    known = not state.profile.missing(["age", "residency", "monthly_income"])
+    notes = (_code_notes(intent, final, home_check, known)
              if final != compliance.HANDOFF_FALLBACK and not out.get("code_written") else "")
     if notes:
         final = final.rstrip() + "\n\n" + notes
@@ -272,7 +279,12 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
 
     if card_job is None and (reviewed["record"]["verdict"] == "handoff" or intent == "refused"):
         card_job = start_card("compliance reviewer escalated")
-    card = card_job.result() if card_job else None
+    card = None
+    if card_job:
+        try:
+            card = card_job.result()
+        except Exception as exc:  # noqa: BLE001 — the reply is ready: a failed lead card must not throw it away
+            state.add_trace("Handoff", f"could not prepare the lead card ({type(exc).__name__}: {exc})")
     if card is not None and guard["action"] == "escalate":
         card["urgency"] = "high"  # vulnerable customer: fair dealing says a human, soon
 
@@ -284,6 +296,11 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
         profile=state.profile.to_dict(), user_msg=user_msg, guard=guard)
     state.add_trace("Defence layers", ", ".join(f"{k}={v['status']}" for k, v in layers.items()), layers)
 
+    # A readback only stands while it's the question on the table. After anything else, a later "ok thanks"
+    # must not count as a yes: the customer gets a fresh readback when they come back to it.
+    if (was_pending and state.pending_readback and intent != "blocked" and not is_readback
+            and draft != WHAT_TO_CHANGE_REPLY):
+        state.readback_profile = None
     state.messages.append({"role": "assistant", "content": final})
     result = TurnResult(
         response=final,

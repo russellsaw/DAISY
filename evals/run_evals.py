@@ -31,7 +31,7 @@ Always-on checks:
   - banned_lexicon       eligibility replies never contain approval vocabulary
   - outcome_template     the fixed outcome sentence is present verbatim whenever a path is shown
   - no_engine_before_confirm  on every turn, the engine only ran on parameters the customer confirmed
-Writes evals/results/<timestamp>.json and latest.json (with run history).
+Writes evals/results/<timestamp>.json, and for a full run also latest.json (with run history).
 """
 from __future__ import annotations
 
@@ -209,8 +209,11 @@ def run_case(case: dict) -> dict:
 
     if case.get("expected_behavior") and response:
         conversation = "\n".join(f"(turn {i + 1}) {t}" for i, t in enumerate(turns)) if len(turns) > 1 else turns[0]
-        verdict = judge(conversation, response, case["expected_behavior"])
-        checks.append({"name": "judge", "passed": bool(verdict["passed"]), "detail": verdict["rationale"]})
+        try:
+            verdict = judge(conversation, response, case["expected_behavior"])
+            checks.append({"name": "judge", "passed": bool(verdict["passed"]), "detail": verdict["rationale"]})
+        except Exception as exc:  # noqa: BLE001 — one judge error shouldn't lose the rest of the run
+            checks.append({"name": "judge", "passed": False, "detail": f"judge error: {exc}"})
 
     if result is not None:
         checks += _always_on_checks(case, result, state)
@@ -291,11 +294,16 @@ def main() -> int:
 
     latest_path = config.EVAL_RESULTS_DIR / "latest.json"
     history = json.loads(latest_path.read_text()).get("history", []) if latest_path.exists() else []
-    history.append({"run_at": run_at, "cases": len(results), "pass_rate": round(pass_rate, 3)})
+    partial = bool(args.categories or args.limit)  # the scorecard shows the last FULL run
+    if not partial:
+        history.append({"run_at": run_at, "cases": len(results), "pass_rate": round(pass_rate, 3)})
 
     payload = {"run_at": run_at, "results": results, "history": history[-30:]}
     (config.EVAL_RESULTS_DIR / f"{run_at.replace(':', '-')}.json").write_text(json.dumps(payload, indent=1))
-    latest_path.write_text(json.dumps(payload, indent=1))
+    if partial:
+        print("Partial run: latest.json and the Trust scorecard were left as they are.")
+    else:
+        latest_path.write_text(json.dumps(payload, indent=1))
 
     print(f"\n{sum(r['passed'] for r in results)}/{len(results)} passed ({pass_rate:.0%})")
     return 0

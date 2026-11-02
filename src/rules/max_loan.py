@@ -26,6 +26,11 @@ def default_tenure(p: CustomerProfile) -> int:
     return max(min(MAS["ltv_tenure_threshold"]["value"][ptype], MAS["ltv_age_limit"]["value"] - p.age), MIN_TENURE)
 
 
+def keeps_full_ltv(p: CustomerProfile, tenure: int) -> bool:
+    ptype = p.property_type if p.property_type in ("hdb", "ec", "private") else "private"
+    return tenure <= MAS["ltv_tenure_threshold"]["value"][ptype] and p.age + tenure <= MAS["ltv_age_limit"]["value"]
+
+
 def largest_loan(p: CustomerProfile, tenure: int, rate: float) -> dict:
     """Largest loan (to the dollar) the forward engine passes at this rate, and which rule stops it going higher."""
     price = p.property_price or _NO_PRICE
@@ -62,6 +67,7 @@ def find(p: CustomerProfile) -> dict:
     sources = list(dict.fromkeys((floor.get("sources") or [PRODUCTS["home_loan"]["source"]])
                                  + [DBS_PLANNER_RATE["source"]]))
     return {"tenure_years": tenure, "tenure_stated": bool(p.tenure_years), "property_price": p.property_price,
+            "keeps_full_ltv": keeps_full_ltv(p, tenure), "profile": p.to_dict(),
             "at_floor": floor, "at_planner": planner, "assumptions": assumptions, "sources": sources,
             "criteria_version": criteria_version()}
 
@@ -112,12 +118,17 @@ def text(result: dict) -> str:
         parts.append(f"**Property price:** the loan-to-value limit of {ltv:.0%} caps the loan at "
                      f"{_money(result['property_price'] * ltv)} on a {_money(result['property_price'])} property.")
     else:
-        prices = sorted({_money(at["max_loan"] / at["ltv_limit"]) for at in known})
+        prices = sorted({round(at["max_loan"] / at["ltv_limit"]) for at in known})
         parts.append(f"**Property price:** the loan also can't be more than {ltv:.0%} of the price, so "
-                     f"{' to '.join(prices)} is the most these loans would cover at that limit.")
-    parts.append(f"**Tenure:** {result['tenure_years']} years, "
-                 + ("the tenure you gave." if result["tenure_stated"]
-                    else "the longest that keeps the full loan-to-value limit. A different tenure changes these figures."))
+                     f"{' to '.join(_money(x) for x in prices)} is the most these loans would cover at that limit.")
+    if result["tenure_stated"]:
+        tenure_note = "the tenure you gave."
+    elif result["keeps_full_ltv"]:
+        tenure_note = "the longest that keeps the full loan-to-value limit. A different tenure changes these figures."
+    else:
+        tenure_note = ("the shortest available. At your age the loan would run past 65, so the lower loan-to-value "
+                       "limit applies. A different tenure changes these figures.")
+    parts.append(f"**Tenure:** {result['tenure_years']} years, {tenure_note}")
     if result["assumptions"]:
         parts += ["", "**Things you didn't mention:**"] + [f"- {a}" for a in result["assumptions"]]
     parts += ["", "A banker's figure may differ, because it depends on the bank's full credit assessment and the package "

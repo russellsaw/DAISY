@@ -41,8 +41,9 @@ REVIEW_SCHEMA = {
     "required": ["verdict", "issues"],
 }
 
-# Hard-banned on eligibility replies, in any form (even "you're not approved"): eligibility is
-# indicative, so the reply must never use approval vocabulary. Enforced here in code, not by prompt.
+# Hard-banned on replies about the customer's own chances (eligibility and advice), in any form (even "you're not
+# approved"): eligibility is indicative, so the reply must never use approval vocabulary. Enforced here in code, not
+# by prompt. Product answers may say "you'll get 3% cashback".
 BANNED_PHRASES = ["will be approved", "approved", "guaranteed", "you will qualify", "you'll qualify",
                   "you'll get", "confirmed"]
 _BANNED = re.compile(
@@ -68,17 +69,30 @@ def _mentions(text: str) -> set[tuple[str, bool]]:
             | {(n, True) for n in _PCT_RANGE.findall(text)})
 
 
+def _traced_forms(key: str, value: float) -> tuple[set[str], set[str]]:
+    """How an engine or profile value may appear in a reply: (as a plain number, as a percentage). Only what it can
+    honestly be written as. A wider rule let "3% p.a." through because 32 (an age) / 12 rounds to 3."""
+    plain = {str(value), f"{value:.0f}", f"{value:.1f}", f"{value:.2f}"}
+    pct: set[str] = set()
+    if isinstance(value, float) and 0 < abs(value) < 10:  # a ratio or rate: 0.2865 is written 28.65%
+        pct = {f"{value * 100:.0f}", f"{value * 100:.1f}", f"{value * 100:.2f}"}
+    if key.endswith("_pp"):  # already in percentage points
+        pct |= plain
+    if "income" in key:  # the only figure quoted both monthly and yearly
+        plain |= {f"{value * 12:.0f}", f"{value / 12:.0f}"}
+    return plain | pct, pct
+
+
 def unsupported_numbers(draft: str, allowed_text: str, computations: dict, profile: dict, user_text: str) -> list[str]:
     mentions = _mentions(allowed_text) | _mentions(user_text)
     allowed = {n for n, _ in mentions}
     # A percentage must trace to a percentage: "3 years" on a page doesn't support "3% p.a.".
     allowed_pct = {n for n, is_pct in mentions if is_pct}
-    for v in list(computations.values()) + list(profile.values()):
-        if isinstance(v, (int, float)):
-            forms = {str(v), f"{v:.0f}", f"{v:.1f}", f"{v:.2f}", f"{v * 100:.0f}", f"{v * 100:.1f}",
-                     f"{v * 100:.2f}", f"{v / 12:.0f}", f"{v * 12:.0f}"}
-            allowed |= forms
-            allowed_pct |= forms
+    for key, v in list(computations.items()) + list(profile.items()):
+        if isinstance(v, (int, float)) and not isinstance(v, bool):
+            plain, pct = _traced_forms(str(key), v)
+            allowed |= plain
+            allowed_pct |= pct
     money = {n.replace(",", "") for n in _MONEY.findall(draft or "")}
     flagged = []
     for n, is_pct in _mentions(draft):
@@ -157,7 +171,7 @@ def review(state: ConversationState, user_msg: str, intent: str, draft: str, *,
                 {"rule": "grounding", "detail": f"untraceable numbers survived a rewrite: {output_filter['untraceable']}"})
 
     lexicon = {"found": [], "action": None}
-    if intent == "eligibility" and final != HANDOFF_FALLBACK:
+    if intent in ("eligibility", "advice_seeking") and final != HANDOFF_FALLBACK:
         final, lexicon = _enforce_lexicon(final, sources_text, computations, state, user_msg, flagged)
         if lexicon["action"] == "replaced":
             verdict["verdict"] = "handoff"

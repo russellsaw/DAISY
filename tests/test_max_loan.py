@@ -103,11 +103,42 @@ def test_sources_include_the_rules_and_dbs_planner():
     ("I've worked for 20 years. How much can I borrow?", {}),
 ])
 def test_property_mentioned_in_the_question_is_read_in_code(msg, expected):
-    assert orchestrator._apply_stated_property({}, msg) == expected
+    assert orchestrator._apply_stated_property({}, msg, CustomerProfile()) == expected
+
+
+@pytest.mark.parametrize("msg,expected", [
+    ("I'm over 30 years old", {}),
+    ("I've been working for over 10 years, can I get a home loan?", {}),
+    ("I want to borrow $500k for a condo", {"property_type": "private"}),
+    ("I owe $3,000 on my condo", {"property_type": "private"}),
+    ("What if I bought a $1m condo?", {}),
+])
+def test_things_that_are_not_property_details_are_left_alone(msg, expected):
+    assert orchestrator._apply_stated_property({}, msg, CustomerProfile()) == expected
 
 
 def test_the_model_s_own_values_win():
-    assert orchestrator._apply_stated_property({"tenure_years": 25}, "over 20 years")["tenure_years"] == 25
+    assert orchestrator._apply_stated_property({"tenure_years": 25}, "over 20 years", CustomerProfile())[
+        "tenure_years"] == 25
+
+
+def test_a_stored_price_is_never_overwritten():
+    p = CustomerProfile(property_price=1_000_000.0, property_type="private")
+    assert orchestrator._apply_stated_property({}, "and a $3,000 condo", p) == {}
+
+
+def test_tenure_wording_is_honest_past_age_60():
+    r = max_loan.find(CustomerProfile(**{**HDB, "age": 62}))
+    assert r["tenure_years"] == 5 and not r["keeps_full_ltv"]
+    assert "the longest that keeps" not in max_loan.text(r) and "lower loan-to-value limit applies" in max_loan.text(r)
+    readback = eligibility.readback_text(CustomerProfile(**{**HDB, "age": 62}), ["home_loan"], max_loan_check=True)
+    assert "the longest that keeps" not in readback
+
+
+def test_price_range_reads_low_to_high_across_a_million():
+    text = max_loan.text(max_loan.find(CustomerProfile(**{**PR_7K, "monthly_income": 6600, "property_type": "private"})))
+    low, high = [int(x.replace(",", "")) for x in text.split("so S$")[1].split(" is the most")[0].split(" to S$")]
+    assert low < high
 
 
 # ---------------- through the pipeline: ask, read back, then run ----------------
@@ -172,3 +203,12 @@ def test_changed_details_hide_the_old_maximum_and_read_back_again(bot):
     assert state.is_confirmed()
     r = send("What if I earn 8k?", dict(monthly_income=8000), asks=True)
     assert r.readback and not r.engine_ran and not state.is_confirmed()
+
+
+def test_old_maximum_is_not_passed_to_the_banker_after_details_change(bot, monkeypatch):
+    send, state, reviews = bot
+    monkeypatch.undo()
+    card = max_loan.find(CustomerProfile(**HDB))
+    state.last_max_loan = card
+    assert card["profile"] == CustomerProfile(**HDB).to_dict()
+    assert state.last_max_loan["profile"] != state.profile.to_dict()
