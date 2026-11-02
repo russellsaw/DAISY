@@ -1,4 +1,5 @@
 """Flight recorder: pick a conversation, step through its events, see what each agent saw and decided."""
+
 import pandas as pd
 import streamlit as st
 
@@ -6,17 +7,28 @@ from src import recorder
 from src.ui import md_safe
 
 ICONS = {
-    "conversation_start": ":material/flag:", "user_turn": ":material/person:", "input_filter": ":material/shield_lock:",
-    "routing": ":material/alt_route:", "readback": ":material/fact_check:", "retrieval": ":material/menu_book:",
-    "engine": ":material/calculate:", "counterfactual": ":material/timeline:", "draft": ":material/edit_note:",
-    "compliance": ":material/verified_user:", "handoff": ":material/support_agent:", "boundary": ":material/front_hand:",
-    "defence": ":material/layers:", "final": ":material/chat:",
+    "conversation_start": ":material/flag:",
+    "user_turn": ":material/person:",
+    "input_filter": ":material/shield_lock:",
+    "routing": ":material/alt_route:",
+    "readback": ":material/fact_check:",
+    "retrieval": ":material/menu_book:",
+    "engine": ":material/calculate:",
+    "counterfactual": ":material/timeline:",
+    "draft": ":material/edit_note:",
+    "compliance": ":material/verified_user:",
+    "handoff": ":material/support_agent:",
+    "boundary": ":material/front_hand:",
+    "defence": ":material/layers:",
+    "final": ":material/chat:",
 }
 
 st.title("Flight recorder", icon=":material/flight:", anchor=False)
-st.caption("Replay any conversation step by step: what the customer asked, what DAISY understood, which pages it "
-           "used, what it calculated, what the review changed and the final reply. NRIC/FIN and card numbers are "
-           "removed; other details, such as phone numbers and emails, aren't. Logs stay on this computer.")
+st.caption(
+    "Replay any conversation step by step: what the customer asked, what DAISY understood, which pages it "
+    "used, what it calculated, what the review changed and the final reply. NRIC/FIN and card numbers are "
+    "removed; other details, such as phone numbers and emails, aren't. Logs stay on this computer."
+)
 
 
 @st.cache_data(ttl=10)
@@ -44,9 +56,12 @@ if not convs:
     st.stop()
 
 conv = st.selectbox(
-    "Conversation", convs,
-    format_func=lambda c: f"{c['started'].replace('T', ' ')}, {c['turns']} turn(s): {c['first_message'][:60]} "
-                          f"({c['id']})")
+    "Conversation",
+    convs,
+    format_func=lambda c: (
+        f"{c['started'].replace('T', ' ')}, {c['turns']} turn(s): {c['first_message'][:60]} ({c['id']})"
+    ),
+)
 path = recorder.Path(conv["path"])
 events = events_of(str(path), path.stat().st_mtime)
 turns = sorted({e["turn"] for e in events})
@@ -64,8 +79,11 @@ def render(e: dict) -> None:
         with st.chat_message("user"):
             st.markdown(md_safe(d.get("message", "")))
         if d.get("pii_removed"):
-            st.badge(f"PII removed before any agent saw it: {', '.join(d['pii_removed'])}", color="green",
-                     icon=":material/shield_lock:")
+            st.badge(
+                f"PII removed before any agent saw it: {', '.join(d['pii_removed'])}",
+                color="green",
+                icon=":material/shield_lock:",
+            )
     elif kind == "routing":
         with st.container(horizontal=True):
             st.badge(f"intent: {d.get('intent')}", color="blue")
@@ -78,20 +96,32 @@ def render(e: dict) -> None:
         if d.get("reasoning"):
             st.caption(md_safe(d["reasoning"]))
         st.markdown("**Extracted from this message**")
-        st.json({"profile_updates": d.get("profile_updates"), "commitments (as the model reported them)":
-                 d.get("commitments"), "commitments (after code resolved dates)": d.get("commitments_resolved"),
-                 "future / hypothetical (not stored)": d.get("future_or_hypothetical"),
-                 "fields changed": d.get("profile_changed")}, expanded=True)
+        st.json(
+            {
+                "profile_updates": d.get("profile_updates"),
+                "commitments (as the model reported them)": d.get("commitments"),
+                "commitments (after code resolved dates)": d.get("commitments_resolved"),
+                "future / hypothetical (not stored)": d.get("future_or_hypothetical"),
+                "fields changed": d.get("profile_changed"),
+            },
+            expanded=True,
+        )
         with st.expander("Profile after this message", icon=":material/person:"):
             st.json(d.get("profile_after"))
     elif kind == "retrieval":
-        st.markdown(f"**Searched for:** {md_safe(d.get('query', ''))}  \n"
-                    f":gray[Product filter:] `{d.get('product_filter')}`")
+        st.markdown(
+            f"**Searched for:** {md_safe(d.get('query', ''))}  \n:gray[Product boost:] `{d.get('product_boost')}`"
+        )
         hits = d.get("hits") or []
         if hits:
-            st.dataframe(pd.DataFrame(hits), hide_index=True,
-                         column_config={"url": st.column_config.LinkColumn("Source"),
-                                        "cited": st.column_config.CheckboxColumn("Cited")})
+            st.dataframe(
+                pd.DataFrame(hits),
+                hide_index=True,
+                column_config={
+                    "url": st.column_config.LinkColumn("Source"),
+                    "cited": st.column_config.CheckboxColumn("Cited"),
+                },
+            )
     elif kind == "engine":
         if isinstance(d, dict) and "results" in d:
             st.caption(f"Criteria version {d.get('criteria_version')}. Products: {', '.join(d.get('products') or [])}.")
@@ -105,12 +135,21 @@ def render(e: dict) -> None:
             st.json(d)
     elif kind == "counterfactual":
         for cf in d.get("counterfactuals", []):
-            st.markdown(f"**{cf['product_name']}**: limiting rule `{cf['binding_rule']}` is {cf['current_value']} "
-                        f"against {cf['threshold']} (gap {cf['gap']})  \n"
-                        f":gray[Checked {cf['assessed_on']} against criteria version {cf['criteria_version']}.]")
-            rows = [{"kind": x["lever_kind"], "label": x["label"], "change": x["description"],
-                     "headroom": x["headroom"], "earliest_date": x["earliest_date"]}
-                    for x in cf["paths"] + cf["borderline"]]
+            st.markdown(
+                f"**{cf['product_name']}**: limiting rule `{cf['binding_rule']}` is {cf['current_value']} "
+                f"against {cf['threshold']} (gap {cf['gap']})  \n"
+                f":gray[Checked {cf['assessed_on']} against criteria version {cf['criteria_version']}.]"
+            )
+            rows = [
+                {
+                    "kind": x["lever_kind"],
+                    "label": x["label"],
+                    "change": x["description"],
+                    "headroom": x["headroom"],
+                    "earliest_date": x["earliest_date"],
+                }
+                for x in cf["paths"] + cf["borderline"]
+            ]
             if rows:
                 st.dataframe(pd.DataFrame(rows), hide_index=True)
             else:
@@ -130,8 +169,10 @@ def render(e: dict) -> None:
             st.badge(f"reviewer: {d.get('reviewer', 'llm')}", color="gray")
         for issue in d.get("issues") or []:
             st.markdown(f"- `{issue.get('rule')}` {md_safe(issue.get('detail', ''))}")
-        st.json({k: d.get(k) for k in ("unsupported_numbers", "revision_unsupported_numbers", "output_filter", "lexicon")},
-                expanded=False)
+        st.json(
+            {k: d.get(k) for k in ("unsupported_numbers", "revision_unsupported_numbers", "output_filter", "lexicon")},
+            expanded=False,
+        )
     elif kind == "defence":
         with st.container(horizontal=True):
             for key, layer in d.items():
@@ -141,10 +182,12 @@ def render(e: dict) -> None:
     elif kind == "final":
         with st.chat_message("assistant", avatar="static/daisy-mark.svg"):
             st.markdown(md_safe(d.get("response", "")))
-        st.caption(f"Took {d.get('elapsed_s')} seconds. Question type: {d.get('intent')}. Read back: "
-                   f"{d.get('readback')}. Eligibility calculated: {d.get('engine_ran')}. Details confirmed: "
-                   f"{d.get('confirmed')}."
-                   + (f" Dated paths: {d['counterfactual_dates']}." if d.get("counterfactual_dates") else ""))
+        st.caption(
+            f"Took {d.get('elapsed_s')} seconds. Question type: {d.get('intent')}. Read back: "
+            f"{d.get('readback')}. Eligibility calculated: {d.get('engine_ran')}. Details confirmed: "
+            f"{d.get('confirmed')}."
+            + (f" Dated paths: {d['counterfactual_dates']}." if d.get("counterfactual_dates") else "")
+        )
         if d.get("handoff_card"):
             with st.expander("Banker lead card", icon=":material/badge:"):
                 st.json(d["handoff_card"])
@@ -172,8 +215,12 @@ if mode == "Step through":
         st.subheader(md_safe(f"{event['agent']}: {event['type'].replace('_', ' ')}"), anchor=False)
         st.caption(md_safe(header(event)))
         render(event)
-    st.caption("Timeline: " + " → ".join(f"**{e['agent']}**" if i == st.session_state[key] else e["agent"]
-                                          for i, e in enumerate(turn_events)))
+    st.caption(
+        "Timeline: "
+        + " → ".join(
+            f"**{e['agent']}**" if i == st.session_state[key] else e["agent"] for i, e in enumerate(turn_events)
+        )
+    )
 else:
     for e in turn_events:
         with st.expander(md_safe(header(e)), type="step", icon=ICONS.get(e["type"])):

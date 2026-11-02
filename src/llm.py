@@ -17,6 +17,7 @@ Model notes (Sonnet 5.5 / Haiku 5.5):
     If a whole chain still refuses, Refusal is raised and the pipeline answers with
     the banker handoff instead of an error.
 """
+
 from __future__ import annotations
 
 import copy
@@ -42,9 +43,7 @@ def client() -> anthropic.Anthropic:
     global _client
     if _client is None:
         if not config.ANTHROPIC_API_KEY:
-            raise RuntimeError(
-                "ANTHROPIC_API_KEY is not set. Copy .env.example to .env and add your key."
-            )
+            raise RuntimeError("ANTHROPIC_API_KEY is not set. Copy .env.example to .env and add your key.")
         # A stuck request should fail within a turn's patience, not after the SDK's 10-minute default.
         _client = anthropic.Anthropic(api_key=config.ANTHROPIC_API_KEY, timeout=config.LLM_TIMEOUT_S)
     return _client
@@ -81,9 +80,7 @@ def complete(
 
 
 def text_of(response) -> str:
-    return "".join(
-        block.text for block in response.content if getattr(block, "type", "") == "text"
-    ).strip()
+    return "".join(block.text for block in response.content if getattr(block, "type", "") == "text").strip()
 
 
 def strict_schema(schema: dict) -> dict:
@@ -133,8 +130,9 @@ def structured(
     return json.loads(text_of(response))
 
 
-def chat(system: str, history: list[dict], *, model: str | None = None, max_tokens: int = 2048,
-         effort: str = "low") -> str:
+def chat(
+    system: str, history: list[dict], *, model: str | None = None, max_tokens: int = 2048, effort: str = "low"
+) -> str:
     """Plain conversational completion over a message history."""
     response = complete(system, history, model=model, max_tokens=max_tokens, effort=effort)
     text = text_of(response)

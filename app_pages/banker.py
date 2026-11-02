@@ -1,29 +1,24 @@
 """Banker view: the lead cards DAISY prepares, for bank staff rather than the customer."""
+
 import streamlit as st
 
 from src import recorder
 from src.rules.counterfactual import fmt_date
 from src.state import PROFILE_FIELDS
-from src.ui import md_safe
+from src.ui import STATUS_WORDS, md_safe, plain_value
 
 URGENCY_COLOR = {"high": "red", "medium": "orange"}
-STATUS_WORDS = {"eligible": "Meets today's criteria", "not_eligible": "Doesn't meet today's criteria",
-                "need_more_info": "More details needed"}
 
 st.title("Banker view", icon=":material/support_agent:", anchor=False)
-st.caption("The summaries DAISY prepares when a customer asks for a banker, asks for advice, or has no clear way to "
-           "meet today's criteria. This is a prototype: nothing here is sent to DBS.")
+st.caption(
+    "The summaries DAISY prepares when a customer asks for a banker, asks for advice, or has no clear way to "
+    "meet today's criteria. This is a prototype: nothing here is sent to DBS."
+)
 
 
 @st.cache_data(ttl=10)
 def load_leads(folder: str) -> list[dict]:
-    """The latest lead card of each logged conversation, newest conversation first."""
-    leads = []
-    for conv in recorder.list_conversations(recorder.Path(folder)):
-        cards = [e["data"] for e in recorder.load(conv["path"]) if e["type"] == "handoff" and e.get("data")]
-        if cards:
-            leads.append({"id": conv["id"], "started": conv["started"], "card": cards[-1]})
-    return leads
+    return recorder.latest_leads(recorder.Path(folder))
 
 
 def bullets(heading: str, items: list[str]) -> None:
@@ -41,16 +36,22 @@ with st.container(horizontal=True):
     st.metric("High priority", sum(lead["card"].get("urgency") == "high" for lead in leads), border=True)
 
 lead = st.selectbox(
-    "Summary", leads,
-    format_func=lambda x: f"{x['started'].replace('T', ' ')}, {x['card'].get('urgency', '?')} priority: "
-                          f"{x['card'].get('customer_summary', '')[:70]} ({x['id']})")
+    "Summary",
+    leads,
+    format_func=lambda x: (
+        f"{x['started'].replace('T', ' ')}, {x['card'].get('urgency', '?')} priority: "
+        f"{x['card'].get('customer_summary', '')[:70]} ({x['id']})"
+    ),
+)
 card = lead["card"]
 
 left, right = st.columns([3, 2])
 with left:
     with st.container(border=True):
         with st.container(horizontal=True, vertical_alignment="center"):
-            st.badge(f"Priority: {card.get('urgency', 'unknown')}", color=URGENCY_COLOR.get(card.get("urgency"), "gray"))
+            st.badge(
+                f"Priority: {card.get('urgency', 'unknown')}", color=URGENCY_COLOR.get(card.get("urgency"), "gray")
+            )
             if card.get("parameters_confirmed_by_customer"):
                 st.badge("Details confirmed by the customer", icon=":material/verified:", color="green")
             else:
@@ -70,8 +71,12 @@ with left:
             st.markdown(f"- {md_safe(path['description'])}, *{when}*")
         for name in card.get("no_clear_path_for", []):
             st.markdown(f"- {md_safe(name)}: no clear way to meet today's criteria")
-        st.caption(md_safe(f"Checked on {fmt_date(card['assessed_on'])} against criteria version "
-                           f"{card['criteria_version']}: {card['banker_note']}."))
+        st.caption(
+            md_safe(
+                f"Checked on {fmt_date(card['assessed_on'])} against criteria version "
+                f"{card['criteria_version']}: {card['banker_note']}."
+            )
+        )
 
 with right:
     st.subheader("Eligibility", anchor=False)
@@ -84,10 +89,15 @@ with right:
 
     if card.get("max_loan"):
         loan = card["max_loan"]
-        st.markdown(md_safe(f"**Maximum home loan over {loan['tenure_years']} years**  \n"
-                            f"S${loan['at_floor']:,.0f} at the MAS floor, S${loan['at_planner_rate']:,.0f} at DBS's "
-                            "planning rate") if loan["at_floor"] and loan["at_planner_rate"]
-                    else "**Maximum home loan**  \nNo amount met today's criteria")
+        st.markdown(
+            md_safe(
+                f"**Maximum home loan over {loan['tenure_years']} years**  \n"
+                f"S${loan['at_floor']:,.0f} at the MAS floor, S${loan['at_planner_rate']:,.0f} at DBS's "
+                "planning rate"
+            )
+            if loan["at_floor"] and loan["at_planner_rate"]
+            else "**Maximum home loan**  \nNo amount met today's criteria"
+        )
 
     st.subheader("Customer details", anchor=False)
     profile = card.get("profile") or {}
@@ -100,8 +110,13 @@ with right:
                 st.markdown(md_safe(f":gray[{c['kind'].capitalize()}]  \nS${c['monthly']:,.0f} a month, {ends}"))
         else:
             label = PROFILE_FIELDS.get(key, (key,))[0]
-            st.markdown(md_safe(f":gray[{label}]  \n{value:,.0f}" if isinstance(value, float)
-                                else f":gray[{label}]  \n{value}"))
+            st.markdown(
+                md_safe(
+                    f":gray[{label}]  \n{value:,.0f}"
+                    if isinstance(value, float)
+                    else f":gray[{label}]  \n{plain_value(key, value)}"
+                )
+            )
     for c in card.get("readback_corrections") or []:
         st.caption(md_safe(f"Corrected by the customer: {c['field']}, {c['from']} to {c['to']}."))
 

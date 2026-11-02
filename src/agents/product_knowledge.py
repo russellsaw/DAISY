@@ -1,4 +1,5 @@
 """Product Knowledge agent: grounded Q&A with mandatory citations."""
+
 from __future__ import annotations
 
 import re
@@ -41,16 +42,31 @@ def cited_sources(draft: str, chunks: list[dict]) -> tuple[list[dict], set[int]]
 
 
 def hits_detail(user_msg: str, search_query: str, products: list[str], chunks: list[dict], cited: set[int]) -> dict:
-    return {"query": user_msg, "search_query": search_query, "product_boost": products[0] if len(products) == 1 else None,
-            "hits": [{"n": i + 1, "title": c["title"], "url": c["url"], "publisher": c.get("publisher"),
-                      "as_of": (c.get("fetched_at") or "")[:10], "score": c["score"], "cited": (i + 1) in cited}
-                     for i, c in enumerate(chunks)]}
+    return {
+        "query": user_msg,
+        "search_query": search_query,
+        "product_boost": products[0] if len(products) == 1 else None,
+        "hits": [
+            {
+                "n": i + 1,
+                "title": c["title"],
+                "url": c["url"],
+                "publisher": c.get("publisher"),
+                "as_of": (c.get("fetched_at") or "")[:10],
+                "score": c["score"],
+                "cited": (i + 1) in cited,
+            }
+            for i, c in enumerate(chunks)
+        ],
+    }
 
 
 def answer(state: ConversationState, user_msg: str, products: list[str], search_query: str = "") -> dict:
     if not retriever.load().ready:
-        draft = ("I don't have the product knowledge base loaded yet, so I can't answer that reliably. "
-                 "The official DBS loans and cards pages have the details, or a DBS banker can help.")
+        draft = (
+            "I don't have the product knowledge base loaded yet, so I can't answer that reliably. "
+            "The official DBS loans and cards pages have the details, or a DBS banker can help."
+        )
         state.add_trace("Product Knowledge", "knowledge base missing — run scripts/ingest.py")
         return {"draft": draft, "sources": [], "chunks": []}
 
@@ -65,8 +81,11 @@ def answer(state: ConversationState, user_msg: str, products: list[str], search_
     draft = llm.chat(prompts.PRODUCT_KNOWLEDGE, messages, model=config.MODEL_MAIN, max_tokens=4096, effort="medium")
 
     sources, cited = cited_sources(draft, chunks)
-    state.add_trace("Product Knowledge", f"retrieved {len(chunks)} chunks, cited {len(cited)}",
-                    hits_detail(user_msg, search_query, products, chunks, cited))
+    state.add_trace(
+        "Product Knowledge",
+        f"retrieved {len(chunks)} chunks, cited {len(cited)}",
+        hits_detail(user_msg, search_query, products, chunks, cited),
+    )
     # `excerpts` is exactly what the drafting model saw ([n] numbering, title, as-of date, URL): the compliance
     # reviewer and the traceability checks get the same text, so citations and URLs can be verified.
     return {"draft": draft, "sources": sources, "chunks": chunks, "excerpts": excerpts}

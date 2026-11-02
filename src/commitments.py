@@ -9,6 +9,7 @@ months" it contains). The date itself is computed here, and only when:
 Anything else yields no date. An uncertain statement ("maybe", "not sure", "around") about a
 commitment's end clears any date stored earlier, so a contradiction can never leave a stale date.
 """
+
 from __future__ import annotations
 
 import calendar
@@ -16,11 +17,27 @@ import re
 from datetime import date
 
 _MONTHS = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"]
-_NUMBER_WORDS = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8,
-                 "nine": 9, "ten": 10, "eleven": 11, "twelve": 12, "eighteen": 18, "twenty-four": 24}
+_NUMBER_WORDS = {
+    "one": 1,
+    "two": 2,
+    "three": 3,
+    "four": 4,
+    "five": 5,
+    "six": 6,
+    "seven": 7,
+    "eight": 8,
+    "nine": 9,
+    "ten": 10,
+    "eleven": 11,
+    "twelve": 12,
+    "eighteen": 18,
+    "twenty-four": 24,
+}
 _HYPOTHETICAL = re.compile(r"\b(assume|assuming|suppose|supposing|pretend|imagine|let'?s say|what if|if)\b")
 _UNCERTAIN = re.compile(r"\b(maybe|perhaps|not sure|unsure|around|about|roughly|probably|i think|i guess|might)\b")
-_TIME = re.compile(r"\d|\b(" + "|".join(_MONTHS) + r")[a-z]*\b|\b(" + "|".join(_NUMBER_WORDS) + r"|a|half a)\s+(year|month)s?\b")
+_TIME = re.compile(
+    r"\d|\b(" + "|".join(_MONTHS) + r")[a-z]*\b|\b(" + "|".join(_NUMBER_WORDS) + r"|a|half a)\s+(year|month)s?\b"
+)
 
 
 def _norm(text: str) -> str:

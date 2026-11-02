@@ -2,9 +2,10 @@
 
 Like the counterfactual search, this never solves a rule backwards: it runs the same forward check on
 different loan amounts. Two rates, because the answer depends on which one is used: the floor MAS sets (what
-the eligibility check uses) and the rate DBS's planning tools currently assume (docs/CALCULATOR_CHECK.md).
+the eligibility check uses) and the rate DBS's planning tools currently assume.
 Every line the customer sees is written here by code, not by a model.
 """
+
 from __future__ import annotations
 
 import copy
@@ -22,13 +23,16 @@ _FAILED = ("exceeds", "is below", "is above", "can only", "No assessable")
 def default_tenure(p: CustomerProfile) -> int:
     """The longest tenure that keeps the full loan-to-value limit: below the property type's threshold and ending by
     the age limit. This is also the tenure DBS's planner offers (25y for an HDB flat at 32, 15y for a condo at 50)."""
-    ptype = p.property_type if p.property_type in ("hdb", "ec", "private") else "private"
-    return max(min(MAS["ltv_tenure_threshold"]["value"][ptype], MAS["ltv_age_limit"]["value"] - p.age), MIN_TENURE)
+    return max(
+        min(MAS["ltv_tenure_threshold"]["value"][p.property_kind], MAS["ltv_age_limit"]["value"] - p.age), MIN_TENURE
+    )
 
 
 def keeps_full_ltv(p: CustomerProfile, tenure: int) -> bool:
-    ptype = p.property_type if p.property_type in ("hdb", "ec", "private") else "private"
-    return tenure <= MAS["ltv_tenure_threshold"]["value"][ptype] and p.age + tenure <= MAS["ltv_age_limit"]["value"]
+    return (
+        tenure <= MAS["ltv_tenure_threshold"]["value"][p.property_kind]
+        and p.age + tenure <= MAS["ltv_age_limit"]["value"]
+    )
 
 
 def largest_loan(p: CustomerProfile, tenure: int, rate: float) -> dict:
@@ -42,8 +46,12 @@ def largest_loan(p: CustomerProfile, tenure: int, rate: float) -> dict:
 
     first = run(1)
     if first.status != "eligible":
-        return {"rate": rate, "max_loan": None, "blocked_by": [c["rule"] for c in first.checks if not c["passed"]],
-                "reasons": [r for r in first.reasons if any(word in r for word in _FAILED)]}
+        return {
+            "rate": rate,
+            "max_loan": None,
+            "blocked_by": [c["rule"] for c in first.checks if not c["passed"]],
+            "reasons": [r for r in first.reasons if any(word in r for word in _FAILED)],
+        }
     # Zero interest and all of income is more than any rule allows, so this bound always fails or equals the price.
     lo, hi = 1, int(min(price, (p.monthly_income or 0) * 12 * tenure + 1))
     while lo < hi:
@@ -52,11 +60,18 @@ def largest_loan(p: CustomerProfile, tenure: int, rate: float) -> dict:
     at_max, above = run(lo), run(lo + 1)
     c = at_max.computations
     limit = next((x["rule"] for x in above.checks if not x["passed"]), None)
-    return {"rate": rate, "max_loan": lo, "limit_rule": limit, "limit_label": RULE_LABELS.get(limit, limit),
-            "limit_cap": next((x["threshold"] for x in above.checks if x["rule"] == limit), None),
-            "instalment": c["stressed_monthly_instalment"], "ltv_limit": c["ltv_limit"],
-            "assessable_income": c["assessable_monthly_income"], "assumptions": at_max.assumptions,
-            "sources": at_max.sources}
+    return {
+        "rate": rate,
+        "max_loan": lo,
+        "limit_rule": limit,
+        "limit_label": RULE_LABELS.get(limit, limit),
+        "limit_cap": next((x["threshold"] for x in above.checks if x["rule"] == limit), None),
+        "instalment": c["stressed_monthly_instalment"],
+        "ltv_limit": c["ltv_limit"],
+        "assessable_income": c["assessable_monthly_income"],
+        "assumptions": at_max.assumptions,
+        "sources": at_max.sources,
+    }
 
 
 def find(p: CustomerProfile) -> dict:
@@ -64,12 +79,21 @@ def find(p: CustomerProfile) -> dict:
     floor = largest_loan(p, tenure, MAS["stress_rate"]["value"])
     planner = largest_loan(p, tenure, DBS_PLANNER_RATE["value"])
     assumptions = floor.get("assumptions") or planner.get("assumptions") or []
-    sources = list(dict.fromkeys((floor.get("sources") or [PRODUCTS["home_loan"]["source"]])
-                                 + [DBS_PLANNER_RATE["source"]]))
-    return {"tenure_years": tenure, "tenure_stated": bool(p.tenure_years), "property_price": p.property_price,
-            "keeps_full_ltv": keeps_full_ltv(p, tenure), "profile": p.to_dict(),
-            "at_floor": floor, "at_planner": planner, "assumptions": assumptions, "sources": sources,
-            "criteria_version": criteria_version()}
+    sources = list(
+        dict.fromkeys((floor.get("sources") or [PRODUCTS["home_loan"]["source"]]) + [DBS_PLANNER_RATE["source"]])
+    )
+    return {
+        "tenure_years": tenure,
+        "tenure_stated": bool(p.tenure_years),
+        "property_price": p.property_price,
+        "keeps_full_ltv": keeps_full_ltv(p, tenure),
+        "profile": p.to_dict(),
+        "at_floor": floor,
+        "at_planner": planner,
+        "assumptions": assumptions,
+        "sources": sources,
+        "criteria_version": criteria_version(),
+    }
 
 
 def numbers_in(result: dict) -> dict:
@@ -93,8 +117,10 @@ def _money(v: float) -> str:
 def _rate_line(at: dict, label: str) -> str:
     cap = f"{at['limit_cap']:.0%} of income" if at.get("limit_rule") in ("msr", "tdsr") else ""
     limit = f"The limit reached is {at['limit_label']}{', ' + cap if cap else ''}." if at.get("limit_rule") else ""
-    return (f"- **{_money(at['max_loan'])}** at the {at['rate'] * 100:g}% {label}. The test instalment is "
-            f"{_money(at['instalment'])} a month. {limit}".rstrip())
+    return (
+        f"- **{_money(at['max_loan'])}** at the {at['rate'] * 100:g}% {label}. The test instalment is "
+        f"{_money(at['instalment'])} a month. {limit}".rstrip()
+    )
 
 
 def text(result: dict) -> str:
@@ -102,35 +128,51 @@ def text(result: dict) -> str:
     floor, planner = result["at_floor"], result["at_planner"]
     if floor["max_loan"] is None and planner["max_loan"] is None:
         reasons = "\n".join(f"- {r}" for r in dict.fromkeys(floor["reasons"] + planner["reasons"]))
-        return ("On the details you checked, I can't show a maximum home loan, because no amount meets today's criteria:"
-                f"\n\n{reasons}\n\nThis is an indicative check, not an approval. A DBS banker can look at your full "
-                "situation.")
-    parts = [f"Here's your indicative maximum home loan over {result['tenure_years']} years. It depends on the "
-             "interest rate used in the test, so here are both. This is not an approval.", ""]
-    for at, label in ((floor, "floor MAS sets for residential property loans"),
-                      (planner, "DBS's planning tools currently assume")):
+        return (
+            "On the details you checked, I can't show a maximum home loan, because no amount meets today's criteria:"
+            f"\n\n{reasons}\n\nThis is an indicative check, not an approval. A DBS banker can look at your full "
+            "situation."
+        )
+    parts = [
+        f"Here's your indicative maximum home loan over {result['tenure_years']} years. It depends on the "
+        "interest rate used in the test, so here are both. This is not an approval.",
+        "",
+    ]
+    for at, label in (
+        (floor, "floor MAS sets for residential property loans"),
+        (planner, "DBS's planning tools currently assume"),
+    ):
         if at["max_loan"] is not None:
             parts.append(_rate_line(at, label))
     parts.append("")
     known = [at for at in (planner, floor) if at["max_loan"] is not None]
     ltv = known[0]["ltv_limit"]
     if result["property_price"]:
-        parts.append(f"**Property price:** the loan-to-value limit of {ltv:.0%} caps the loan at "
-                     f"{_money(result['property_price'] * ltv)} on a {_money(result['property_price'])} property.")
+        parts.append(
+            f"**Property price:** the loan-to-value limit of {ltv:.0%} caps the loan at "
+            f"{_money(result['property_price'] * ltv)} on a {_money(result['property_price'])} property."
+        )
     else:
         prices = sorted({round(at["max_loan"] / at["ltv_limit"]) for at in known})
-        parts.append(f"**Property price:** the loan also can't be more than {ltv:.0%} of the price, so "
-                     f"{' to '.join(_money(x) for x in prices)} is the most these loans would cover at that limit.")
+        parts.append(
+            f"**Property price:** the loan also can't be more than {ltv:.0%} of the price, so "
+            f"{' to '.join(_money(x) for x in prices)} is the most these loans would cover at that limit."
+        )
     if result["tenure_stated"]:
         tenure_note = "the tenure you gave."
     elif result["keeps_full_ltv"]:
         tenure_note = "the longest that keeps the full loan-to-value limit. A different tenure changes these figures."
     else:
-        tenure_note = ("the shortest available. At your age the loan would run past 65, so the lower loan-to-value "
-                       "limit applies. A different tenure changes these figures.")
+        tenure_note = (
+            "the shortest available. At your age the loan would run past 65, so the lower loan-to-value "
+            "limit applies. A different tenure changes these figures."
+        )
     parts.append(f"**Tenure:** {result['tenure_years']} years, {tenure_note}")
     if result["assumptions"]:
         parts += ["", "**Things you didn't mention:**"] + [f"- {a}" for a in result["assumptions"]]
-    parts += ["", "A banker's figure may differ, because it depends on the bank's full credit assessment and the package "
-                  "rate. To check a specific loan, tell me the property price and the amount you'd borrow."]
+    parts += [
+        "",
+        "A banker's figure may differ, because it depends on the bank's full credit assessment and the package "
+        "rate. To check a specific loan, tell me the property price and the amount you'd borrow.",
+    ]
     return "\n".join(parts)

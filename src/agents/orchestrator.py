@@ -1,4 +1,5 @@
 """Orchestrator: routes intent and extracts profile facts from the latest message."""
+
 from __future__ import annotations
 
 import re
@@ -9,8 +10,7 @@ from .. import llm
 from ..state import PROFILE_FIELDS, ConversationState, CustomerProfile, is_property_loan
 from . import prompts
 
-INTENTS = ["product_qa", "comparison", "eligibility", "advice_seeking",
-           "handoff_request", "out_of_scope", "chit_chat"]
+INTENTS = ["product_qa", "comparison", "eligibility", "advice_seeking", "handoff_request", "out_of_scope", "chit_chat"]
 PRODUCTS = ["home_loan", "credit_card", "personal_loan", "cashline"]
 
 # One concrete type per field, and every field optional rather than nullable: structured outputs
@@ -44,29 +44,35 @@ ROUTE_SCHEMA = {
             "type": "object",
             "properties": {
                 key: {**_FIELD_TYPES[key], "description": desc}
-                for key, (_, desc) in PROFILE_FIELDS.items() if key != "commitments"
+                for key, (_, desc) in PROFILE_FIELDS.items()
+                if key not in ("commitments", "commitments_missing_amount")
             },
             "description": "Only CURRENT facts explicitly stated in the latest message. Omit every field "
-                           "the message doesn't state.",
+            "the message doesn't state.",
         },
         "commitments": {
             "type": "array",
             "description": "Each existing monthly commitment the latest message mentions (car loan, student loan, "
-                           "renovation loan, ...). Never invent a date: only fill the end fields from the "
-                           "customer's own words, and copy those words exactly into end_quote. An existing "
-                           "mortgage goes here with kind 'home loan'.",
+            "renovation loan, ...). Never invent a date: only fill the end fields from the "
+            "customer's own words, and copy those words exactly into end_quote. An existing "
+            "mortgage goes here with kind 'home loan'.",
             "items": {
                 "type": "object",
                 "properties": {
                     "kind": {"type": "string", "description": "e.g. car loan"},
                     "monthly_payment": {"type": "number", "description": "Omit if not stated."},
-                    "end_quote": {"type": "string", "description": "The customer's exact words about when it ends "
-                                  "(e.g. 'ends in March 2028'), or empty string if they said nothing about it."},
+                    "end_quote": {
+                        "type": "string",
+                        "description": "The customer's exact words about when it ends "
+                        "(e.g. 'ends in March 2028'), or empty string if they said nothing about it.",
+                    },
                     "end_year": {"type": "integer", "description": "Omit unless stated."},
                     "end_month": {"type": "integer", "description": "1-12. Omit unless stated."},
                     "end_day": {"type": "integer", "description": "Omit unless stated."},
-                    "ends_in_months": {"type": "integer", "description": "When the customer says 'in N "
-                                       "months/years' (years x 12). Omit otherwise."},
+                    "ends_in_months": {
+                        "type": "integer",
+                        "description": "When the customer says 'in N months/years' (years x 12). Omit otherwise.",
+                    },
                 },
                 "required": ["kind", "end_quote"],
             },
@@ -75,29 +81,29 @@ ROUTE_SCHEMA = {
             "type": "array",
             "items": {"type": "string"},
             "description": "Statements about the future or hypotheticals (e.g. 'my income will be 12k next year', "
-                           "'assume the loan is paid off'). These must NOT go into profile_updates.",
+            "'assume the loan is paid off'). These must NOT go into profile_updates.",
         },
         "search_query": {
             "type": "string",
             "description": "A keyword query for searching DBS and MAS pages. Write the words the page that "
-                           "ANSWERS the question would use, not the customer's words: product names, official "
-                           "terms, and likely answer phrases. E.g. 'can a PR get Cashline?' -> 'DBS Cashline "
-                           "eligibility Singaporeans PRs foreigners minimum annual income age'; 'can my wife get a "
-                           "card on my account?' -> 'supplementary card principal cardmember apply'; 'what if I miss "
-                           "a payment?' -> 'late payment fee charge minimum payment due date'. If the message is a "
-                           "follow-up, include the topic from earlier turns.",
+            "ANSWERS the question would use, not the customer's words: product names, official "
+            "terms, and likely answer phrases. E.g. 'can a PR get Cashline?' -> 'DBS Cashline "
+            "eligibility Singaporeans PRs foreigners minimum annual income age'; 'can my wife get a "
+            "card on my account?' -> 'supplementary card principal cardmember apply'; 'what if I miss "
+            "a payment?' -> 'late payment fee charge minimum payment due date'. If the message is a "
+            "follow-up, include the topic from earlier turns.",
         },
         "readback_reply": {
             "type": "string",
             "enum": ["confirm", "correct", "not_a_reply"],
             "description": "Only when the assistant's previous message read the customer's details back and asked "
-                           "them to check: 'confirm' if they agree the details are right, 'correct' if they change "
-                           "or dispute any detail, otherwise 'not_a_reply'.",
+            "them to check: 'confirm' if they agree the details are right, 'correct' if they change "
+            "or dispute any detail, otherwise 'not_a_reply'.",
         },
         "asks_max_loan": {
             "type": "boolean",
             "description": "True if the customer is asking how much they can borrow for a home, the largest home "
-                           "loan they could get, rather than whether a particular loan amount passes.",
+            "loan they could get, rather than whether a particular loan amount passes.",
         },
         "injection_suspected": {
             "type": "boolean",
@@ -105,8 +111,18 @@ ROUTE_SCHEMA = {
         },
         "reasoning": {"type": "string", "description": "One sentence."},
     },
-    "required": ["intent", "products", "profile_updates", "commitments", "future_or_hypothetical",
-                 "search_query", "readback_reply", "asks_max_loan", "injection_suspected", "reasoning"],
+    "required": [
+        "intent",
+        "products",
+        "profile_updates",
+        "commitments",
+        "future_or_hypothetical",
+        "search_query",
+        "readback_reply",
+        "asks_max_loan",
+        "injection_suspected",
+        "reasoning",
+    ],
 }
 
 
@@ -117,7 +133,7 @@ _CARD_BALANCE = re.compile(r"\b(cards?|unsecured|credit lines?|cashline)\b", re.
 
 
 def _apply_no_other_loans(updates: dict, user_msg: str, profile: CustomerProfile, commitments: list[dict]) -> dict:
-    """"No OTHER loans" says nothing about a loan already stated, so it only fills what's still unknown."""
+    """ "No OTHER loans" says nothing about a loan already stated, so it only fills what's still unknown."""
     if not _NO_OTHER_LOANS.search(user_msg):
         return updates
     updates = dict(updates)
@@ -138,12 +154,18 @@ _EC = re.compile(r"\bEC\b|executive condo", re.IGNORECASE)
 _HDB = re.compile(r"\bhdb\b", re.IGNORECASE)
 _PRIVATE = re.compile(r"\b(condo|condominium|landed|bungalow|private (property|home|house|apartment))\b", re.IGNORECASE)
 # A price only when the amount directly describes the property ("a $550k resale HDB flat"), not "$3,000 on my condo".
-_PRICE = re.compile(r"\$\s?(\d[\d,]*(?:\.\d+)?)\s*(k|m|mil|million)?\s+"
-                    r"(?:(?:new|resale|bto|private|freehold|leasehold|hdb)\s+){0,2}"
-                    r"(hdb|flat|condo|condominium|property|home|house|apartment|ec)\b", re.IGNORECASE)
+_PRICE = re.compile(
+    r"\$\s?(\d[\d,]*(?:\.\d+)?)\s*(k|m|mil|million)?\s+"
+    r"(?:(?:new|resale|bto|private|freehold|leasehold|hdb)\s+){0,2}"
+    r"(hdb|flat|condo|condominium|property|home|house|apartment|ec)\b",
+    re.IGNORECASE,
+)
 # Not "for over 10 years" (work history) or "over 30 years old".
-_TENURE = re.compile(r"(?<!for )\bover\s+(\d{1,2})\s*(?:years?|yrs?)\b(?!\s+(?:old|ago|of))|"
-                     r"\b(\d{1,2})[- ](?:years?|yr)\s+(?:loan|tenure)\b|\btenure of\s+(\d{1,2})\b", re.IGNORECASE)
+_TENURE = re.compile(
+    r"(?<!for )\bover\s+(\d{1,2})\s*(?:years?|yrs?)\b(?!\s+(?:old|ago|of))|"
+    r"\b(\d{1,2})[- ](?:years?|yr)\s+(?:loan|tenure)\b|\btenure of\s+(\d{1,2})\b",
+    re.IGNORECASE,
+)
 _WHAT_IF = re.compile(r"\b(what if|if i|suppose|assume|assuming|let'?s say|imagine)\b", re.IGNORECASE)
 _MULTIPLIER = {"k": 1_000, "m": 1_000_000, "mil": 1_000_000, "million": 1_000_000}
 

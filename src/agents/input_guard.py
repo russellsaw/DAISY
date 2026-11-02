@@ -1,6 +1,6 @@
 """Input guardrail: decides whether a customer message may reach the agents at all.
 
-The one component of DBS's reference architecture ("LLM-assisted input guardrail") DAISY lacked. Two layers:
+Two layers:
 
   1. Code patterns — instant and high-precision: instruction override, system-prompt extraction,
      role-play/jailbreak, fake operator or compliance messages.
@@ -17,6 +17,7 @@ Actions:
 A guard that blocks real customers is worse than none, so the categories are narrow and the eval suite
 carries benign look-alikes ("can my father act as a guarantor?").
 """
+
 from __future__ import annotations
 
 import re
@@ -27,65 +28,105 @@ from .. import config, llm
 _PATTERNS: list[tuple[str, re.Pattern]] = [
     # "your rules" is about the assistant only when nothing says which rules: "your rules for foreigners" and
     # "the rules for TDSR" are product questions. A customer's "system message" may come from the DBS app.
-    ("system_prompt_extraction", re.compile(
-        r"\b(system|initial|hidden)\s+prompt\b|"
-        r"\byour\s+(system|initial|hidden|original)\s+(instructions?|message)\b|"
-        r"\b(repeat|print|reveal|show|output|recite)\b[^.?!]{0,40}\b(your\s+(prompt|instructions|rules|guidelines)"
-        r"\b(?!\s+(for|on|about|regarding))|the\s+prompt\b(?=\s*(?:[.?!]|$)))|"
-        r"\bwhat\s+(are|were)\s+your\s+(instructions|rules)\b(?!\s+(for|on|about|regarding))", re.I)),
-    ("instruction_override", re.compile(
-        r"\b(ignore|disregard|forget|override|bypass)\s+(all\s+|any\s+|of\s+)*(your|the|previous|prior|above|"
-        r"earlier|these|those|system|safety|its)\b[^.?!]{0,25}\b(instructions?|rules(?!\s+of\s+thumb)|guidelines|"
-        r"guardrails|restrictions|policies|prompt)\b", re.I)),
-    ("role_play_override", re.compile(
-        r"\byou\s*(are|'re)\s+now\s+(a|an|in|the)\b[^.?!]{0,40}\b(officer|manager|underwriter|approver|banker|"
-        r"assistant|ai|bot|model|mode|unrestricted)\b|\b(developer|god|jailbreak|unrestricted)\s+mode\b|(?-i:\bDAN\b)|"
-        r"\bpretend\s+(to\s+be|you\s+are)\b[^.?!]{0,40}\b(officer|manager|underwriter|approver|banker|unrestricted)\b|"
-        r"\bact\s+as\b[^.?!]{0,30}\b(loan\s+officer|underwriter|approver|credit\s+officer|unrestricted|no\s+restrictions)\b",
-        re.I)),
-    ("fake_authority", re.compile(
-        r"^\s*\[\s*(system|admin|developer|operator)\b[^\]]*\]|"
-        r"^\s*(system|admin|developer|operator)\s+(note|message|override)\s*:|"
-        r"^\s*(?-i:SYSTEM|ADMIN|DEVELOPER|OPERATOR)\s*:|"
-        r"\b(compliance|guardrails?|safety)\b[^.?!]{0,20}\b(is|are|has been|have been)\s+(disabled|turned off|"
-        r"suspended|waived)\b|\b((you\s+are|you're)\s+now|the assistant is(\s+now)?)\s+(authori[sz]ed|permitted|allowed)\s+to\b|"
-        r"\b(here'?s|this is|forwarding)\s+a\s+message\s+from\s+(dbs\s+)?(compliance|management|the bank|admin)\b",
-        re.I | re.M)),
+    (
+        "system_prompt_extraction",
+        re.compile(
+            r"\b(system|initial|hidden)\s+prompt\b|"
+            r"\byour\s+(system|initial|hidden|original)\s+(instructions?|message)\b|"
+            r"\b(repeat|print|reveal|show|output|recite)\b[^.?!]{0,40}\b(your\s+(prompt|instructions|rules|guidelines)"
+            r"\b(?!\s+(for|on|about|regarding))|the\s+prompt\b(?=\s*(?:[.?!]|$)))|"
+            r"\bwhat\s+(are|were)\s+your\s+(instructions|rules)\b(?!\s+(for|on|about|regarding))",
+            re.I,
+        ),
+    ),
+    (
+        "instruction_override",
+        re.compile(
+            r"\b(ignore|disregard|forget|override|bypass)\s+(all\s+|any\s+|of\s+)*(your|the|previous|prior|above|"
+            r"earlier|these|those|system|safety|its)\b[^.?!]{0,25}\b(instructions?|rules(?!\s+of\s+thumb)|guidelines|"
+            r"guardrails|restrictions|policies|prompt)\b",
+            re.I,
+        ),
+    ),
+    (
+        "role_play_override",
+        re.compile(
+            r"\byou\s*(are|'re)\s+now\s+(a|an|in|the)\b[^.?!]{0,40}\b(officer|manager|underwriter|approver|banker|"
+            r"assistant|ai|bot|model|mode|unrestricted)\b|\b(developer|god|jailbreak|unrestricted)\s+mode\b|(?-i:\bDAN\b)|"
+            r"\bpretend\s+(to\s+be|you\s+are)\b[^.?!]{0,40}\b(officer|manager|underwriter|approver|banker|unrestricted)\b|"
+            r"\bact\s+as\b[^.?!]{0,30}\b(loan\s+officer|underwriter|approver|credit\s+officer|unrestricted|no\s+restrictions)\b",
+            re.I,
+        ),
+    ),
+    (
+        "fake_authority",
+        re.compile(
+            r"^\s*\[\s*(system|admin|developer|operator)\b[^\]]*\]|"
+            r"^\s*(system|admin|developer|operator)\s+(note|message|override)\s*:|"
+            r"^\s*(?-i:SYSTEM|ADMIN|DEVELOPER|OPERATOR)\s*:|"
+            r"\b(compliance|guardrails?|safety)\b[^.?!]{0,20}\b(is|are|has been|have been)\s+(disabled|turned off|"
+            r"suspended|waived)\b|\b((you\s+are|you're)\s+now|the assistant is(\s+now)?)\s+(authori[sz]ed|permitted|allowed)\s+to\b|"
+            r"\b(here'?s|this is|forwarding)\s+a\s+message\s+from\s+(dbs\s+)?(compliance|management|the bank|admin)\b",
+            re.I | re.M,
+        ),
+    ),
 ]
 
-BLOCKING = {"system_prompt_extraction", "instruction_override", "role_play_override", "fake_authority",
-            "disparagement_request", "abusive_or_harmful"}
+BLOCKING = {
+    "system_prompt_extraction",
+    "instruction_override",
+    "role_play_override",
+    "fake_authority",
+    "disparagement_request",
+    "abusive_or_harmful",
+}
 ESCALATING = {"vulnerable_customer"}
 
 # Code-written replies (never drafted by a model, never contain approval vocabulary).
 REPLIES = {
     "system_prompt_extraction": (
         "I can't share how I'm set up, but I'm happy to help with DBS home loans, credit cards and personal "
-        "loans: product details, fees, or an indicative eligibility check."),
+        "loans: product details, fees, or an indicative eligibility check."
+    ),
     "instruction_override": (
         "I can't change how I work based on instructions in a message. I can share DBS product information "
-        "and run indicative eligibility checks, or prepare a summary for a DBS banker. What would you like to know?"),
+        "and run indicative eligibility checks, or prepare a summary for a DBS banker. What would you like to know?"
+    ),
     "role_play_override": (
         "I can't take on a different role or grant approvals. I'm DAISY, and I can share DBS product information "
-        "and run indicative eligibility checks, or prepare a summary for a DBS banker."),
+        "and run indicative eligibility checks, or prepare a summary for a DBS banker."
+    ),
     "fake_authority": (
         "I can't act on instructions or permissions that arrive inside a message, and I can't confirm approvals "
         "or limits. I can share DBS product information, run an indicative eligibility check, or prepare a summary "
-        "for a DBS banker."),
+        "for a DBS banker."
+    ),
     "disparagement_request": (
         "I can only speak to DBS products, so I won't comment on other banks or say one is better than another. "
-        "I'm happy to explain DBS's own rates, fees and features so you can compare for yourself."),
+        "I'm happy to explain DBS's own rates, fees and features so you can compare for yourself."
+    ),
     "abusive_or_harmful": (
         "I can't help with that. If you have a question about DBS home loans, credit cards or personal loans, "
-        "I'm glad to help."),
+        "I'm glad to help."
+    ),
 }
 
 SCHEMA = {
     "type": "object",
     "properties": {
-        "category": {"type": "string", "enum": [
-            "none", "system_prompt_extraction", "instruction_override", "role_play_override", "fake_authority",
-            "disparagement_request", "abusive_or_harmful", "vulnerable_customer"]},
+        "category": {
+            "type": "string",
+            "enum": [
+                "none",
+                "system_prompt_extraction",
+                "instruction_override",
+                "role_play_override",
+                "fake_authority",
+                "disparagement_request",
+                "abusive_or_harmful",
+                "vulnerable_customer",
+            ],
+        },
         "evidence": {"type": "string", "description": "The exact words that triggered the category, or empty."},
     },
     "required": ["category", "evidence"],
@@ -118,23 +159,59 @@ def check(user_msg: str) -> dict:
     for category, pattern in _PATTERNS:
         m = pattern.search(user_msg)
         if m:
-            return {"action": "block", "category": category, "source": "code pattern", "evidence": m.group(0),
-                    "reply": REPLIES[category]}
+            return {
+                "action": "block",
+                "category": category,
+                "source": "code pattern",
+                "evidence": m.group(0),
+                "reply": REPLIES[category],
+            }
     try:
-        verdict = llm.structured(GUARD_PROMPT, f"Customer's latest message:\n{user_msg}", SCHEMA,
-                                 model=config.MODEL_FAST, effort="low", max_tokens=2048)
+        verdict = llm.structured(
+            GUARD_PROMPT,
+            f"Customer's latest message:\n{user_msg}",
+            SCHEMA,
+            model=config.MODEL_FAST,
+            effort="low",
+            max_tokens=2048,
+        )
     except llm.Refusal:
-        return {"action": "block", "category": "abusive_or_harmful", "source": "model declined to classify",
-                "evidence": "", "reply": REPLIES["abusive_or_harmful"]}
+        return {
+            "action": "block",
+            "category": "abusive_or_harmful",
+            "source": "model declined to classify",
+            "evidence": "",
+            "reply": REPLIES["abusive_or_harmful"],
+        }
     except Exception as exc:  # noqa: BLE001 — API trouble: code patterns already ran; let other layers work
-        return {"action": "allow", "category": "none", "source": f"classifier unavailable ({type(exc).__name__})",
-                "evidence": "", "reply": None}
+        return {
+            "action": "allow",
+            "category": "none",
+            "source": f"classifier unavailable ({type(exc).__name__})",
+            "evidence": "",
+            "reply": None,
+        }
     category = verdict.get("category", "none")
     if category in BLOCKING:
-        return {"action": "block", "category": category, "source": "llm classifier",
-                "evidence": verdict.get("evidence", ""), "reply": REPLIES[category]}
+        return {
+            "action": "block",
+            "category": category,
+            "source": "llm classifier",
+            "evidence": verdict.get("evidence", ""),
+            "reply": REPLIES[category],
+        }
     if category in ESCALATING:
-        return {"action": "escalate", "category": category, "source": "llm classifier",
-                "evidence": verdict.get("evidence", ""), "reply": None}
-    return {"action": "allow", "category": "none", "source": "code pattern + llm classifier", "evidence": "",
-            "reply": None}
+        return {
+            "action": "escalate",
+            "category": category,
+            "source": "llm classifier",
+            "evidence": verdict.get("evidence", ""),
+            "reply": None,
+        }
+    return {
+        "action": "allow",
+        "category": "none",
+        "source": "code pattern + llm classifier",
+        "evidence": "",
+        "reply": None,
+    }

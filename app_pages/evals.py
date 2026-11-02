@@ -1,9 +1,9 @@
 """Trust scorecard: pass rates, Swiss-cheese defence layers, case drill-down, live run."""
+
 import json
 import subprocess
 import sys
 from datetime import datetime
-from pathlib import Path
 
 import pandas as pd
 import streamlit as st
@@ -12,9 +12,11 @@ from src import config, defence
 from src.ui import md_safe
 
 st.title("Trust scorecard", icon=":material/fact_check:", anchor=False)
-st.caption("How DAISY did in the last full run of our test conversations, including attempts to break it. The suite "
-           "is run by hand, not automatically, and failures stay visible. Model-written replies vary, so a result can "
-           "move by a case or two between runs.")
+st.caption(
+    "How DAISY did in the last full run of our test conversations, including attempts to break it. The suite "
+    "is run by hand, not automatically, and failures stay visible. Model-written replies vary, so a result can "
+    "move by a case or two between runs."
+)
 
 PASS_COLOR, FAIL_COLOR = "#0F8A5F", "#DC1F1F"  # green for a pass, red only for a failure
 
@@ -31,13 +33,14 @@ if config.STAFF_CONTROLS:
     with col_limit:
         limit = st.number_input("Max cases", min_value=1, max_value=500, value=len(cases))
     with col_run:
-        if st.button("Run suite", icon=":material/play_arrow:", type="primary", width="stretch"):
+        if st.button("Run suite", icon=":material/play_arrow:", type="primary", width="stretch", disabled=not selected):
             cmd = [sys.executable, str(config.ROOT / "evals" / "run_evals.py"), "--limit", str(int(limit))]
             if selected and len(selected) < len(categories):
                 cmd += ["--categories", ",".join(selected)]
             with st.status("Running evals…", expanded=True) as status:
-                proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
-                                        cwd=str(config.ROOT))
+                proc = subprocess.Popen(
+                    cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, cwd=str(config.ROOT)
+                )
                 log = st.empty()
                 lines = []
                 for line in proc.stdout:
@@ -53,6 +56,9 @@ if not latest.exists():
     st.stop()
 
 data = json.loads(latest.read_text())
+if not data["results"]:
+    st.info("The last run had no cases.", icon=":material/info:")
+    st.stop()
 df = pd.DataFrame(data["results"])
 total = len(df)
 passed = int(df["passed"].sum())
@@ -64,30 +70,38 @@ with st.container(horizontal=True):
     st.metric("Last run", datetime.fromisoformat(data["run_at"]).strftime("%-d %b %Y, %H:%M"), border=True)
 
 tab_rates, tab_layers, tab_cases = st.tabs(
-    [":material/bar_chart: Pass rates", ":material/layers: Safety checks", ":material/list: Cases"])
+    [":material/bar_chart: Pass rates", ":material/layers: Safety checks", ":material/list: Cases"]
+)
 
 # ---------------- Pass rates (by category) ----------------
 with tab_rates:
     by_cat = df.groupby("category")["passed"].agg(["count", "sum"]).rename(columns={"count": "cases", "sum": "passed"})
     by_cat["failed"] = by_cat["cases"] - by_cat["passed"]
     by_cat["pass_rate"] = by_cat["passed"] / by_cat["cases"]
-    st.bar_chart(by_cat[["passed", "failed"]], color=[PASS_COLOR, FAIL_COLOR], y_label="Cases",
-                 alt="Cases passed and failed in each test category")
+    st.bar_chart(
+        by_cat[["passed", "failed"]],
+        color=[PASS_COLOR, FAIL_COLOR],
+        y_label="Cases",
+        alt="Cases passed and failed in each test category",
+    )
     st.dataframe(by_cat.style.format({"pass_rate": "{:.0%}"}))
     if len(data.get("history", [])) > 1:
         st.subheader("Pass rate across runs", anchor=False)
         hist = pd.DataFrame(data["history"]).set_index("run_at")
-        st.line_chart(hist["pass_rate"], color=PASS_COLOR, y_label="Pass rate",
-                      alt="Pass rate of each test run over time")
+        st.line_chart(
+            hist["pass_rate"], color=PASS_COLOR, y_label="Pass rate", alt="Pass rate of each test run over time"
+        )
 
 # ---------------- Swiss cheese: which defence layer stopped each attack ----------------
 with tab_layers:
-    st.caption("There are five safety checks, and each reply shows the ones that applied to it. The **input guardrail** removes personal details and blocks "
-               "attempts to manipulate DAISY. **Retrieval grounding** checks the answer against DBS pages. The "
-               "**rules engine** does every calculation. The **compliance agent** reviews each reply. **Code filters** "
-               "remove numbers that can't be traced and, on eligibility and advice replies, approval wording. A check is "
-               "highlighted when it stepped in, which includes routine work such as holding the calculation until "
-               "details are confirmed, so an attack marked stopped may also have been refused by the model anyway.")
+    st.caption(
+        "There are five safety checks, and each reply shows the ones that applied to it. The **input guardrail** removes personal details and blocks "
+        "attempts to manipulate DAISY. **Retrieval grounding** checks the answer against DBS pages. The "
+        "**rules engine** does every calculation. The **compliance agent** reviews each reply. **Code filters** "
+        "remove numbers that can't be traced and, on eligibility and advice replies, approval wording. A check is "
+        "highlighted when it stepped in, which includes routine work such as holding the calculation until "
+        "details are confirmed, so an attack marked stopped may also have been refused by the model anyway."
+    )
     if "defence" not in df.columns:
         st.info("These results predate layer instrumentation. Run the suite again.", icon=":material/info:")
     else:
@@ -105,24 +119,37 @@ with tab_layers:
             st.metric("Got through every check", len(holes), border=True)
 
         if len(holes):
-            st.error(f"{len(holes)} attack(s) got through every check and reached the customer: "
-                     + ", ".join(holes["id"]), icon=":material/report:")
+            st.error(
+                f"{len(holes)} attack(s) got through every check and reached the customer: " + ", ".join(holes["id"]),
+                icon=":material/report:",
+            )
         else:
             st.success("No attack in this run got through every check.", icon=":material/verified:")
         if len(prompt_only):
-            st.warning(f"{len(prompt_only)} attack(s) were stopped only by DAISY's own instructions, with no check "
-                       "stepping in. That's acceptable, but nothing would catch it if it changed: "
-                       + ", ".join(prompt_only["id"]), icon=":material/warning:")
+            st.warning(
+                f"{len(prompt_only)} attack(s) were stopped only by DAISY's own instructions, with no check "
+                "stepping in. That's acceptable, but nothing would catch it if it changed: "
+                + ", ".join(prompt_only["id"]),
+                icon=":material/warning:",
+            )
 
-        acted_counts = {label: int(attacks["defence"].map(lambda d, k=key: bool(d.get(k, {}).get("acted"))).sum())
-                        for key, label in defence.LAYERS}
+        acted_counts = {
+            label: int(attacks["defence"].map(lambda d, k=key: bool(d.get(k, {}).get("acted"))).sum())
+            for key, label in defence.LAYERS
+        }
         st.subheader("Attacks where each check stepped in", anchor=False)
-        st.bar_chart(pd.Series(acted_counts, name="attacks"), horizontal=True, color=PASS_COLOR,
-                     alt="Number of attacks in which each safety check stepped in")
+        st.bar_chart(
+            pd.Series(acted_counts, name="attacks"),
+            horizontal=True,
+            color=PASS_COLOR,
+            alt="Number of attacks in which each safety check stepped in",
+        )
 
-        verdict_badge = {"hole": ("Got through", "red", ":material/report:"),
-                         "prompt_only": ("Stopped by instructions only", "orange", ":material/warning:"),
-                         "stopped": ("Stopped", "green", ":material/shield:")}
+        verdict_badge = {
+            "hole": ("Got through", "red", ":material/report:"),
+            "prompt_only": ("Stopped by instructions only", "orange", ":material/warning:"),
+            "stopped": ("Stopped", "green", ":material/shield:"),
+        }
         for _, row in attacks.iterrows():
             with st.container(border=True):
                 label, color, icon = verdict_badge[row["defended"]]
@@ -144,8 +171,10 @@ with tab_layers:
                         st.markdown(f"- **{name}** ({layer.get('status', 'n/a')}): {md_safe(layer.get('detail', ''))}")
                     failed = [c for c in row["checks"] if not c["passed"]]
                     if failed:
-                        st.markdown("**Failed checks:** " + "; ".join(f"`{c['name']}` {md_safe(str(c['detail']))}"
-                                                                    for c in failed))
+                        st.markdown(
+                            "**Failed checks:** "
+                            + "; ".join(f"`{c['name']}` {md_safe(str(c['detail']))}" for c in failed)
+                        )
                     st.markdown(f"**Response:** {md_safe(row['response'][:600])}")
 
 # ---------------- Case drill-down ----------------

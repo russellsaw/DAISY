@@ -13,14 +13,15 @@ Metrics (thresholds fixed when the suite was set up; fix the app, never the thre
 Contextual relevancy (retrieval precision) is left out on purpose: DAISY retrieves 10 excerpts because 5
 missed the right page in the 50-question review, so a precision metric would push that fix back out.
 """
+
 from __future__ import annotations
 
 import pytest
+from daisy_deepeval import excerpts, existing_goldens, generated_goldens, judge
 from deepeval import assert_test
 from deepeval.metrics import AnswerRelevancyMetric, ContextualRecallMetric, FaithfulnessMetric
 from deepeval.test_case import LLMTestCase
 
-from daisy_deepeval import excerpts, existing_goldens, generated_goldens, judge
 from src.pipeline import run_turn
 from src.state import ConversationState
 
@@ -36,8 +37,12 @@ def test_daisy_answers(golden, run_dir):
         actual_output=result.response,
         expected_output=golden.expected_output,
         retrieval_context=excerpts(result.sources_text) or ["(no excerpts retrieved)"],
-        additional_metadata={"id": golden.id, "intent": result.intent, "source": golden.source,
-                             "log": str(run_dir / f"{golden.id}.jsonl")},
+        additional_metadata={
+            "id": golden.id,
+            "intent": result.intent,
+            "source": golden.source,
+            "log": str(run_dir / f"{golden.id}.jsonl"),
+        },
     )
     metrics = [FaithfulnessMetric(threshold=0.8, model=JUDGE), AnswerRelevancyMetric(threshold=0.7, model=JUDGE)]
     if golden.expected_output:

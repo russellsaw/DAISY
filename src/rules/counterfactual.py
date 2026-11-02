@@ -15,6 +15,7 @@ Search budget: single levers first; pairs only if no single lever is a path; nev
 A lever that passes but clears a ratio that fails today by less than config.CF_MARGIN is
 "borderline", not a path. If nothing is a path, `path` is None and the caller hands off to a banker.
 """
+
 from __future__ import annotations
 
 import copy
@@ -58,11 +59,11 @@ RULE_LABELS = {
 
 @dataclass
 class Lever:
-    kind: str                                   # "dated" | "whatif"
+    kind: str  # "dated" | "whatif"
     name: str
     apply: Callable[[CustomerProfile], CustomerProfile] | None = None
     describe: Callable[[CustomerProfile], str] | None = None
-    when: date | None = None                    # dated levers only
+    when: date | None = None  # dated levers only
     steps: Callable[[CustomerProfile], Iterator[tuple[CustomerProfile, str]]] | None = None  # searched what-ifs
 
 
@@ -83,6 +84,7 @@ def _aged(p: CustomerProfile, when: date, today: date, age_today: int | None = N
 
 # ---------------------------------------------------------------- levers
 
+
 def _levers(p: CustomerProfile, product: str, today: date) -> list[Lever]:
     levers: list[Lever] = []
 
@@ -92,36 +94,70 @@ def _levers(p: CustomerProfile, product: str, today: date) -> list[Lever]:
             q = copy.deepcopy(q)
             q.commitments = [x for x in q.commitments if x["kind"] != kind]
             return q
+
         label = f"your {c['kind']} (S${c['monthly']:,.0f}/month)"
         if c.get("end_date"):
             end = date.fromisoformat(c["end_date"])
-            levers.append(Lever("dated", f"commitment_ends:{c['kind']}",
-                                apply=lambda q, f=remove, end=end: _aged(f(q), end, today, p.age),
-                                describe=lambda q, label=label, quote=c.get("end_quote"):
-                                    f"{label} has ended" + (f" (you told us: \u201c{quote}\u201d)" if quote else ""),
-                                when=end))
+            levers.append(
+                Lever(
+                    "dated",
+                    f"commitment_ends:{c['kind']}",
+                    apply=lambda q, f=remove, end=end: _aged(f(q), end, today, p.age),
+                    describe=lambda q, label=label, quote=c.get("end_quote"): (
+                        f"{label} has ended" + (f" (you told us: \u201c{quote}\u201d)" if quote else "")
+                    ),
+                    when=end,
+                )
+            )
         else:
-            levers.append(Lever("whatif", f"commitment_cleared:{c['kind']}", apply=remove,
-                                describe=lambda q, label=label: f"{label} were cleared (you haven't given an end date)"))
+            levers.append(
+                Lever(
+                    "whatif",
+                    f"commitment_cleared:{c['kind']}",
+                    apply=remove,
+                    describe=lambda q, label=label: f"{label} were cleared (you haven't given an end date)",
+                )
+            )
 
     if p.existing_monthly_debt:
+
         def clear_other(q):
             q = copy.deepcopy(q)
             q.existing_monthly_debt = 0.0
             return q
-        levers.append(Lever("whatif", "other_debt_cleared", apply=clear_other,
-                            describe=lambda q, v=p.existing_monthly_debt: f"your other monthly repayments (S${v:,.0f}) were cleared"))
+
+        levers.append(
+            Lever(
+                "whatif",
+                "other_debt_cleared",
+                apply=clear_other,
+                describe=lambda q, v=p.existing_monthly_debt: (
+                    f"your other monthly repayments (S${v:,.0f}) were cleared"
+                ),
+            )
+        )
 
     if product != "home_loan" and p.existing_unsecured_balance:
+
         def clear_unsecured(q):
             q = copy.deepcopy(q)
             q.existing_unsecured_balance = 0.0
             return q
-        levers.append(Lever("whatif", "unsecured_balance_cleared", apply=clear_unsecured,
-                            describe=lambda q, v=p.existing_unsecured_balance: f"your existing unsecured balance (S${v:,.0f}) were paid down"))
+
+        levers.append(
+            Lever(
+                "whatif",
+                "unsecured_balance_cleared",
+                apply=clear_unsecured,
+                describe=lambda q, v=p.existing_unsecured_balance: (
+                    f"your existing unsecured balance (S${v:,.0f}) were paid down"
+                ),
+            )
+        )
 
     # ---- searched what-ifs: smallest step first, within realistic bounds ----
     if p.monthly_income:
+
         def income_steps(q):
             base = q.monthly_income
             limit = base * config.CF_MAX_INCOME_UPLIFT
@@ -131,9 +167,11 @@ def _levers(p: CustomerProfile, product: str, today: date) -> list[Lever]:
                 r.monthly_income = base + amount
                 yield r, f"your gross monthly income were S${base + amount:,.0f} (S${amount:,.0f} more than today)"
                 amount += config.CF_INCOME_STEP
+
         levers.append(Lever("whatif", "income_higher", steps=income_steps))
 
     if product == "home_loan" and p.home_loan_amount:
+
         def loan_steps(q):
             base = q.home_loan_amount
             limit = base * config.CF_MAX_HOME_LOAN_CUT
@@ -143,9 +181,11 @@ def _levers(p: CustomerProfile, product: str, today: date) -> list[Lever]:
                 r.home_loan_amount = base - amount
                 yield r, f"you borrowed S${base - amount:,.0f} instead of S${base:,.0f} (S${amount:,.0f} less)"
                 amount += config.CF_HOME_LOAN_STEP
+
         levers.append(Lever("whatif", "home_loan_smaller", steps=loan_steps))
 
     if product == "home_loan" and p.tenure_years:
+
         def tenure_steps(q):
             current = q.tenure_years
             for t in sorted(range(5, 36), key=lambda t: (abs(t - current), t)):
@@ -154,9 +194,11 @@ def _levers(p: CustomerProfile, product: str, today: date) -> list[Lever]:
                 r = copy.deepcopy(q)
                 r.tenure_years = t
                 yield r, f"the loan tenure were {t} years instead of {current}"
+
         levers.append(Lever("whatif", "tenure_changed", steps=tenure_steps))
 
     if product == "personal_loan" and p.personal_loan_amount:
+
         def pl_steps(q):
             base = q.personal_loan_amount
             amount = config.CF_PERSONAL_LOAN_STEP
@@ -165,6 +207,7 @@ def _levers(p: CustomerProfile, product: str, today: date) -> list[Lever]:
                 r.personal_loan_amount = base - amount
                 yield r, f"you borrowed S${base - amount:,.0f} instead of S${base:,.0f}"
                 amount += config.CF_PERSONAL_LOAN_STEP
+
         levers.append(Lever("whatif", "personal_loan_smaller", steps=pl_steps))
 
     return levers
@@ -172,14 +215,17 @@ def _levers(p: CustomerProfile, product: str, today: date) -> list[Lever]:
 
 # ---------------------------------------------------------------- evaluation
 
+
 def _binding(failed: list[dict]) -> dict:
     """The rule to explain first: absolute rules (residency, no income) before ratios/thresholds,
     then the largest relative gap."""
+
     def severity(c):
         if c["kind"] == "rule":
             return (0, 0)
         gap = (c["value"] - c["threshold"]) if c["kind"] in ("ratio", "max") else (c["threshold"] - c["value"])
         return (1, -abs(gap) / (abs(c["threshold"]) or 1))
+
     return sorted(failed, key=severity)[0]
 
 
@@ -191,8 +237,15 @@ def _gap(c: dict):
     return None
 
 
-def _evaluate(product: str, q: CustomerProfile, watch: set[str], margin: float, log: list | None = None,
-              lever: str = "", candidate: str = ""):
+def _evaluate(
+    product: str,
+    q: CustomerProfile,
+    watch: set[str],
+    margin: float,
+    log: list | None = None,
+    lever: str = "",
+    candidate: str = "",
+):
     """Run the forward engine; classify as fail / borderline / path. Optionally log the run."""
     res = CHECKS[product](q)
     if res.status != "eligible":
@@ -202,21 +255,34 @@ def _evaluate(product: str, q: CustomerProfile, watch: set[str], margin: float, 
         headroom = round(min(c["threshold"] - c["value"] for c in ratios), 4) if ratios else None
         verdict = "borderline" if headroom is not None and headroom < margin - 1e-9 else "path"
     if log is not None:
-        log.append({"product": product, "lever": lever, "candidate": candidate, "engine_status": res.status,
-                    "verdict": verdict, "headroom": headroom,
-                    "failed_rules": [c["rule"] for c in res.checks if not c["passed"]]})
+        log.append(
+            {
+                "product": product,
+                "lever": lever,
+                "candidate": candidate,
+                "engine_status": res.status,
+                "verdict": verdict,
+                "headroom": headroom,
+                "failed_rules": [c["rule"] for c in res.checks if not c["passed"]],
+            }
+        )
     return res, verdict, headroom
 
 
-def _entry(kind: str, name: str, description: str, q: CustomerProfile, res, headroom, when: date | None,
-           label: str = "path") -> dict:
+def _entry(
+    kind: str, name: str, description: str, q: CustomerProfile, res, headroom, when: date | None, label: str = "path"
+) -> dict:
     return {
         "lever_kind": kind,
         "lever": name,
         "description": description,
         "counterfactual_profile": q.to_dict(),
-        "engine_result": {"status": res.status, "checks": res.checks, "computations": res.computations,
-                          "criteria_version": res.criteria_version},
+        "engine_result": {
+            "status": res.status,
+            "checks": res.checks,
+            "computations": res.computations,
+            "criteria_version": res.criteria_version,
+        },
         "headroom": headroom,
         "earliest_date": when.isoformat() if (kind == "dated" and when) else None,
         "label": label,
@@ -229,8 +295,9 @@ def _try(product, lever: Lever, base: CustomerProfile, watch, margin, prefix=Non
     if lever.steps is None:
         q = lever.apply(base)
         desc = (pre_desc + " and " if pre_desc else "") + lever.describe(base)
-        res, verdict, headroom = _evaluate(product, q, watch, margin, log, (pre_name + "+" if pre_name else "")
-                                           + lever.name, desc)
+        res, verdict, headroom = _evaluate(
+            product, q, watch, margin, log, (pre_name + "+" if pre_name else "") + lever.name, desc
+        )
         kind = "dated" if lever.kind == "dated" and pre_kind in (None, "dated") else "whatif"
         when = max([d for d in (lever.when, pre_when) if d], default=None) if kind == "dated" else None
         name = (pre_name + "+" if pre_name else "") + lever.name
@@ -251,10 +318,11 @@ def _try(product, lever: Lever, base: CustomerProfile, watch, margin, prefix=Non
     return None, borderline
 
 
-def search(p: CustomerProfile, product: str, *, today: date | None = None,
-           margin: float | None = None, log: list | None = None) -> dict | None:
-    """`log`, if given, receives one entry per forward-engine evaluation (flight recorder)."""
-    """Counterfactual search for one product. None if the product isn't failing today."""
+def search(
+    p: CustomerProfile, product: str, *, today: date | None = None, margin: float | None = None, log: list | None = None
+) -> dict | None:
+    """Counterfactual search for one product. None if the product isn't failing today.
+    `log`, if given, receives one entry per forward-engine evaluation (flight recorder)."""
     today = today or date.today()
     margin = config.CF_MARGIN if margin is None else margin
     current = CHECKS[product](p)
@@ -308,6 +376,7 @@ def search(p: CustomerProfile, product: str, *, today: date | None = None,
 
 # ---------------------------------------------------------------- deterministic narration pieces
 
+
 def _fmt_value(rule: str, value) -> str:
     if isinstance(value, float) and value <= 5 and rule in ("tdsr", "msr", "ltv", "unsecured_utilisation"):
         return f"{value:.0%}" if round(value * 100, 6) == int(round(value * 100)) else f"{value:.1%}"
@@ -322,28 +391,40 @@ def outcome_block(cfs: list[dict]) -> str:
     parts: list[str] = []
     for cf in cfs:
         if cf["paths"]:
-            lines = [f"**What would change for the {cf['product_name']}** (on criteria as of {fmt_date(cf['assessed_on'])}):"]
+            lines = [
+                f"**What would change for the {cf['product_name']}** (on criteria as of {fmt_date(cf['assessed_on'])}):"
+            ]
             for path in cf["paths"]:
                 after = next((c for c in path["engine_result"]["checks"] if c["rule"] == cf["binding_rule"]), None)
-                result = (f"your {cf['binding_label']} would be {_fmt_value(cf['binding_rule'], after['value'])} "
-                          f"against the {_fmt_value(cf['binding_rule'], after['threshold'])} limit") if after else \
-                    "today's criteria would be met"
+                result = (
+                    (
+                        f"your {cf['binding_label']} would be {_fmt_value(cf['binding_rule'], after['value'])} "
+                        f"against the {_fmt_value(cf['binding_rule'], after['threshold'])} limit"
+                    )
+                    if after
+                    else "today's criteria would be met"
+                )
                 if path["headroom"] is not None:
                     result += f", {path['headroom'] * 100:.1f} points of headroom"
                 if path["lever_kind"] == "dated":
                     lines.append(f"- **From {fmt_date(path['earliest_date'])}**, once {path['description']}: {result}.")
                 else:
-                    lines.append(f"- **What if** {path['description']}: {result}. "
-                                 f"(No date: this depends on a change, not on something you've told us will happen.)")
+                    lines.append(
+                        f"- **What if** {path['description']}: {result}. "
+                        f"(No date: this depends on a change, not on something you've told us will happen.)"
+                    )
             for near in cf["borderline"][:2]:
-                lines.append(f"- *Borderline, not a path*: if {near['description']}, it would only just clear "
-                             f"({near['headroom'] * 100:.1f} points inside the limit), so I wouldn't rely on it.")
+                lines.append(
+                    f"- *Borderline, not a path*: if {near['description']}, it would only just clear "
+                    f"({near['headroom'] * 100:.1f} points inside the limit), so I wouldn't rely on it."
+                )
             lines.append("Each line above is a separate scenario, not a forecast.")
             lines.append(OUTCOME_TEMPLATE.format(assessed_on=fmt_date(cf["assessed_on"])))
             parts.append("\n".join(lines))
         else:
-            parts.append(NO_PATH_TEMPLATE.format(assessed_on=fmt_date(cf["assessed_on"]),
-                                                 product_name=cf["product_name"]))
+            parts.append(
+                NO_PATH_TEMPLATE.format(assessed_on=fmt_date(cf["assessed_on"]), product_name=cf["product_name"])
+            )
     return "\n\n".join(parts)
 
 
@@ -351,9 +432,11 @@ def numbers_in(cfs: list[dict]) -> dict:
     """Every number and date component a counterfactual can put in a reply, for the compliance
     number check (so it can tell engine numbers from invented ones)."""
     out: dict = {}
+
     def add(key, v):
         if isinstance(v, (int, float)) and not isinstance(v, bool):
             out[key] = v
+
     for cf in cfs:
         pk = cf["product"]
         add(f"cf.{pk}.current", cf["current_value"])

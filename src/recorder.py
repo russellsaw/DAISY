@@ -19,6 +19,7 @@ Everything written passes through the PII redactor once more, so an NRIC or card
 can't reach disk even if some agent detail carried one. Phone numbers and emails aren't redacted. Logs are local, git-ignored, and contain customer
 conversations: treat them as such.
 """
+
 from __future__ import annotations
 
 import json
@@ -53,15 +54,34 @@ def _iso(ts: float) -> str:
     return datetime.fromtimestamp(ts).isoformat(timespec="milliseconds")
 
 
-def record_turn(state, *, started_at: float, user_msg: str, pii_found: list, draft: str, draft_agent: str,
-                result, finished_at: float) -> Path:
+def record_turn(
+    state,
+    *,
+    started_at: float,
+    user_msg: str,
+    pii_found: list,
+    draft: str,
+    draft_agent: str,
+    result,
+    finished_at: float,
+) -> Path:
     """Append one turn's events to the conversation's log. Returns the log path."""
     events: list[dict] = []
 
     def add(etype: str, agent: str, summary: str, data, at: float) -> None:
-        events.append({"_ts": at, "conversation_id": state.conversation_id, "turn": state.turn_count, "at": _iso(at),
-                       "t_ms": round((at - started_at) * 1000), "type": etype, "agent": agent,
-                       "summary": summary, "data": data})
+        events.append(
+            {
+                "_ts": at,
+                "conversation_id": state.conversation_id,
+                "turn": state.turn_count,
+                "at": _iso(at),
+                "t_ms": round((at - started_at) * 1000),
+                "type": etype,
+                "agent": agent,
+                "summary": summary,
+                "data": data,
+            }
+        )
 
     if state.turn_count == 1:
         add("conversation_start", "DAISY", "conversation started", {"started_at": _iso(started_at)}, started_at - 1e-6)
@@ -71,16 +91,27 @@ def record_turn(state, *, started_at: float, user_msg: str, pii_found: list, dra
         if ev.agent == "Compliance" and compliance_at is None:
             compliance_at = ev.at
         add(TYPES.get(ev.agent, ev.agent.lower().replace(" ", "_")), ev.agent, ev.summary, ev.detail, ev.at)
-    add("draft", draft_agent, "reply as drafted, before review", {"text": draft},
-        (compliance_at or finished_at) - 1e-4)
-    add("final", "DAISY", result.response[:140], {
-        "response": result.response, "intent": result.intent, "sources": result.sources,
-        "readback": result.readback, "engine_ran": result.engine_ran, "confirmed": result.confirmed,
-        "corrections": result.corrections, "handoff_card": result.handoff_card,
-        "counterfactual_dates": [x["earliest_date"] for cf in result.counterfactuals for x in cf["paths"]
-                                 if x["earliest_date"]],
-        "elapsed_s": round(finished_at - started_at, 2),
-    }, finished_at)
+    add("draft", draft_agent, "reply as drafted, before review", {"text": draft}, (compliance_at or finished_at) - 1e-4)
+    add(
+        "final",
+        "DAISY",
+        result.response[:140],
+        {
+            "response": result.response,
+            "intent": result.intent,
+            "sources": result.sources,
+            "readback": result.readback,
+            "engine_ran": result.engine_ran,
+            "confirmed": result.confirmed,
+            "corrections": result.corrections,
+            "handoff_card": result.handoff_card,
+            "counterfactual_dates": [
+                x["earliest_date"] for cf in result.counterfactuals for x in cf["paths"] if x["earliest_date"]
+            ],
+            "elapsed_s": round(finished_at - started_at, 2),
+        },
+        finished_at,
+    )
     events.sort(key=lambda e: e.pop("_ts"))
 
     folder = directory(state)
@@ -90,8 +121,9 @@ def record_turn(state, *, started_at: float, user_msg: str, pii_found: list, dra
         for seq, event in enumerate(events):
             event["seq"] = seq
             # Last line of defence: no NRIC/FIN or card number the patterns catch.
-            f.write(json.dumps(pii.redact_values(event), ensure_ascii=False,
-                               default=lambda o: pii.redact(str(o))[0]) + "\n")
+            f.write(
+                json.dumps(pii.redact_values(event), ensure_ascii=False, default=lambda o: pii.redact(str(o))[0]) + "\n"
+            )
     return path
 
 
@@ -106,13 +138,33 @@ def list_conversations(folder: Path) -> list[dict]:
     for path in sorted(Path(folder).glob("*.jsonl"), key=lambda p: p.stat().st_mtime, reverse=True):
         try:
             events = load(path)
-        except (OSError, json.JSONDecodeError):
+        except OSError, json.JSONDecodeError:
             continue
         first = next((e for e in events if e["type"] == "user_turn"), None)
-        out.append({"id": path.stem, "path": path, "started": events[0]["at"][:19] if events else "",
-                    "turns": max((e["turn"] for e in events), default=0),
-                    "first_message": (first or {}).get("data", {}).get("message", "")})
+        out.append(
+            {
+                "id": path.stem,
+                "path": path,
+                "started": events[0]["at"][:19] if events else "",
+                "turns": max((e["turn"] for e in events), default=0),
+                "first_message": (first or {}).get("data", {}).get("message", ""),
+            }
+        )
     return out
+
+
+def latest_leads(folder: Path) -> list[dict]:
+    """The latest lead card of each conversation in a folder, newest conversation first."""
+    leads = []
+    for path in sorted(Path(folder).glob("*.jsonl"), key=lambda p: p.stat().st_mtime, reverse=True):
+        try:
+            events = load(path)
+        except OSError, json.JSONDecodeError:
+            continue
+        cards = [e["data"] for e in events if e["type"] == "handoff" and e.get("data")]
+        if cards:
+            leads.append({"id": path.stem, "started": events[0]["at"][:19], "card": cards[-1]})
+    return leads
 
 
 def eval_runs(base: Path = CONVERSATIONS_DIR / "evals") -> list[Path]:

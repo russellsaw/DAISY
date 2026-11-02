@@ -3,6 +3,7 @@
 CustomerProfile is filled progressively as the customer talks. The rules
 engine reads from it; the UI side panel displays it.
 """
+
 from __future__ import annotations
 
 import copy
@@ -15,20 +16,47 @@ from typing import Any, Callable, Optional
 
 # field -> (friendly label, description shown to the model for extraction)
 PROFILE_FIELDS: dict[str, tuple[str, str]] = {
+    # Order matters: structured output follows it, so the property details come before the debts. Otherwise "no other
+    # loans" can make the model jump ahead to the debt fields and leave the property details out.
     "age": ("Age", "Customer's age in years (integer)."),
     "residency": ("Residency", "One of: citizen, pr, foreigner."),
-    "monthly_income": ("Monthly income (S$)", "Gross MONTHLY income in SGD. If the customer gives an annual figure, divide by 12."),
-    "employment_type": ("Employment", "One of: salaried, self_employed, variable, unemployed."),
-    "existing_monthly_debt": ("Other monthly debt (S$)", "Monthly repayments the customer gave only as a total, NOT itemised as a commitment."),
-    "existing_housing_loans": ("Existing housing loans", "Number of outstanding housing loans (integer, 0 if none)."),
-    "existing_property_loan_monthly": ("Existing property-loan repayments (S$)", "Total monthly repayment on the customer's existing housing or property loans."),
+    "monthly_income": (
+        "Monthly income (S$)",
+        "Gross MONTHLY income in SGD. If the customer gives an annual figure, divide by 12.",
+    ),
+    "employment_type": (
+        "Employment",
+        "One of: salaried, self_employed, variable, unemployed. Self-employed and variable income count for less in a home-loan check.",
+    ),
     "property_type": ("Property type", "One of: hdb, ec, private."),
     "property_price": ("Property price (S$)", "Purchase price of the property."),
     "home_loan_amount": ("Home loan amount (S$)", "Housing loan amount the customer wants for the property."),
-    "personal_loan_amount": ("Personal loan amount (S$)", "Amount the customer wants to borrow as a personal loan / instant cash."),
+    "personal_loan_amount": (
+        "Personal loan amount (S$)",
+        "Amount the customer wants to borrow as a personal loan / instant cash.",
+    ),
     "tenure_years": ("Tenure (years)", "Desired loan tenure in years (integer)."),
-    "existing_unsecured_balance": ("Existing unsecured balance (S$)", "Outstanding balance across all unsecured credit (cards, personal loans, credit lines)."),
-    "commitments": ("Existing commitments", "Itemised monthly commitments (car loan, student loan, ...), each with an end date only if the customer stated one."),
+    "existing_monthly_debt": (
+        "Other monthly debt (S$)",
+        "Monthly repayments the customer gave only as a total, NOT itemised as a commitment.",
+    ),
+    "existing_housing_loans": ("Existing housing loans", "Number of outstanding housing loans (integer, 0 if none)."),
+    "existing_property_loan_monthly": (
+        "Existing property-loan repayments (S$)",
+        "Total monthly repayment on the customer's existing housing or property loans.",
+    ),
+    "existing_unsecured_balance": (
+        "Existing unsecured balance (S$)",
+        "Outstanding balance across all unsecured credit (cards, personal loans, credit lines).",
+    ),
+    "commitments": (
+        "Existing commitments",
+        "Itemised monthly commitments (car loan, student loan, ...), each with an end date only if the customer stated one.",
+    ),
+    "commitments_missing_amount": (
+        "Commitments needing an amount",
+        "Commitments the customer mentioned without saying the monthly repayment: ask for each one.",
+    ),
 }
 
 # Commitments that are property loans count towards MSR as well as TDSR. Whole words only: a "flat rate personal loan"
@@ -41,9 +69,17 @@ def is_property_loan(kind: str | None) -> bool:
 
 
 RESIDENCY_ALIASES = {
-    "singaporean": "citizen", "singapore citizen": "citizen", "citizen": "citizen", "sc": "citizen",
-    "pr": "pr", "permanent resident": "pr", "spr": "pr",
-    "foreigner": "foreigner", "foreign": "foreigner", "expat": "foreigner", "ep": "foreigner",
+    "singaporean": "citizen",
+    "singapore citizen": "citizen",
+    "citizen": "citizen",
+    "sc": "citizen",
+    "pr": "pr",
+    "permanent resident": "pr",
+    "spr": "pr",
+    "foreigner": "foreigner",
+    "foreign": "foreigner",
+    "expat": "foreigner",
+    "ep": "foreigner",
 }
 
 
@@ -65,10 +101,17 @@ class CustomerProfile:
     # [{"kind": "car loan", "monthly": 600.0, "end_date": "2028-04-20" | None, "end_quote": "..."}]
     # end_date is only ever set from the customer's own words (see src/commitments.py).
     commitments: list[dict] = field(default_factory=list)
+    # "I also have a car loan" with no amount: kept, so the debt is asked about instead of quietly left out.
+    commitments_missing_amount: list[str] = field(default_factory=list)
 
     def __post_init__(self):
         # Own copies: a profile must never share commitment dicts with the caller (or another profile).
         self.commitments = [dict(c) for c in self.commitments]
+
+    @property
+    def property_kind(self) -> str:
+        """The property type the rules use: anything not HDB or EC follows the private-property rules."""
+        return self.property_type if self.property_type in ("hdb", "ec", "private") else "private"
 
     def property_loan_monthly(self) -> float:
         """Repayments on existing property loans: the MSR numerator, besides the loan being applied for.
@@ -90,6 +133,12 @@ class CustomerProfile:
             if self._merge_commitments(updates.pop("commitments")):
                 changed.append("commitments")
         updates.pop("commitments", None)
+        # A total repayment covers whatever was mentioned without an amount.
+        if updates.get("existing_monthly_debt") and self.commitments_missing_amount:
+            self.commitments_missing_amount = []
+            changed.append("commitments")
+        elif updates.get("existing_property_loan_monthly"):
+            self.commitments_missing_amount = [k for k in self.commitments_missing_amount if not is_property_loan(k)]
         for key, value in updates.items():
             if key not in self.__dataclass_fields__ or value is None or value == "":
                 continue
@@ -100,15 +149,22 @@ class CustomerProfile:
             if key in ("age", "existing_housing_loans", "tenure_years"):
                 try:
                     value = int(value)
-                except (TypeError, ValueError):
+                except TypeError, ValueError:
                     continue
                 if value < 0 or (key != "existing_housing_loans" and value == 0):  # no age or tenure of 0
                     continue
-            if key in ("monthly_income", "existing_monthly_debt", "existing_property_loan_monthly", "property_price",
-                       "home_loan_amount", "personal_loan_amount", "existing_unsecured_balance"):
+            if key in (
+                "monthly_income",
+                "existing_monthly_debt",
+                "existing_property_loan_monthly",
+                "property_price",
+                "home_loan_amount",
+                "personal_loan_amount",
+                "existing_unsecured_balance",
+            ):
                 try:
                     value = float(value)
-                except (TypeError, ValueError):
+                except TypeError, ValueError:
                     continue
                 if value < 0:
                     continue
@@ -124,6 +180,14 @@ class CustomerProfile:
         for item in incoming or []:
             kind = str(item.get("kind") or "commitment").strip().lower()
             existing = next((c for c in self.commitments if c["kind"] == kind), None)
+            if existing is None and item.get("monthly") in (None, ""):
+                if kind not in self.commitments_missing_amount:
+                    self.commitments_missing_amount.append(kind)
+                    changed = True
+                continue
+            if kind in self.commitments_missing_amount:
+                self.commitments_missing_amount.remove(kind)  # they've now given the amount, or said it's S$0
+                changed = True
             if existing is None:
                 existing = {"kind": kind, "monthly": None, "end_date": None, "end_quote": None}
                 self.commitments.append(existing)
@@ -131,7 +195,7 @@ class CustomerProfile:
             if item.get("monthly") not in (None, ""):
                 try:
                     monthly = float(item["monthly"])
-                except (TypeError, ValueError):
+                except TypeError, ValueError:
                     monthly = None
                 if monthly is not None and monthly != existing["monthly"]:
                     existing["monthly"] = monthly
@@ -156,8 +220,11 @@ class CustomerProfile:
         for k, v in self.to_dict().items():
             if k == "commitments":
                 for c in v:
-                    ends = f"ends {c['end_date']} (customer said: \"{c['end_quote']}\")" if c.get("end_date") \
+                    ends = (
+                        f'ends {c["end_date"]} (customer said: "{c["end_quote"]}")'
+                        if c.get("end_date")
                         else "no end date stated"
+                    )
                     lines.append(f"- Commitment: {c['kind']}, S${c['monthly']:,.0f}/month, {ends}")
             else:
                 lines.append(f"- {PROFILE_FIELDS[k][0]}: {v}")
@@ -187,8 +254,8 @@ class ConversationState:
     handoff_card: Optional[dict] = None
     last_eligibility: list[dict] = field(default_factory=list)
     last_counterfactuals: list[dict] = field(default_factory=list)
-    last_max_loan: Optional[dict] = None     # the last "how much can I borrow?" result (src/rules/max_loan.py)
-    pending_max_loan: bool = False           # that question is waiting on missing details or a readback
+    last_max_loan: Optional[dict] = None  # the last "how much can I borrow?" result (src/rules/max_loan.py)
+    pending_max_loan: bool = False  # that question is waiting on missing details or a readback
     # ---- Readback before clearance ----
     # readback_profile: what was last read back to the customer, awaiting a yes or a correction.
     # confirmed_profile: the snapshot the customer said yes to. The profile counts as confirmed only
@@ -237,6 +304,8 @@ class ConversationState:
         now = self.profile.to_dict()
         found = []
         for key, before in reference.items():
+            if key == "commitments_missing_amount":
+                continue  # giving an amount that was asked for isn't correcting anything
             after = now.get(key)
             if key == "commitments":
                 after_by_kind = {c["kind"]: c for c in after or []}
@@ -255,7 +324,7 @@ class ConversationState:
 
     def recent_history(self, max_turns: int) -> list[dict]:
         """Last N exchanges, always starting on a user turn (the API requires it)."""
-        msgs = self.messages[-max_turns * 2:]
+        msgs = self.messages[-max_turns * 2 :]
         while msgs and msgs[0]["role"] != "user":
             msgs = msgs[1:]
         return msgs

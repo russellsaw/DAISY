@@ -11,6 +11,7 @@ expected answer must state facts only. The first batch (2026-10-29) had nine exp
 context doesn't say X"; Contextual Recall then failed DAISY for retrieving pages that did say X. Those were
 corrected by hand (see each golden's `vetting_note`).
 """
+
 from __future__ import annotations
 
 import argparse
@@ -42,8 +43,13 @@ def group_of(chunk: dict) -> str | None:
 
 def pick_contexts(n: int, seed: int) -> list[dict]:
     chunks = json.loads((ROOT / "data" / "kb.json").read_text(encoding="utf-8"))["chunks"]
-    usable = [c for c in chunks if c.get("publisher") in ("DBS", "POSB") and len(c["text"]) >= 400
-              and not any(s in c["doc_id"] for s in SKIP_DOCS)]
+    usable = [
+        c
+        for c in chunks
+        if c.get("publisher") in ("DBS", "POSB")
+        and len(c["text"]) >= 400
+        and not any(s in c["doc_id"] for s in SKIP_DOCS)
+    ]
     rng = random.Random(seed)
     picked: list[dict] = []
     for group, share in GROUPS.items():
@@ -75,13 +81,13 @@ def main() -> None:
         evolution_config=EvolutionConfig(num_evolutions=1),
         styling_config=StylingConfig(
             scenario="A retail banking customer in Singapore asking DBS's chat assistant about DBS home loans, "
-                     "credit cards, personal loans or Cashline.",
+            "credit cards, personal loans or Cashline.",
             task="Answer the customer's product question from DBS's public product pages.",
             input_format="One short question a customer would type into a chat, in plain English, without "
-                         "referring to 'the context', 'the passage' or 'the document'.",
+            "referring to 'the context', 'the passage' or 'the document'.",
             expected_output_format="A short factual answer stating the relevant figures and conditions. State only "
-                                   "facts from the context; never say what the context, passage or document does "
-                                   "or doesn't contain.",
+            "facts from the context; never say what the context, passage or document does "
+            "or doesn't contain.",
         ),
     )
     goldens = synthesizer.generate_goldens_from_contexts(
@@ -93,9 +99,16 @@ def main() -> None:
     out = []
     for i, g in enumerate(goldens, 1):
         chunk = by_context.get((g.context or [""])[0], {})
-        out.append({"id": f"gen-{i:02d}", "input": g.input, "expected_output": g.expected_output,
-                    "source_doc": chunk.get("doc_id", ""), "source_url": chunk.get("url", ""),
-                    "context": g.context})
+        out.append(
+            {
+                "id": f"gen-{i:02d}",
+                "input": g.input,
+                "expected_output": g.expected_output,
+                "source_doc": chunk.get("doc_id", ""),
+                "source_url": chunk.get("url", ""),
+                "context": g.context,
+            }
+        )
     GENERATED.write_text(json.dumps(out, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"wrote {len(out)} goldens -> {GENERATED}")
 

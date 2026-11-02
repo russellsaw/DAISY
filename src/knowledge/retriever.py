@@ -15,6 +15,7 @@ nothing to break at 3am. Tuned after the 50-question review (2026-10-25):
     can't crowd out the one that answers the question (5 of 8 slots once went to one
     page). A hard cap of 2 per page was tried and starved single-product questions.
 """
+
 from __future__ import annotations
 
 import json
@@ -26,16 +27,58 @@ from rank_bm25 import BM25Okapi
 from .. import config
 
 _TOKEN = re.compile(r"[a-z0-9]+(?:\.[0-9]+)?%?")
-_STOP = {"the", "a", "an", "and", "or", "of", "to", "for", "in", "on", "is", "are", "what",
-         "how", "do", "i", "my", "me", "can", "with", "be", "it", "this", "that", "does", "you",
-         "your", "s", "dbs"}
+_STOP = {
+    "the",
+    "a",
+    "an",
+    "and",
+    "or",
+    "of",
+    "to",
+    "for",
+    "in",
+    "on",
+    "is",
+    "are",
+    "what",
+    "how",
+    "do",
+    "i",
+    "my",
+    "me",
+    "can",
+    "with",
+    "be",
+    "it",
+    "this",
+    "that",
+    "does",
+    "you",
+    "your",
+    "s",
+    "dbs",
+}
 
 
 # Word forms customers and pages use for the same idea.
-_NORMAL = {"application": "apply", "applications": "apply", "applying": "apply", "applied": "apply",
-           "repay": "repayment", "repaying": "repayment", "repaid": "repayment", "borrowing": "borrow",
-           "borrowed": "borrow", "charged": "charge", "charges": "charge", "documents": "document",
-           "eligible": "eligibility", "qualify": "eligibility", "mortgage": "home", "housing": "home"}
+_NORMAL = {
+    "application": "apply",
+    "applications": "apply",
+    "applying": "apply",
+    "applied": "apply",
+    "repay": "repayment",
+    "repaying": "repayment",
+    "repaid": "repayment",
+    "borrowing": "borrow",
+    "borrowed": "borrow",
+    "charged": "charge",
+    "charges": "charge",
+    "documents": "document",
+    "eligible": "eligibility",
+    "qualify": "eligibility",
+    "mortgage": "home",
+    "housing": "home",
+}
 _PRODUCT_BOOST = 1.25
 SAME_DOC_DECAY = 0.8
 
@@ -87,9 +130,11 @@ class KnowledgeBase:
         pool = sorted((i for i in range(len(scores)) if scores[i] > 0), key=lambda i: scores[i], reverse=True)[:200]
         out, per_doc = [], {}
         while pool and len(out) < k:  # greedy: best score after decaying for passages already taken
+
             def adjusted(i):
                 doc = self.chunks[i].get("doc_id") or self.chunks[i].get("url")
                 return scores[i] * SAME_DOC_DECAY ** per_doc.get(doc, 0)
+
             best = max(pool, key=adjusted)
             pool.remove(best)
             c = self.chunks[best]

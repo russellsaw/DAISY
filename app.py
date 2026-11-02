@@ -2,6 +2,7 @@
 
 Sets the page config, logo and top navigation once; each page lives in app_pages/.
 """
+
 import streamlit as st
 
 from src import config

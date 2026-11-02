@@ -1,4 +1,5 @@
 """Central configuration. Everything tunable lives here or in .env."""
+
 import os
 from pathlib import Path
 
@@ -40,8 +41,8 @@ STAFF_CONTROLS = os.getenv("DAISY_STAFF_CONTROLS", "").strip().lower() in ("1", 
 # unsecured utilisation) clears its cap by at least this margin. Below it: "borderline", not a path.
 CF_MARGIN = 0.03  # 3 percentage points
 # What-if levers are searched in these steps, and never beyond these "realistic" bounds.
-CF_INCOME_STEP = 100            # S$ per month
-CF_MAX_INCOME_UPLIFT = 0.50     # at most +50% of today's income
-CF_HOME_LOAN_STEP = 5_000       # S$
-CF_MAX_HOME_LOAN_CUT = 0.50     # at most half the requested home loan
-CF_PERSONAL_LOAN_STEP = 1_000   # S$
+CF_INCOME_STEP = 100  # S$ per month
+CF_MAX_INCOME_UPLIFT = 0.50  # at most +50% of today's income
+CF_HOME_LOAN_STEP = 5_000  # S$
+CF_MAX_HOME_LOAN_CUT = 0.50  # at most half the requested home loan
+CF_PERSONAL_LOAN_STEP = 1_000  # S$

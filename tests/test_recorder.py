@@ -1,4 +1,5 @@
 """flight recorder. Deterministic: LLM steps stubbed; logs go to a temp dir (conftest)."""
+
 import sys
 from pathlib import Path
 
@@ -11,9 +12,17 @@ from src.agents import compliance, eligibility, handoff, orchestrator  # noqa: E
 from src.pipeline import run_turn  # noqa: E402
 from src.state import ConversationState  # noqa: E402
 
-CONDO = {"age": 32, "residency": "pr", "monthly_income": 7000, "property_type": "private",
-         "property_price": 1_000_000, "home_loan_amount": 700_000, "tenure_years": 30,
-         "commitments": [{"kind": "car loan", "monthly": 600, "end_date": "2028-04-20", "end_quote": "in 18 months"}]}
+CONDO = {
+    "age": 32,
+    "residency": "pr",
+    "monthly_income": 7000,
+    "employment_type": "salaried",
+    "property_type": "private",
+    "property_price": 1_000_000,
+    "home_loan_amount": 700_000,
+    "tenure_years": 30,
+    "commitments": [{"kind": "car loan", "monthly": 600, "end_date": "2028-04-20", "end_quote": "in 18 months"}],
+}
 
 
 @pytest.fixture
@@ -23,8 +32,14 @@ def stubbed(monkeypatch):
     def fake_route(st, msg):
         updates, reply = script.pop("next")
         changed = st.profile.update(updates or {})
-        decision = {"intent": "eligibility", "products": ["home_loan"], "injection_suspected": False,
-                    "readback_reply": reply, "profile_changed": changed, "profile_after": st.profile.to_dict()}
+        decision = {
+            "intent": "eligibility",
+            "products": ["home_loan"],
+            "injection_suspected": False,
+            "readback_reply": reply,
+            "profile_changed": changed,
+            "profile_after": st.profile.to_dict(),
+        }
         st.add_trace("Orchestrator", "intent=eligibility (stub)", decision)  # as the real route() does
         return decision
 
@@ -49,8 +64,17 @@ def test_every_turn_is_logged_with_what_each_agent_saw(stubbed):
     t1 = [e["type"] for e in events if e["turn"] == 1]
     t2 = [e["type"] for e in events if e["turn"] == 2]
     assert t1[0] == "conversation_start" and "readback" in t1 and "engine" not in t1
-    for needed in ("user_turn", "routing", "readback", "engine", "counterfactual", "draft", "compliance", "defence",
-                   "final"):
+    for needed in (
+        "user_turn",
+        "routing",
+        "readback",
+        "engine",
+        "counterfactual",
+        "draft",
+        "compliance",
+        "defence",
+        "final",
+    ):
         assert needed in t2, needed
     assert t2.index("draft") < t2.index("compliance") < t2.index("final")
     engine = next(e for e in events if e["type"] == "engine")

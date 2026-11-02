@@ -7,6 +7,7 @@ In order:
      the issues found.
   3. Code filters on the outcome: untraceable numbers and, on eligibility replies, approval vocabulary.
 """
+
 from __future__ import annotations
 
 import re
@@ -17,7 +18,9 @@ from . import prompts
 
 _NUM = re.compile(r"(?<![\w\[])(\d[\d,]*(?:\.\d+)?)\s*(%|per\s?cent\b)?", re.IGNORECASE)
 # The "3" in "3-5%" or "3 to 5%" is a percentage too.
-_PCT_RANGE = re.compile(r"(?<![\w\[])(\d+(?:\.\d+)?)\s*(?:-|\u2013|to)\s*\d+(?:\.\d+)?\s*(?:%|per\s?cent\b)", re.IGNORECASE)
+_PCT_RANGE = re.compile(
+    r"(?<![\w\[])(\d+(?:\.\d+)?)\s*(?:-|\u2013|to)\s*\d+(?:\.\d+)?\s*(?:%|per\s?cent\b)", re.IGNORECASE
+)
 _MONEY = re.compile(r"\$\s*(\d[\d,]*(?:\.\d+)?)")
 
 REVIEW_SCHEMA = {
@@ -29,14 +32,26 @@ REVIEW_SCHEMA = {
             "items": {
                 "type": "object",
                 "properties": {
-                    "rule": {"type": "string", "enum": ["advice_boundary", "grounding", "approval_language",
-                                                        "scope", "fair_dealing", "prompt_injection"]},
+                    "rule": {
+                        "type": "string",
+                        "enum": [
+                            "advice_boundary",
+                            "grounding",
+                            "approval_language",
+                            "scope",
+                            "fair_dealing",
+                            "prompt_injection",
+                        ],
+                    },
                     "detail": {"type": "string"},
                 },
                 "required": ["rule", "detail"],
             },
         },
-        "revised_response": {"type": "string", "description": "Required when verdict is revise; the full corrected customer-facing response."},
+        "revised_response": {
+            "type": "string",
+            "description": "Required when verdict is revise; the full corrected customer-facing response.",
+        },
     },
     "required": ["verdict", "issues"],
 }
@@ -44,11 +59,21 @@ REVIEW_SCHEMA = {
 # Hard-banned on replies about the customer's own chances (eligibility and advice), in any form (even "you're not
 # approved"): eligibility is indicative, so the reply must never use approval vocabulary. Enforced here in code, not
 # by prompt. Product answers may say "you'll get 3% cashback".
-BANNED_PHRASES = ["will be approved", "approved", "guaranteed", "you will qualify", "you'll qualify",
-                  "you'll get", "confirmed"]
+BANNED_PHRASES = [
+    "will be approved",
+    "approved",
+    "guaranteed",
+    "you will qualify",
+    "you'll qualify",
+    "you'll get",
+    "confirmed",
+]
 _BANNED = re.compile(
-    r"(?<![\w])(" + "|".join(re.escape(p).replace("'", "['\u2019]") for p in sorted(BANNED_PHRASES, key=len, reverse=True))
-    + r")(?![\w])", re.IGNORECASE)
+    r"(?<![\w])("
+    + "|".join(re.escape(p).replace("'", "['\u2019]") for p in sorted(BANNED_PHRASES, key=len, reverse=True))
+    + r")(?![\w])",
+    re.IGNORECASE,
+)
 
 
 def banned_phrases(text: str) -> list[str]:
@@ -65,8 +90,9 @@ HANDOFF_FALLBACK = (
 def _mentions(text: str) -> set[tuple[str, bool]]:
     """(number, is_percentage) pairs, commas stripped."""
     text = text or ""
-    return ({(n.replace(",", "").rstrip("."), bool(pct)) for n, pct in _NUM.findall(text)}
-            | {(n, True) for n in _PCT_RANGE.findall(text)})
+    return {(n.replace(",", "").rstrip("."), bool(pct)) for n, pct in _NUM.findall(text)} | {
+        (n, True) for n in _PCT_RANGE.findall(text)
+    }
 
 
 def _traced_forms(key: str, value: float) -> tuple[set[str], set[str]]:
@@ -111,9 +137,18 @@ def unsupported_numbers(draft: str, allowed_text: str, computations: dict, profi
     return sorted(set(flagged))
 
 
-def review(state: ConversationState, user_msg: str, intent: str, draft: str, *,
-           sources_text: str = "", computations: dict | None = None, injection_suspected: bool = False,
-           deterministic: bool = False, appended: str = "") -> dict:
+def review(
+    state: ConversationState,
+    user_msg: str,
+    intent: str,
+    draft: str,
+    *,
+    sources_text: str = "",
+    computations: dict | None = None,
+    injection_suspected: bool = False,
+    deterministic: bool = False,
+    appended: str = "",
+) -> dict:
     """deterministic=True: the draft was written by code from a fixed template (e.g. the readback), so the
     LLM reviewer is skipped; the code-level filters (traceability, lexicon) still run.
     appended: code-written text that will follow the reply. The reviewer sees it, so it can tell what the
@@ -130,18 +165,22 @@ def review(state: ConversationState, user_msg: str, intent: str, draft: str, *,
         f"Sources available to the drafting agent:\n{sources_text[:16000] or '(none)'}\n\n"
         f"Engine computations available:\n{computations or '(none)'}\n\n"
         f"DRAFT RESPONSE:\n{draft}"
-        + (f"\n\nTEXT THE SYSTEM APPENDS AFTER THE REPLY (fixed, not part of the draft, don't repeat it):\n{appended}"
-           if appended else "")
+        + (
+            f"\n\nTEXT THE SYSTEM APPENDS AFTER THE REPLY (fixed, not part of the draft, don't repeat it):\n{appended}"
+            if appended
+            else ""
+        )
     )
     try:
         if deterministic:
             verdict = {"verdict": "approve", "issues": [], "deterministic_template": True}
         else:
-            verdict = llm.structured(prompts.COMPLIANCE, context, REVIEW_SCHEMA, max_tokens=8000,
-                                     effort="medium")
+            verdict = llm.structured(prompts.COMPLIANCE, context, REVIEW_SCHEMA, max_tokens=8000, effort="medium")
     except llm.Refusal as exc:  # a reviewer that won't review fails closed
-        verdict = {"verdict": "handoff",
-                   "issues": [{"rule": "fair_dealing", "detail": f"reviewer model declined ({exc})"}]}
+        verdict = {
+            "verdict": "handoff",
+            "issues": [{"rule": "fair_dealing", "detail": f"reviewer model declined ({exc})"}],
+        }
 
     revision_flags: list[str] = []
     if verdict["verdict"] == "approve":
@@ -150,14 +189,17 @@ def review(state: ConversationState, user_msg: str, intent: str, draft: str, *,
         final = verdict["revised_response"]
         # The rewrite goes straight to the customer, so it gets the same number check. Numbers the
         # reviewer kept from the draft were already judged; a NEW unsupported number is not allowed.
-        revision_flags = [n for n in unsupported_numbers(final, sources_text, computations,
-                                                         state.profile.to_dict(), user_msg)
-                          if n not in flagged]
+        revision_flags = [
+            n
+            for n in unsupported_numbers(final, sources_text, computations, state.profile.to_dict(), user_msg)
+            if n not in flagged
+        ]
         if revision_flags:
             final = HANDOFF_FALLBACK
             verdict["verdict"] = "handoff"
             verdict.setdefault("issues", []).append(
-                {"rule": "grounding", "detail": f"reviewer's revision introduced unsupported numbers {revision_flags}"})
+                {"rule": "grounding", "detail": f"reviewer's revision introduced unsupported numbers {revision_flags}"}
+            )
     else:
         final = HANDOFF_FALLBACK
         verdict["verdict"] = "handoff"
@@ -168,7 +210,11 @@ def review(state: ConversationState, user_msg: str, intent: str, draft: str, *,
         if output_filter["action"] == "replaced":
             verdict["verdict"] = "handoff"
             verdict.setdefault("issues", []).append(
-                {"rule": "grounding", "detail": f"untraceable numbers survived a rewrite: {output_filter['untraceable']}"})
+                {
+                    "rule": "grounding",
+                    "detail": f"untraceable numbers survived a rewrite: {output_filter['untraceable']}",
+                }
+            )
 
     lexicon = {"found": [], "action": None}
     if intent in ("eligibility", "advice_seeking") and final != HANDOFF_FALLBACK:
@@ -176,7 +222,8 @@ def review(state: ConversationState, user_msg: str, intent: str, draft: str, *,
         if lexicon["action"] == "replaced":
             verdict["verdict"] = "handoff"
             verdict.setdefault("issues", []).append(
-                {"rule": "approval_language", "detail": f"banned phrases survived a rewrite: {lexicon['found']}"})
+                {"rule": "approval_language", "detail": f"banned phrases survived a rewrite: {lexicon['found']}"}
+            )
 
     record = {
         "verdict": verdict["verdict"],
@@ -186,35 +233,51 @@ def review(state: ConversationState, user_msg: str, intent: str, draft: str, *,
         "lexicon": lexicon,
         "output_filter": output_filter,
         "reviewer": "code template (LLM review skipped)" if deterministic else "llm",
-        "original_draft": draft if (verdict["verdict"] != "approve" or lexicon["action"] or output_filter["action"])
+        "original_draft": draft
+        if (verdict["verdict"] != "approve" or lexicon["action"] or output_filter["action"])
         else None,
     }
     state.add_trace(
         "Compliance",
         f"{verdict['verdict'].upper()}  issues={len(record['issues'])}  unsupported_numbers={flagged or '-'}"
         + (f"  lexicon={lexicon['found']}→{lexicon['action']}" if lexicon["found"] else "")
-        + (f"  untraceable={output_filter['untraceable']}→{output_filter['action']}"
-           if output_filter["untraceable"] else ""),
+        + (
+            f"  untraceable={output_filter['untraceable']}→{output_filter['action']}"
+            if output_filter["untraceable"]
+            else ""
+        ),
         record,
     )
     return {"final": final, "record": record}
 
 
-def _enforce_lexicon(text: str, sources_text: str, computations: dict, state: ConversationState, user_msg: str,
-                     already_flagged: list[str]) -> tuple[str, dict]:
+def _enforce_lexicon(
+    text: str,
+    sources_text: str,
+    computations: dict,
+    state: ConversationState,
+    user_msg: str,
+    already_flagged: list[str],
+) -> tuple[str, dict]:
     """Hard fail on banned approval vocabulary: one constrained rewrite, re-checked in code;
     if anything banned (or any new unsupported number) survives, the reply becomes the handoff."""
     found = banned_phrases(text)
     if not found:
         return text, {"found": [], "action": None}
     try:
-        rewritten = llm.chat(prompts.LEXICON_REWRITE,
-                             [{"role": "user", "content": f"Banned phrases found: {found}\n\nRESPONSE:\n{text}"}],
-                             model=config.MODEL_FAST, max_tokens=4096)
+        rewritten = llm.chat(
+            prompts.LEXICON_REWRITE,
+            [{"role": "user", "content": f"Banned phrases found: {found}\n\nRESPONSE:\n{text}"}],
+            model=config.MODEL_FAST,
+            max_tokens=4096,
+        )
     except llm.Refusal:
         rewritten = ""
-    new_numbers = [n for n in unsupported_numbers(rewritten, sources_text, computations, state.profile.to_dict(),
-                                                  user_msg) if n not in already_flagged]
+    new_numbers = [
+        n
+        for n in unsupported_numbers(rewritten, sources_text, computations, state.profile.to_dict(), user_msg)
+        if n not in already_flagged
+    ]
     if rewritten and not banned_phrases(rewritten) and not new_numbers:
         return rewritten, {"found": found, "action": "rewritten"}
     # Last resort before the handoff: the forward-looking promises have a safe conditional equivalent,
@@ -226,23 +289,29 @@ def _enforce_lexicon(text: str, sources_text: str, computations: dict, state: Co
     return HANDOFF_FALLBACK, {"found": found, "action": "replaced"}
 
 
-_SAFE_WORDING = {"you will qualify": "you would meet today's criteria",
-                 "you'll qualify": "you would meet today's criteria",
-                 "you'll get": "you would get"}
+_SAFE_WORDING = {
+    "you will qualify": "you would meet today's criteria",
+    "you'll qualify": "you would meet today's criteria",
+    "you'll get": "you would get",
+}
 _SAFE_SWAP = re.compile(r"(?<![\w])(you will qualify|you['\u2019]ll qualify|you['\u2019]ll get)(?![\w])", re.IGNORECASE)
 
 
-def _enforce_traceable(text: str, sources_text: str, computations: dict, state: ConversationState,
-                       user_msg: str) -> tuple[str, dict]:
+def _enforce_traceable(
+    text: str, sources_text: str, computations: dict, state: ConversationState, user_msg: str
+) -> tuple[str, dict]:
     """Hard constraint: every number in the reply must come from the engine, the customer or a retrieved
     page. Anything else gets one rewrite that removes it (re-checked in code), else the handoff."""
     untraceable = unsupported_numbers(text, sources_text, computations, state.profile.to_dict(), user_msg)
     if not untraceable:
         return text, {"untraceable": [], "action": None}
     try:
-        rewritten = llm.chat(prompts.NUMBER_REWRITE,
-                             [{"role": "user", "content": f"Numbers to remove: {untraceable}\n\nRESPONSE:\n{text}"}],
-                             model=config.MODEL_FAST, max_tokens=4096)
+        rewritten = llm.chat(
+            prompts.NUMBER_REWRITE,
+            [{"role": "user", "content": f"Numbers to remove: {untraceable}\n\nRESPONSE:\n{text}"}],
+            model=config.MODEL_FAST,
+            max_tokens=4096,
+        )
     except llm.Refusal:
         rewritten = ""
     if rewritten and not unsupported_numbers(rewritten, sources_text, computations, state.profile.to_dict(), user_msg):

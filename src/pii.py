@@ -4,6 +4,7 @@ The assistant never needs an NRIC/FIN or a card number, so they are removed from
 message rather than trusted to a prompt instruction: the redacted text is what gets
 stored in the conversation, sent to the model, put on the lead card and logged.
 """
+
 from __future__ import annotations
 
 import re

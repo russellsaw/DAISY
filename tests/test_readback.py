@@ -1,5 +1,6 @@
 """readback before clearance. Deterministic: the LLM steps are stubbed, and the engine and
 counterfactual search are booby-trapped so any call before confirmation fails the test."""
+
 import sys
 from pathlib import Path
 
@@ -12,8 +13,16 @@ from src.agents.eligibility import readback_text  # noqa: E402
 from src.pipeline import _YES, WHAT_TO_CHANGE_REPLY, run_turn  # noqa: E402
 from src.state import ConversationState, CustomerProfile  # noqa: E402
 
-PERSONA = {"age": 32, "residency": "pr", "monthly_income": 7000, "property_type": "private",
-           "property_price": 1_000_000, "home_loan_amount": 700_000, "tenure_years": 30}
+PERSONA = {
+    "age": 32,
+    "residency": "pr",
+    "monthly_income": 7000,
+    "employment_type": "salaried",
+    "property_type": "private",
+    "property_price": 1_000_000,
+    "home_loan_amount": 700_000,
+    "tenure_years": 30,
+}
 CAR = {"kind": "car loan", "monthly": 600, "end_date": "2028-04-20", "end_quote": "ending in 18 months"}
 
 
@@ -46,8 +55,13 @@ def bot(monkeypatch):
     def fake_route(st, msg):
         updates, reply = script.pop("next")
         changed = st.profile.update(updates or {})
-        return {"intent": "eligibility", "products": ["home_loan"], "injection_suspected": False,
-                "readback_reply": reply, "profile_changed": changed}
+        return {
+            "intent": "eligibility",
+            "products": ["home_loan"],
+            "injection_suspected": False,
+            "readback_reply": reply,
+            "profile_changed": changed,
+        }
 
     monkeypatch.setattr(orchestrator, "route", fake_route)
 
@@ -92,8 +106,10 @@ def test_contradicted_end_date_is_reconfirmed_before_any_date(bot):
     first = send("yes")
     assert any(x["earliest_date"] for cf in first.counterfactuals for x in cf["paths"])
     # The customer now contradicts the end date (the date-resolution rules turn "not sure" into no date).
-    r = send("Actually I'm not sure when it ends", {"commitments": [{"kind": "car loan", "end_date": None,
-                                                                    "end_quote": "not sure when it ends"}]})
+    r = send(
+        "Actually I'm not sure when it ends",
+        {"commitments": [{"kind": "car loan", "end_date": None, "end_quote": "not sure when it ends"}]},
+    )
     assert r.readback and not r.engine_ran and r.counterfactuals == []
     assert "2028" not in r.response and "no end date given" in r.response
     assert any(c["field"] == "car loan.end_date" for c in r.corrections)
@@ -118,9 +134,16 @@ def test_skip_request_still_reads_back(bot):
 def test_readback_lists_every_parameter_and_is_clean():
     p = CustomerProfile(**{**PERSONA, "commitments": [CAR], "existing_unsecured_balance": 2000})
     text = readback_text(p)
-    for expected in ["Age: 32", "Singapore PR", "S$7,000", "Car loan: S$600 a month, ending 20 Apr 2028",
-                     "ending in 18 months", "private property at S$1,000,000", "S$700,000 over 30 years",
-                     "S$2,000"]:
+    for expected in [
+        "Age: 32",
+        "Singapore PR",
+        "S$7,000",
+        "Car loan: S$600 a month, ending 20 Apr 2028",
+        "ending in 18 months",
+        "private property at S$1,000,000",
+        "S$700,000 over 30 years",
+        "S$2,000",
+    ]:
         assert expected in text
     assert compliance.banned_phrases(text) == []
 
@@ -140,34 +163,56 @@ def test_readback_shows_unknown_unsecured_balance_for_a_personal_loan():
 
 
 def test_readback_tells_existing_mortgage_from_the_new_loan():
-    text = readback_text(CustomerProfile(**PERSONA, commitments=[{"kind": "home loan", "monthly": 1800.0}]), ["home_loan"])
+    text = readback_text(
+        CustomerProfile(**PERSONA, commitments=[{"kind": "home loan", "monthly": 1800.0}]), ["home_loan"]
+    )
     assert "Existing home loan: S$1,800 a month" in text and "New home loan: S$700,000" in text
 
 
 def test_mortgage_stated_two_ways_is_read_back_once():
-    p = CustomerProfile(**PERSONA, commitments=[{"kind": "home loan", "monthly": 1800.0}],
-                        existing_property_loan_monthly=1800)
+    p = CustomerProfile(
+        **PERSONA, commitments=[{"kind": "home loan", "monthly": 1800.0}], existing_property_loan_monthly=1800
+    )
     assert readback_text(p, ["home_loan"]).count("S$1,800") == 1
 
 
-@pytest.mark.parametrize("msg,updates,expected", [
-    ("I'd borrow $380k and I have no other loans.", {"existing_unsecured_balance": 0},
-     {"existing_housing_loans": 0, "existing_monthly_debt": 0}),
-    ("I have no credit card balance and no other loans", {"existing_unsecured_balance": 0},
-     {"existing_housing_loans": 0, "existing_monthly_debt": 0, "existing_unsecured_balance": 0}),
-    ("I have no other loans.", {"existing_unsecured_balance": 0.0001},
-     {"existing_housing_loans": 0, "existing_monthly_debt": 0}),
-    ("I'd borrow $380k", {"age": 32}, {"age": 32}),
-    ("No other loans, but one housing loan", {"existing_housing_loans": 1},
-     {"existing_housing_loans": 1, "existing_monthly_debt": 0}),
-])
+@pytest.mark.parametrize(
+    "msg,updates,expected",
+    [
+        (
+            "I'd borrow $380k and I have no other loans.",
+            {"existing_unsecured_balance": 0},
+            {"existing_housing_loans": 0, "existing_monthly_debt": 0},
+        ),
+        (
+            "I have no credit card balance and no other loans",
+            {"existing_unsecured_balance": 0},
+            {"existing_housing_loans": 0, "existing_monthly_debt": 0, "existing_unsecured_balance": 0},
+        ),
+        (
+            "I have no other loans.",
+            {"existing_unsecured_balance": 0.0001},
+            {"existing_housing_loans": 0, "existing_monthly_debt": 0},
+        ),
+        ("I'd borrow $380k", {"age": 32}, {"age": 32}),
+        (
+            "No other loans, but one housing loan",
+            {"existing_housing_loans": 1},
+            {"existing_housing_loans": 1, "existing_monthly_debt": 0},
+        ),
+    ],
+)
 def test_no_other_loans_is_recorded_as_stated(msg, updates, expected):
     assert orchestrator._apply_no_other_loans(updates, msg, CustomerProfile(), []) == expected
 
 
 def test_no_other_loans_keeps_a_mortgage_stated_in_the_same_message():
-    out = orchestrator._apply_no_other_loans({}, "I have a home loan of $1500 a month and no other loans",
-                                             CustomerProfile(), [{"kind": "home loan", "monthly": 1500}])
+    out = orchestrator._apply_no_other_loans(
+        {},
+        "I have a home loan of $1500 a month and no other loans",
+        CustomerProfile(),
+        [{"kind": "home loan", "monthly": 1500}],
+    )
     assert "existing_housing_loans" not in out and out["existing_monthly_debt"] == 0
 
 
@@ -177,8 +222,9 @@ def test_no_other_loans_keeps_debts_stated_earlier():
 
 
 def test_no_other_loans_keeps_a_real_balance():
-    out = orchestrator._apply_no_other_loans({"existing_unsecured_balance": 5000}, "$5000 owing, no other loans",
-                                             CustomerProfile(), [])
+    out = orchestrator._apply_no_other_loans(
+        {"existing_unsecured_balance": 5000}, "$5000 owing, no other loans", CustomerProfile(), []
+    )
     assert out["existing_unsecured_balance"] == 5000
 
 
@@ -202,6 +248,7 @@ def test_later_readback_keeps_the_numbers_in_the_customer_s_own_words(bot):
 def test_home_loan_result_carries_the_rate_note_and_its_numbers_trace(bot):
     from src.agents.compliance import unsupported_numbers
     from src.pipeline import HOME_CHECK_NOTE
+
     send, state, calls = bot
     send("details", PERSONA)
     r = send("yes")
@@ -217,8 +264,47 @@ def test_changed_details_clear_the_old_result(bot):
     assert r.readback and r.eligibility == [] and state.last_eligibility == []
 
 
-@pytest.mark.parametrize("msg,ok", [("yes", True), ("Yes, that's right.", True), ("yep thanks", True),
-                                    ("looks good", True), ("yes but my income is 6500", False),
-                                    ("no", False), ("what is TDSR?", False)])
+@pytest.mark.parametrize(
+    "msg,ok",
+    [
+        ("yes", True),
+        ("Yes, that's right.", True),
+        ("yep thanks", True),
+        ("looks good", True),
+        ("yes but my income is 6500", False),
+        ("no", False),
+        ("what is TDSR?", False),
+    ],
+)
 def test_bare_yes_detection(msg, ok):
     assert bool(_YES.match(msg)) is ok
+
+
+def test_home_loan_check_asks_about_employment_instead_of_assuming_a_salary(bot):
+    send, state, calls = bot
+    r = send("details", {k: v for k, v in PERSONA.items() if k != "employment_type"})
+    assert not r.readback and calls["engine"] == 0 and not state.pending_readback
+    r = send("I'm self-employed", {"employment_type": "self_employed"})
+    assert r.readback and "Self-employed" in r.response
+
+
+def test_debt_without_an_amount_is_asked_about_then_counted(bot):
+    send, state, calls = bot
+    r = send("I also have a car loan", {**PERSONA, "commitments": [{"kind": "car loan"}]})
+    assert not r.readback and calls["engine"] == 0
+    assert state.profile.commitments_missing_amount == ["car loan"]
+    r = send("$600 a month", {"commitments": [{"kind": "car loan", "monthly": 600}]})
+    assert r.readback and "S$600 a month" in r.response and state.profile.commitments_missing_amount == []
+    assert state.profile.total_monthly_debt() == 600
+
+
+def test_a_debt_they_say_is_zero_stops_being_asked_about():
+    p = CustomerProfile(commitments_missing_amount=["car loan"])
+    p.update({"commitments": [{"kind": "car loan", "monthly": 0}]})
+    assert p.commitments_missing_amount == [] and p.commitments == []
+
+
+def test_a_total_repayment_covers_debts_without_an_amount():
+    p = CustomerProfile(commitments_missing_amount=["car loan"])
+    assert "commitments" in p.update({"existing_monthly_debt": 800})
+    assert p.commitments_missing_amount == []

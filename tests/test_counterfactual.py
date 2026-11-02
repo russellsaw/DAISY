@@ -1,4 +1,5 @@
-""""Not now, but when". Deterministic tests: no API calls (LLM steps are stubbed)."""
+""" "Not now, but when". Deterministic tests: no API calls (LLM steps are stubbed)."""
+
 import sys
 from datetime import date, timedelta
 from pathlib import Path
@@ -16,19 +17,37 @@ from src.rules.engine import CHECKS  # noqa: E402
 from src.state import CustomerProfile  # noqa: E402
 
 TODAY = date(2026, 10, 20)
-BASE = dict(age=32, residency="pr", monthly_income=7000, property_type="hdb", property_price=550_000,
-            home_loan_amount=380_000, tenure_years=25, existing_housing_loans=0)
+BASE = dict(
+    age=32,
+    residency="pr",
+    monthly_income=7000,
+    employment_type="salaried",
+    property_type="hdb",
+    property_price=550_000,
+    home_loan_amount=380_000,
+    tenure_years=25,
+    existing_housing_loans=0,
+)
 CAR = {"kind": "car loan", "monthly": 600.0, "end_date": "2028-04-20", "end_quote": "ending in 18 months"}
 # Scenario 2 (dated path): same person, S$1M condo, S$700k over 30 years, car loan ending in 18 months.
 CONDO = dict(BASE, property_type="private", property_price=1_000_000, home_loan_amount=700_000, tenure_years=30)
 SCENARIO_2 = dict(CONDO, commitments=[dict(CAR)])
 # Scenario 3: same person on S$4.5k, no commitments.
 SCENARIO_3 = dict(BASE, monthly_income=4500)
-ALL_SCENARIOS = [SCENARIO_2, SCENARIO_3,
-                 dict(CONDO, commitments=[dict(CAR, end_date=None, end_quote=None)]),
-                 dict(CONDO, commitments=[dict(CAR, end_date="2028-03-31", end_quote="ends March 2028")]),
-                 dict(CONDO, monthly_income=6800, commitments=[dict(CAR), {"kind": "student loan", "monthly": 300.0,
-                                                                          "end_date": "2027-06-30", "end_quote": "June 2027"}])]
+ALL_SCENARIOS = [
+    SCENARIO_2,
+    SCENARIO_3,
+    dict(CONDO, commitments=[dict(CAR, end_date=None, end_quote=None)]),
+    dict(CONDO, commitments=[dict(CAR, end_date="2028-03-31", end_quote="ends March 2028")]),
+    dict(
+        CONDO,
+        monthly_income=6800,
+        commitments=[
+            dict(CAR),
+            {"kind": "student loan", "monthly": 300.0, "end_date": "2027-06-30", "end_quote": "June 2027"},
+        ],
+    ),
+]
 
 
 def run(p, product="home_loan"):
@@ -41,6 +60,7 @@ def _binding_headroom(path, rule):
 
 
 # ---------------- tightness: every dated path ----------------
+
 
 @pytest.mark.parametrize("scenario", ALL_SCENARIOS)
 def test_tightness_of_every_dated_path(scenario):
@@ -75,6 +95,7 @@ def test_scenario_2_gives_the_stated_date():
 
 # ---------------- what-ifs never carry a date ----------------
 
+
 @pytest.mark.parametrize("scenario", ALL_SCENARIOS)
 def test_whatif_paths_never_have_a_date(scenario):
     cf = run(scenario)
@@ -97,6 +118,7 @@ def test_scenario_3_has_no_dated_path():
 
 # ---------------- borderline ----------------
 
+
 def test_borderline_is_labelled_not_a_path():
     # Income chosen so that, without the car loan, TDSR is ~53.5%: passes, but by less than 3 points.
     cf = run(dict(CONDO, monthly_income=6247, commitments=[dict(CAR)]))
@@ -108,12 +130,17 @@ def test_borderline_is_labelled_not_a_path():
 
 
 def test_margin_is_one_constant():
-    strict = search(CustomerProfile(**dict(CONDO, monthly_income=6247, commitments=[dict(CAR)])), "home_loan",
-                    today=TODAY, margin=0.0)
+    strict = search(
+        CustomerProfile(**dict(CONDO, monthly_income=6247, commitments=[dict(CAR)])),
+        "home_loan",
+        today=TODAY,
+        margin=0.0,
+    )
     assert any(x["lever"] == "commitment_ends:car loan" for x in strict["paths"])  # same case, margin 0 -> a path
 
 
 # ---------------- no path ----------------
+
 
 def test_no_path_returns_none():
     cf = run(dict(BASE, residency="foreigner", monthly_income=12_000))  # foreigners can't buy HDB: no lever fixes it
@@ -129,6 +156,7 @@ def test_never_more_than_two_levers():
 
 
 # ---------------- template + lexicon ----------------
+
 
 def test_template_present_verbatim_whenever_a_path_is_shown():
     for scenario in ALL_SCENARIOS:
@@ -151,6 +179,7 @@ def test_no_banned_phrase_in_any_code_written_text():
 
 # ---------------- same engine, same criteria ----------------
 
+
 def test_counterfactual_uses_live_criteria_and_stress_floor():
     cf = run(SCENARIO_2)
     assert cf["criteria_version"] == criteria_version()
@@ -171,7 +200,9 @@ EMPTY = {"end_year": None, "end_month": None, "end_day": None, "ends_in_months":
 
 def test_assume_paid_off_gives_no_date():
     msg = "Just assume the car loan is paid off. When can I get the home loan?"
-    item = dict(EMPTY, kind="car loan", monthly_payment=None, end_quote="assume the car loan is paid off", ends_in_months=1)
+    item = dict(
+        EMPTY, kind="car loan", monthly_payment=None, end_quote="assume the car loan is paid off", ends_in_months=1
+    )
     assert "end_date" not in resolve(item, msg, TODAY)
 
 
@@ -196,6 +227,7 @@ def test_contradiction_clears_the_date():
 
 # ---------------- pipeline: template survives review, no path fires the handoff ----------------
 
+
 def _stub_pipeline(monkeypatch, profile: dict, draft: str):
     from src.agents import compliance, eligibility, handoff, orchestrator
     from src.pipeline import run_turn
@@ -204,14 +236,20 @@ def _stub_pipeline(monkeypatch, profile: dict, draft: str):
     st = ConversationState()
     st.profile.update(profile)
     st.confirm()  # seeded profiles count as confirmed (readback is tested separately)
-    monkeypatch.setattr(orchestrator, "route", lambda state, msg: {"intent": "eligibility", "products": ["home_loan"],
-                                                                 "injection_suspected": False})
+    monkeypatch.setattr(
+        orchestrator,
+        "route",
+        lambda state, msg: {"intent": "eligibility", "products": ["home_loan"], "injection_suspected": False},
+    )
     monkeypatch.setattr(eligibility.llm, "chat", lambda *a, **k: draft)
     monkeypatch.setattr(compliance.llm, "structured", lambda *a, **k: {"verdict": "approve", "issues": []})
     cards = []
     monkeypatch.setattr(handoff, "build_card", lambda state, trigger: cards.append(trigger) or {"trigger": trigger})
-    monkeypatch.setattr(eligibility.counterfactual, "search",
-                        lambda p, product, today=None, log=None: search(p, product, today=TODAY, log=log))
+    monkeypatch.setattr(
+        eligibility.counterfactual,
+        "search",
+        lambda p, product, today=None, log=None: search(p, product, today=TODAY, log=log),
+    )
     return run_turn(st, "Can I get the home loan?"), cards
 
 
@@ -223,8 +261,9 @@ def test_pipeline_appends_template_after_review(monkeypatch):
 
 
 def test_pipeline_no_path_fires_handoff(monkeypatch):
-    result, cards = _stub_pipeline(monkeypatch, dict(BASE, residency="foreigner", monthly_income=12_000),
-                                   "The HDB residency rule isn't met.")
+    result, cards = _stub_pipeline(
+        monkeypatch, dict(BASE, residency="foreigner", monthly_income=12_000), "The HDB residency rule isn't met."
+    )
     assert cards == [cfm.NO_PATH_TRIGGER]
     assert "prepared a summary for a DBS banker" in result.response
 
@@ -255,7 +294,9 @@ def test_forward_looking_promise_is_swapped_not_thrown_away(monkeypatch):
     from src.agents import compliance
 
     monkeypatch.setattr(compliance.llm, "chat", lambda *a, **k: "Still: you'll qualify.")  # rewrite fails
-    result, _ = _stub_pipeline(monkeypatch, SCENARIO_2, "Your TDSR is above the cap. If you borrowed less, you’ll qualify.")
+    result, _ = _stub_pipeline(
+        monkeypatch, SCENARIO_2, "Your TDSR is above the cap. If you borrowed less, you’ll qualify."
+    )
     assert result.compliance["lexicon"]["action"] == "substituted"
     assert "you would meet today's criteria" in result.response and "TDSR is above the cap" in result.response
     assert compliance.banned_phrases(result.response) == []
@@ -263,11 +304,22 @@ def test_forward_looking_promise_is_swapped_not_thrown_away(monkeypatch):
 
 def test_a_pair_of_cleared_debts_removes_the_right_two():
     from src.rules.counterfactual import _levers
+
     today = date(2026, 11, 2)
-    p = CustomerProfile(age=32, residency="pr", monthly_income=5000, property_type="private", property_price=1_000_000,
-                        home_loan_amount=500_000, tenure_years=30,
-                        commitments=[{"kind": "car", "monthly": 1500.0}, {"kind": "student", "monthly": 200.0},
-                                     {"kind": "renovation", "monthly": 1500.0}])
+    p = CustomerProfile(
+        age=32,
+        residency="pr",
+        monthly_income=5000,
+        property_type="private",
+        property_price=1_000_000,
+        home_loan_amount=500_000,
+        tenure_years=30,
+        commitments=[
+            {"kind": "car", "monthly": 1500.0},
+            {"kind": "student", "monthly": 200.0},
+            {"kind": "renovation", "monthly": 1500.0},
+        ],
+    )
     levers = {lv.name: lv for lv in _levers(p, "home_loan", today)}
     q = levers["commitment_cleared:student"].apply(levers["commitment_cleared:car"].apply(p))
     assert [c["kind"] for c in q.commitments] == ["renovation"]
@@ -275,18 +327,37 @@ def test_a_pair_of_cleared_debts_removes_the_right_two():
 
 def test_a_pair_of_dated_debts_ages_the_customer_once():
     from src.rules.counterfactual import _levers
+
     today = date(2026, 11, 2)
-    p = CustomerProfile(age=32, residency="pr", monthly_income=5000, property_type="private", property_price=1_000_000,
-                        home_loan_amount=500_000, tenure_years=30,
-                        commitments=[{"kind": "car", "monthly": 900.0, "end_date": "2028-01-31", "end_quote": "x"},
-                                     {"kind": "bike", "monthly": 900.0, "end_date": "2030-01-31", "end_quote": "y"}])
+    p = CustomerProfile(
+        age=32,
+        residency="pr",
+        monthly_income=5000,
+        property_type="private",
+        property_price=1_000_000,
+        home_loan_amount=500_000,
+        tenure_years=30,
+        commitments=[
+            {"kind": "car", "monthly": 900.0, "end_date": "2028-01-31", "end_quote": "x"},
+            {"kind": "bike", "monthly": 900.0, "end_date": "2030-01-31", "end_quote": "y"},
+        ],
+    )
     levers = {lv.name: lv for lv in _levers(p, "home_loan", today)}
     q = levers["commitment_ends:bike"].apply(levers["commitment_ends:car"].apply(p))
     assert q.age == 36 and q.commitments == []
 
 
-@pytest.mark.parametrize("quote,months", [("ends in 2 years", 24), ("in two years", 24), ("in 1 year", 12),
-                                          ("in a year", 12), ("in 18 months", 18), ("in half a year", 6)])
+@pytest.mark.parametrize(
+    "quote,months",
+    [
+        ("ends in 2 years", 24),
+        ("in two years", 24),
+        ("in 1 year", 12),
+        ("in a year", 12),
+        ("in 18 months", 18),
+        ("in half a year", 6),
+    ],
+)
 def test_end_stated_in_years_gets_a_date(quote, months):
     item = dict(EMPTY, kind="car loan", monthly_payment=600, end_quote=quote, ends_in_months=months)
     assert resolve(item, f"car loan S$600, {quote}", TODAY)["end_date"]

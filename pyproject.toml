@@ -1,0 +1,12 @@
+[tool.ruff]
+line-length = 120
+target-version = "py314"
+
+[tool.ruff.lint]
+select = ["E9", "F", "I", "W"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["src", "evals"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

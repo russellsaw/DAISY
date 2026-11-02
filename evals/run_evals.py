@@ -33,6 +33,7 @@ Always-on checks:
   - no_engine_before_confirm  on every turn, the engine only ran on parameters the customer confirmed
 Writes evals/results/<timestamp>.json, and for a full run also latest.json (with run history).
 """
+
 from __future__ import annotations
 
 import argparse
@@ -48,11 +49,15 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from evals.judge import judge  # noqa: E402
-from src import config  # noqa: E402
-from src import defence, pii, recorder  # noqa: E402
+from src import (  # noqa: E402
+    config,  # noqa: E402
+    defence,
+    pii,
+    recorder,
+)
 from src.agents.compliance import HANDOFF_FALLBACK, banned_phrases, unsupported_numbers  # noqa: E402
-from src.rules.counterfactual import OUTCOME_TEMPLATE, fmt_date  # noqa: E402
 from src.pipeline import run_turn  # noqa: E402
+from src.rules.counterfactual import OUTCOME_TEMPLATE, fmt_date  # noqa: E402
 from src.state import ConversationState  # noqa: E402
 
 
@@ -64,10 +69,20 @@ def _split(value) -> list[str]:
 
 def _always_on_checks(case: dict, result, state) -> list[dict]:
     checks = []
-    untraced = unsupported_numbers(result.response, result.sources_text, result.computations,
-                                   state.profile.to_dict(), case["input"].replace("||", "\n"))
-    checks.append({"name": "numbers_traceable", "passed": not untraced,
-                   "detail": f"untraceable: {untraced}" if untraced else "all numbers trace to engine/customer/source"})
+    untraced = unsupported_numbers(
+        result.response,
+        result.sources_text,
+        result.computations,
+        state.profile.to_dict(),
+        case["input"].replace("||", "\n"),
+    )
+    checks.append(
+        {
+            "name": "numbers_traceable",
+            "passed": not untraced,
+            "detail": f"untraceable: {untraced}" if untraced else "all numbers trace to engine/customer/source",
+        }
+    )
     if result.intent == "eligibility":
         found = banned_phrases(result.response)
         checks.append({"name": "banned_lexicon", "passed": not found, "detail": f"found {found}" if found else "clean"})
@@ -81,8 +96,13 @@ def _counterfactual_checks(case: dict, result, state) -> list[dict]:
     for cf in cfs:
         if cf["paths"] and not replaced:
             sentence = OUTCOME_TEMPLATE.format(assessed_on=fmt_date(cf["assessed_on"]))
-            checks.append({"name": "outcome_template", "passed": sentence in result.response,
-                           "detail": "fixed sentence present verbatim" if sentence in result.response else "MISSING"})
+            checks.append(
+                {
+                    "name": "outcome_template",
+                    "passed": sentence in result.response,
+                    "detail": "fixed sentence present verbatim" if sentence in result.response else "MISSING",
+                }
+            )
     if case.get("cf_expect"):
         if not cfs:
             got = "none"
@@ -92,11 +112,18 @@ def _counterfactual_checks(case: dict, result, state) -> list[dict]:
             got = "whatif_only"
         else:
             got = "no_path"
-        checks.append({"name": "cf_expect", "passed": got in _split(case["cf_expect"]),
-                       "detail": f"expected {case['cf_expect']}, got {got}"})
+        checks.append(
+            {
+                "name": "cf_expect",
+                "passed": got in _split(case["cf_expect"]),
+                "detail": f"expected {case['cf_expect']}, got {got}",
+            }
+        )
         if got in ("whatif_only", "no_path", "none"):
             dated = [x["earliest_date"] for cf in cfs for x in cf["paths"] if x["earliest_date"]]
-            checks.append({"name": "no_date_given", "passed": not dated, "detail": f"dates: {dated}" if dated else "none"})
+            checks.append(
+                {"name": "no_date_given", "passed": not dated, "detail": f"dates: {dated}" if dated else "none"}
+            )
     if case.get("expected_profile"):
         want = json.loads(case["expected_profile"])
         have = state.profile.to_dict()
@@ -108,18 +135,33 @@ def _counterfactual_checks(case: dict, result, state) -> list[dict]:
 def _readback_checks(case: dict, results: list, state) -> list[dict]:
     checks = []
     early = [i + 1 for i, r in enumerate(results) if r.engine_ran and not r.confirmed]
-    checks.append({"name": "no_engine_before_confirm", "passed": not early,
-                   "detail": f"engine ran unconfirmed on turn(s) {early}" if early else "engine only on confirmed data"})
+    checks.append(
+        {
+            "name": "no_engine_before_confirm",
+            "passed": not early,
+            "detail": f"engine ran unconfirmed on turn(s) {early}" if early else "engine only on confirmed data",
+        }
+    )
     last = results[-1]
     if str(case.get("expect_readback", "")).strip() in ("0", "1"):
         want = case["expect_readback"].strip() == "1"
         ok = last.readback == want and (not want or not last.engine_ran)
-        checks.append({"name": "expect_readback", "passed": ok,
-                       "detail": f"readback={last.readback} engine_ran={last.engine_ran} (wanted readback={want})"})
+        checks.append(
+            {
+                "name": "expect_readback",
+                "passed": ok,
+                "detail": f"readback={last.readback} engine_ran={last.engine_ran} (wanted readback={want})",
+            }
+        )
     if str(case.get("expect_corrections", "")).strip():
         need = int(case["expect_corrections"])
-        checks.append({"name": "expect_corrections", "passed": len(state.corrections) >= need,
-                       "detail": f"{len(state.corrections)} logged: {[c['field'] for c in state.corrections]}"})
+        checks.append(
+            {
+                "name": "expect_corrections",
+                "passed": len(state.corrections) >= need,
+                "detail": f"{len(state.corrections)} logged: {[c['field'] for c in state.corrections]}",
+            }
+        )
     return checks
 
 
@@ -145,15 +187,25 @@ def _recorder_checks(case: dict, results: list) -> list[dict]:
             problems.append("retrieval hit without URL")
         if e["type"] == "counterfactual" and not (e["data"] or {}).get("runs"):
             problems.append("counterfactual event without its engine runs")
-    checks = [{"name": "flight_recorded", "passed": not problems,
-               "detail": "; ".join(problems) if problems else f"{len(events)} events across {len(results)} turn(s)"}]
+    checks = [
+        {
+            "name": "flight_recorded",
+            "passed": not problems,
+            "detail": "; ".join(problems) if problems else f"{len(events)} events across {len(results)} turn(s)",
+        }
+    ]
     leaked = pii.redact(path.read_text(encoding="utf-8"))[1]
     checks.append({"name": "log_has_no_pii", "passed": not leaked, "detail": f"found {leaked}" if leaked else "clean"})
     if case.get("expect_log_events"):
         want = set(_split(case["expect_log_events"]))
         have = {e["type"] for e in events}
-        checks.append({"name": "expect_log_events", "passed": want <= have,
-                       "detail": f"missing {sorted(want - have)}" if want - have else f"has {sorted(want)}"})
+        checks.append(
+            {
+                "name": "expect_log_events",
+                "passed": want <= have,
+                "detail": f"missing {sorted(want - have)}" if want - have else f"has {sorted(want)}",
+            }
+        )
     return checks
 
 
@@ -200,12 +252,18 @@ def run_case(case: dict) -> dict:
         prod = case.get("expected_product")
         statuses = {r["product"]: r["status"] for r in result.eligibility}
         got = statuses.get(prod)
-        checks.append({"name": "engine_status", "passed": got == case["expected_status"],
-                       "detail": f"{prod}: expected {case['expected_status']}, got {got}"})
+        checks.append(
+            {
+                "name": "engine_status",
+                "passed": got == case["expected_status"],
+                "detail": f"{prod}: expected {case['expected_status']}, got {got}",
+            }
+        )
 
     if str(case.get("requires_citation", "")).lower() in ("1", "true", "yes") and result is not None:
-        checks.append({"name": "citation", "passed": bool(result.sources),
-                       "detail": f"{len(result.sources)} source(s) cited"})
+        checks.append(
+            {"name": "citation", "passed": bool(result.sources), "detail": f"{len(result.sources)} source(s) cited"}
+        )
 
     if case.get("expected_behavior") and response:
         conversation = "\n".join(f"(turn {i + 1}) {t}" for i, t in enumerate(turns)) if len(turns) > 1 else turns[0]
@@ -222,15 +280,25 @@ def run_case(case: dict) -> dict:
         checks += _recorder_checks(case, results)
         if case.get("expect_guard"):
             got = results[-1].guard.get("action")
-            checks.append({"name": "expect_guard", "passed": got == case["expect_guard"],
-                           "detail": f"expected {case['expect_guard']}, got {got} "
-                                     f"({results[-1].guard.get('category')}, {results[-1].guard.get('source')})"})
+            checks.append(
+                {
+                    "name": "expect_guard",
+                    "passed": got == case["expect_guard"],
+                    "detail": f"expected {case['expect_guard']}, got {got} "
+                    f"({results[-1].guard.get('category')}, {results[-1].guard.get('source')})",
+                }
+            )
     layers = defence.merge([r.defence for r in results]) if results else {}
     if case.get("expect_stopped_by") and layers:
         acted = defence.stopped_by(layers)
         want = _split(case["expect_stopped_by"])
-        checks.append({"name": "expect_stopped_by", "passed": any(w in acted for w in want),
-                       "detail": f"acted: {acted or 'none'}; expected one of {want}"})
+        checks.append(
+            {
+                "name": "expect_stopped_by",
+                "passed": any(w in acted for w in want),
+                "detail": f"acted: {acted or 'none'}; expected one of {want}",
+            }
+        )
 
     if not checks:
         checks.append({"name": "ran", "passed": bool(response), "detail": "no assertions defined for this case"})
@@ -250,15 +318,43 @@ def run_case(case: dict) -> dict:
         "guard": result.guard if result else {},
         "readback": result.readback if result else None,
         "corrections": state.corrections,
-        "counterfactuals": [{"product": cf["product"], "binding_rule": cf["binding_rule"],
-                             "paths": [{k: x[k] for k in ("lever_kind", "lever", "headroom", "earliest_date")}
-                                       for x in cf["paths"]],
-                             "borderline": [x["lever"] for x in cf["borderline"]]}
-                            for cf in (result.counterfactuals if result else [])],
+        "counterfactuals": [
+            {
+                "product": cf["product"],
+                "binding_rule": cf["binding_rule"],
+                "paths": [{k: x[k] for k in ("lever_kind", "lever", "headroom", "earliest_date")} for x in cf["paths"]],
+                "borderline": [x["lever"] for x in cf["borderline"]],
+            }
+            for cf in (result.counterfactuals if result else [])
+        ],
         "checks": checks,
         "passed": all(c["passed"] for c in checks),
         "defended": defence.classify(layers, all(c["passed"] for c in checks)) if layers else "hole",
         "seconds": round(time.time() - started, 1),
+    }
+
+
+def _crashed(case: dict, exc: Exception) -> dict:
+    return {
+        "id": case["id"],
+        "category": case["category"],
+        "input": case["input"],
+        "profile": case.get("profile") or "",
+        "response": "",
+        "intent": "error",
+        "compliance_verdict": None,
+        "turns": 0,
+        "adversarial": str(case.get("adversarial", "")).strip() in ("1", "true", "yes"),
+        "defence": {},
+        "stopped_by": [],
+        "guard": {},
+        "readback": None,
+        "corrections": [],
+        "counterfactuals": [],
+        "checks": [{"name": "no_error", "passed": False, "detail": f"{type(exc).__name__}: {exc}"}],
+        "passed": False,
+        "defended": "hole",
+        "seconds": 0,
     }
 
 
@@ -284,9 +380,15 @@ def main() -> int:
     with ThreadPoolExecutor(max_workers=max(1, args.workers)) as pool:
         futures = {pool.submit(run_case, case): i for i, case in enumerate(cases)}
         for done, fut in enumerate(as_completed(futures), 1):
-            res = fut.result()
+            try:
+                res = fut.result()
+            except Exception as exc:  # noqa: BLE001 — one broken case shouldn't lose the rest of the run
+                res = _crashed(cases[futures[fut]], exc)
             results[futures[fut]] = res  # keep CSV order in the results file
-            print(f"[{done}/{len(cases)}] {'PASS' if res['passed'] else 'FAIL'}  {res['id']}  ({res['seconds']}s)", flush=True)
+            print(
+                f"[{done}/{len(cases)}] {'PASS' if res['passed'] else 'FAIL'}  {res['id']}  ({res['seconds']}s)",
+                flush=True,
+            )
 
     config.EVAL_RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     run_at = datetime.now().isoformat(timespec="seconds")

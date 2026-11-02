@@ -1,4 +1,5 @@
 """Unit tests for the deterministic guards and the knowledge pipeline. No API calls."""
+
 import sys
 from pathlib import Path
 
@@ -9,11 +10,13 @@ from src.agents.compliance import unsupported_numbers  # noqa: E402
 from src.knowledge.ingest import chunk, doc_id, html_to_text  # noqa: E402
 from src.ui import md_safe  # noqa: E402
 
-
 # ---------------- compliance number check ----------------
 
+
 def test_invented_small_percentage_is_flagged():
-    flagged = unsupported_numbers("Rates start from 3% p.a.", allowed_text="", computations={}, profile={}, user_text="")
+    flagged = unsupported_numbers(
+        "Rates start from 3% p.a.", allowed_text="", computations={}, profile={}, user_text=""
+    )
     assert "3%" in flagged
 
 
@@ -23,8 +26,13 @@ def test_small_plain_integers_are_not_flagged():
 
 def test_numbers_from_sources_and_engine_pass():
     draft = "Rates from 1.48% p.a. Your TDSR is 30.2% against the 55% cap; stressed instalment S$2,111."
-    flagged = unsupported_numbers(draft, "as low as 1.48% p.a.",
-                                  {"tdsr": 0.3017, "tdsr_cap": 0.55, "stressed_monthly_instalment": 2111.27}, {}, "")
+    flagged = unsupported_numbers(
+        draft,
+        "as low as 1.48% p.a.",
+        {"tdsr": 0.3017, "tdsr_cap": 0.55, "stressed_monthly_instalment": 2111.27},
+        {},
+        "",
+    )
     assert flagged == []
 
 
@@ -62,24 +70,34 @@ def test_income_may_be_quoted_monthly_or_yearly():
 
 # ---------------- engine and profile inputs ----------------
 
+
 def test_only_real_property_loans_count_as_mortgages():
     from src.state import is_property_loan
+
     for kind in ("home loan", "mortgage", "HDB loan", "housing loan", "investment property loan"):
         assert is_property_loan(kind), kind
-    for kind in ("flat rate personal loan", "home appliance instalment", "inflation loan", "home renovation loan",
-                 "car loan"):
+    for kind in (
+        "flat rate personal loan",
+        "home appliance instalment",
+        "inflation loan",
+        "home renovation loan",
+        "car loan",
+    ):
         assert not is_property_loan(kind), kind
 
 
 def test_impossible_values_are_refused():
     from src.state import CustomerProfile
+
     p = CustomerProfile()
-    assert p.update({"tenure_years": 0, "age": 0, "home_loan_amount": -5, "existing_housing_loans": 0}) == \
-        ["existing_housing_loans"]
+    assert p.update({"tenure_years": 0, "age": 0, "home_loan_amount": -5, "existing_housing_loans": 0}) == [
+        "existing_housing_loans"
+    ]
 
 
 def test_conversation_ids_do_not_look_like_card_numbers():
     from src.state import ConversationState
+
     for _ in range(50):
         cid = ConversationState().conversation_id
         assert pii.redact(cid) == (cid, [])
@@ -92,6 +110,7 @@ def test_redacting_a_log_event_keeps_it_valid_and_leaves_numbers_alone():
 
 
 # ---------------- PII guard ----------------
+
 
 def test_nric_and_card_removed():
     text, kinds = pii.redact("NRIC S1234567A, card 4111 1111 1111 1111")
@@ -111,16 +130,21 @@ def test_non_luhn_long_number_kept():
 
 # ---------------- UI ----------------
 
+
 def test_md_safe_escapes_dollars():
     assert md_safe("S$7,000 and S$2,111") == r"S\$7,000 and S\$2,111"
 
 
 # ---------------- knowledge pipeline ----------------
 
+
 def test_html_to_text_keeps_structure_and_drops_chrome():
-    html = ("<html><head><meta charset='utf-8'><title>t</title></head><body><nav>Menu Home Loans</nav>"
-            "<main><h2>Eligibility</h2><p>Age 21 – 70 years old</p><p>SG/PR: $20,000 p.a</p>"
-            + "<p>filler text</p>" * 60 + "</main><footer>©2026 DBS</footer></body></html>").encode("utf-8")
+    html = (
+        "<html><head><meta charset='utf-8'><title>t</title></head><body><nav>Menu Home Loans</nav>"
+        "<main><h2>Eligibility</h2><p>Age 21 – 70 years old</p><p>SG/PR: $20,000 p.a</p>"
+        + "<p>filler text</p>" * 60
+        + "</main><footer>©2026 DBS</footer></body></html>"
+    ).encode("utf-8")
     text = html_to_text(html)
     assert "## Eligibility" in text
     assert "Age 21 – 70 years old" in text
@@ -138,18 +162,27 @@ def test_chunk_sizes_and_overlap():
 def test_doc_id_is_stable_and_readable():
     assert doc_id({"title": "DBS Woman's Card T&Cs", "publisher": "DBS"}) == "dbs-womans-card-tncs"
     assert doc_id({"title": "MAS: Calculating TDSR", "publisher": "MAS"}) == "mas-calculating-tdsr"
-    assert doc_id({"title": "Eligibility for a DBS Credit Card", "publisher": "DBS"}) == \
-        "dbs-eligibility-for-a-dbs-credit-card"
+    assert (
+        doc_id({"title": "Eligibility for a DBS Credit Card", "publisher": "DBS"})
+        == "dbs-eligibility-for-a-dbs-credit-card"
+    )
 
 
 # ---------------- model layer ----------------
 
+
 def test_strict_schema_closes_objects_and_rewrites_unions():
     from src.llm import strict_schema
 
-    out = strict_schema({"type": "object", "properties": {
-        "a": {"type": ["number", "null"]},
-        "b": {"type": "array", "items": {"type": "object", "properties": {"c": {"type": "string"}}}}}})
+    out = strict_schema(
+        {
+            "type": "object",
+            "properties": {
+                "a": {"type": ["number", "null"]},
+                "b": {"type": "array", "items": {"type": "object", "properties": {"c": {"type": "string"}}}},
+            },
+        }
+    )
     assert out["additionalProperties"] is False
     assert out["properties"]["a"]["anyOf"] == [{"type": "number"}, {"type": "null"}]
     assert out["properties"]["b"]["items"]["additionalProperties"] is False
@@ -168,8 +201,11 @@ def test_transcript_leaves_out_the_message_being_handled():
     from src.state import ConversationState
 
     st = ConversationState()
-    st.messages = [{"role": "user", "content": "first"}, {"role": "assistant", "content": "reply"},
-                   {"role": "user", "content": "second"}]
+    st.messages = [
+        {"role": "user", "content": "first"},
+        {"role": "assistant", "content": "reply"},
+        {"role": "user", "content": "second"},
+    ]
     assert "second" in st.transcript()
     assert "second" not in st.transcript(before="second") and "reply" in st.transcript(before="second")
     assert "second" in st.transcript(before="something else")

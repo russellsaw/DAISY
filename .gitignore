@@ -17,6 +17,5 @@ evals/results/*
 !evals/results/latest.json
 .streamlit/secrets.toml
 
-
-# DeepEval local cache (tests/evals)
+# DeepEval local cache
 .deepeval/

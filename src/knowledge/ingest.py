@@ -24,6 +24,7 @@ txt) and describe them in data/raw/sources.json:
                    "products": ["home_loan"]}}
 (a bare URL string as the value also works).
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -42,7 +43,7 @@ from bs4 import BeautifulSoup, NavigableString
 from .. import config
 from .sources import SOURCES, SUPERSEDED_LINES
 
-HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; DAISY-kb-builder/0.2; hackathon prototype)"}
+HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; DAISY-kb-builder/0.2; prototype)"}
 CHUNK_CHARS = 900
 OVERLAP_CHARS = 150
 THIN_DOC_CHARS = 800  # below this a page is probably JS-rendered or a soft 404
@@ -59,6 +60,7 @@ _HEADINGS = ["h1", "h2", "h3", "h4"]
 
 # ---------------------------------------------------------------- extraction
 
+
 def doc_id(src: dict) -> str:
     title = src["title"].lower().replace("&", " and ").replace("t and cs", "tncs")
     slug = re.sub(r"[^a-z0-9]+", "-", re.sub(r"['’]", "", title)).strip("-")
@@ -69,8 +71,9 @@ def doc_id(src: dict) -> str:
 def html_to_text(content: bytes | str) -> str:
     """Readable text with line structure kept. Pass bytes so the page's own charset is used."""
     soup = BeautifulSoup(content, "html.parser")
-    for tag in soup(["script", "style", "nav", "footer", "header", "noscript", "svg", "form",
-                     "aside", "button", "iframe"]):
+    for tag in soup(
+        ["script", "style", "nav", "footer", "header", "noscript", "svg", "form", "aside", "button", "iframe"]
+    ):
         tag.decompose()
     body = soup.body or soup
     main = soup.find("main")
@@ -120,7 +123,7 @@ def chunk(text: str) -> list[str]:
         if not line:
             continue
         while len(line) > CHUNK_CHARS:  # one very long line (common in PDFs): hard split
-            head, line = line[:CHUNK_CHARS], line[CHUNK_CHARS - OVERLAP_CHARS:]
+            head, line = line[:CHUNK_CHARS], line[CHUNK_CHARS - OVERLAP_CHARS :]
             if buf:
                 chunks.append("\n".join(buf))
                 buf, size = [], 0
@@ -143,6 +146,7 @@ def chunk(text: str) -> list[str]:
 
 # ---------------------------------------------------------------- repository I/O
 
+
 def _sha(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
@@ -154,23 +158,30 @@ def load_manifest() -> dict:
 def _log(event: str, did: str, **extra) -> None:
     SOURCES_DIR.mkdir(parents=True, exist_ok=True)
     with HISTORY_PATH.open("a", encoding="utf-8") as f:
-        f.write(json.dumps({"at": datetime.now().isoformat(timespec="seconds"), "event": event,
-                            "id": did, **extra}, ensure_ascii=False) + "\n")
+        f.write(
+            json.dumps(
+                {"at": datetime.now().isoformat(timespec="seconds"), "event": event, "id": did, **extra},
+                ensure_ascii=False,
+            )
+            + "\n"
+        )
 
 
 def _write_snapshot(entry: dict, text: str) -> None:
     TEXT_DIR.mkdir(parents=True, exist_ok=True)
-    header = "\n".join([
-        "---",
-        f"id: {entry['id']}",
-        f"title: {entry['title']}",
-        f"publisher: {entry['publisher']}",
-        f"url: {entry['url']}",
-        f"products: {', '.join(entry['products'])}",
-        f"fetched_at: {entry['fetched_at']}",
-        f"sha256: {entry['sha256']}",
-        "---",
-    ])
+    header = "\n".join(
+        [
+            "---",
+            f"id: {entry['id']}",
+            f"title: {entry['title']}",
+            f"publisher: {entry['publisher']}",
+            f"url: {entry['url']}",
+            f"products: {', '.join(entry['products'])}",
+            f"fetched_at: {entry['fetched_at']}",
+            f"sha256: {entry['sha256']}",
+            "---",
+        ]
+    )
     (TEXT_DIR / f"{entry['id']}.md").write_text(f"{header}\n\n{text}\n", encoding="utf-8")
 
 
@@ -183,11 +194,12 @@ def read_snapshot(did: str) -> str:
     if raw.startswith("---\n"):
         end = raw.find("\n---\n", 4)
         if end != -1:
-            return raw[end + 5:].strip()
+            return raw[end + 5 :].strip()
     return raw.strip()
 
 
 # ---------------------------------------------------------------- fetch
+
 
 def _fetch_one(src: dict) -> dict:
     did = doc_id(src)
@@ -198,8 +210,14 @@ def _fetch_one(src: dict) -> dict:
             raise RuntimeError(f"soft 404 (redirected to {resp.url})")
         is_pdf = src["kind"] == "pdf" or resp.headers.get("content-type", "").startswith("application/pdf")
         text = pdf_to_text(resp.content) if is_pdf else html_to_text(resp.content)
-        return {"id": did, "src": src, "ok": True, "text": text, "raw": resp.content,
-                "ext": "pdf" if is_pdf else "html"}
+        return {
+            "id": did,
+            "src": src,
+            "ok": True,
+            "text": text,
+            "raw": resp.content,
+            "ext": "pdf" if is_pdf else "html",
+        }
     except Exception as exc:  # noqa: BLE001
         return {"id": did, "src": src, "ok": False, "error": f"{type(exc).__name__}: {exc}"[:300]}
 
@@ -213,20 +231,25 @@ def _local_sources() -> list[dict]:
         return out
     for path in sorted(config.RAW_DIR.iterdir()):
         suffix = path.suffix.lower()
-        if path.name.startswith(".") or path.name == "sources.json" or suffix not in (
-                ".pdf", ".html", ".htm", ".txt", ".md"):
+        if (
+            path.name.startswith(".")
+            or path.name == "sources.json"
+            or suffix not in (".pdf", ".html", ".htm", ".txt", ".md")
+        ):
             continue
         meta = mapping.get(path.name, {})
         if isinstance(meta, str):
             meta = {"url": meta}
-        out.append({
-            "url": meta.get("url", f"local:{path.name}"),
-            "title": meta.get("title", path.stem.replace("_", " ").replace("-", " ")),
-            "publisher": meta.get("publisher", "DBS"),
-            "products": meta.get("products", ["general"]),
-            "kind": "pdf" if suffix == ".pdf" else "html" if suffix in (".html", ".htm") else "txt",
-            "local_path": str(path),
-        })
+        out.append(
+            {
+                "url": meta.get("url", f"local:{path.name}"),
+                "title": meta.get("title", path.stem.replace("_", " ").replace("-", " ")),
+                "publisher": meta.get("publisher", "DBS"),
+                "products": meta.get("products", ["general"]),
+                "kind": "pdf" if suffix == ".pdf" else "html" if suffix in (".html", ".htm") else "txt",
+                "local_path": str(path),
+            }
+        )
     return out
 
 
@@ -248,6 +271,14 @@ def _read_local(src: dict) -> dict:
         return {"id": did, "src": src, "ok": False, "error": f"{type(exc).__name__}: {exc}"[:300]}
 
 
+def _keep_good_snapshot(res: dict, prev: dict, has_snapshot: bool) -> dict:
+    """DBS answers HTTP 200 with an empty shell for pages it has moved. Treat that as a failed fetch, so a thin
+    page never replaces good text. A page that has always been thin is left alone."""
+    if res["ok"] and len(res["text"]) < THIN_DOC_CHARS and (prev.get("chars") or 0) >= THIN_DOC_CHARS and has_snapshot:
+        return {**res, "ok": False, "error": f"page came back with only {len(res['text'])} characters"}
+    return res
+
+
 def fetch(only: set[str] | None = None, verbose: bool = True) -> dict:
     """Fetch sources into the repository. Returns the updated manifest."""
     manifest = load_manifest()
@@ -263,20 +294,30 @@ def fetch(only: set[str] | None = None, verbose: bool = True) -> dict:
     for res in results:
         did, src = res["id"], res["src"]
         prev = manifest.get(did, {})
+        res = _keep_good_snapshot(res, prev, (TEXT_DIR / f"{did}.md").exists())
         entry = {
-            "id": did, "url": src["url"], "title": src["title"], "publisher": src.get("publisher", "DBS"),
-            "products": src.get("products", ["general"]), "kind": src["kind"],
+            "id": did,
+            "url": src["url"],
+            "title": src["title"],
+            "publisher": src.get("publisher", "DBS"),
+            "products": src.get("products", ["general"]),
+            "kind": src["kind"],
             "origin": "manual" if "local_path" in src else "web",
         }
         if res["ok"]:
             text = res["text"]
             sha = _sha(text)
-            entry.update({
-                "status": "thin" if len(text) < THIN_DOC_CHARS else "ok",
-                "fetched_at": now, "last_good_fetch": now, "sha256": sha, "chars": len(text),
-                "last_changed": prev.get("last_changed", now) if prev.get("sha256") == sha else now,
-                "error": None,
-            })
+            entry.update(
+                {
+                    "status": "thin" if len(text) < THIN_DOC_CHARS else "ok",
+                    "fetched_at": now,
+                    "last_good_fetch": now,
+                    "sha256": sha,
+                    "chars": len(text),
+                    "last_changed": prev.get("last_changed", now) if prev.get("sha256") == sha else now,
+                    "error": None,
+                }
+            )
             (RAW_SNAPSHOT_DIR / f"{did}.{res['ext']}").write_bytes(res["raw"])
             _write_snapshot(entry, text)
             if not prev.get("sha256"):
@@ -289,8 +330,7 @@ def fetch(only: set[str] | None = None, verbose: bool = True) -> dict:
         else:
             has_snapshot = (TEXT_DIR / f"{did}.md").exists()
             entry.update({k: prev.get(k) for k in ("sha256", "chars", "last_changed", "last_good_fetch")})
-            entry.update({"status": "stale" if has_snapshot else "failed", "fetched_at": now,
-                          "error": res["error"]})
+            entry.update({"status": "stale" if has_snapshot else "failed", "fetched_at": now, "error": res["error"]})
             _log("failed", did, error=res["error"], kept_previous_snapshot=has_snapshot)
             if verbose:
                 note = "keeping last good snapshot" if has_snapshot else "no snapshot"
@@ -311,6 +351,7 @@ def fetch(only: set[str] | None = None, verbose: bool = True) -> dict:
 
 
 # ---------------------------------------------------------------- build
+
 
 def _boilerplate_lines(docs: list[tuple[dict, str]]) -> set[tuple[str, str]]:
     """Lines repeated across most pages of one publisher (menus, footers, 'Apply now')."""
@@ -351,28 +392,43 @@ def build(verbose: bool = True) -> dict:
                 dropped_dupes += 1
                 continue
             seen.add(fingerprint)
-            chunks.append({
-                "id": f"{url_key}-{i}",
-                "doc_id": entry["id"],
-                "url": entry["url"],
-                "title": entry["title"],
-                "publisher": entry["publisher"],
-                "products": entry["products"],
-                "fetched_at": entry.get("last_good_fetch"),
-                "text": piece,
-            })
+            chunks.append(
+                {
+                    "id": f"{url_key}-{i}",
+                    "doc_id": entry["id"],
+                    "url": entry["url"],
+                    "title": entry["title"],
+                    "publisher": entry["publisher"],
+                    "products": entry["products"],
+                    "fetched_at": entry.get("last_good_fetch"),
+                    "text": piece,
+                }
+            )
 
     per_doc = Counter(c["doc_id"] for c in chunks)
     kb = {
         "built_on": date.today().isoformat(),
         "built_at": datetime.now().isoformat(timespec="seconds"),
         "chunks": chunks,
-        "documents": [{"id": e["id"], "url": e["url"], "title": e["title"], "publisher": e["publisher"],
-                       "products": e["products"], "status": e["status"], "chars": e.get("chars"),
-                       "chunks": per_doc.get(e["id"], 0), "fetched_at": e.get("last_good_fetch")}
-                      for e, _ in docs],
-        "failures": [{"id": e["id"], "url": e["url"], "error": e.get("error")}
-                     for e in manifest.values() if e.get("status") in ("failed", "stale")],
+        "documents": [
+            {
+                "id": e["id"],
+                "url": e["url"],
+                "title": e["title"],
+                "publisher": e["publisher"],
+                "products": e["products"],
+                "status": e["status"],
+                "chars": e.get("chars"),
+                "chunks": per_doc.get(e["id"], 0),
+                "fetched_at": e.get("last_good_fetch"),
+            }
+            for e, _ in docs
+        ],
+        "failures": [
+            {"id": e["id"], "url": e["url"], "error": e.get("error")}
+            for e in manifest.values()
+            if e.get("status") in ("failed", "stale")
+        ],
         "boilerplate_lines_removed": len(noise),
         "duplicate_chunks_removed": dropped_dupes,
     }
@@ -385,8 +441,10 @@ def build(verbose: bool = True) -> dict:
         if thin:
             print(f"  thin documents (check them): {', '.join(thin)}")
         if kb["failures"]:
-            print(f"  {len(kb['failures'])} source(s) failed or stale — see {MANIFEST_PATH}. "
-                  f"Save them from your browser into {config.RAW_DIR} and re-run.")
+            print(
+                f"  {len(kb['failures'])} source(s) failed or stale — see {MANIFEST_PATH}. "
+                f"Save them from your browser into {config.RAW_DIR} and re-run."
+            )
     return kb
 
 
@@ -400,8 +458,11 @@ def reextract(verbose: bool = True) -> int:
         if entry.get("status") not in ("ok", "thin", "stale") or raw is None:
             continue
         data = raw.read_bytes()
-        text = pdf_to_text(data) if raw.suffix == ".pdf" else (
-            html_to_text(data) if raw.suffix in (".html", ".htm") else data.decode("utf-8", errors="ignore"))
+        text = (
+            pdf_to_text(data)
+            if raw.suffix == ".pdf"
+            else (html_to_text(data) if raw.suffix in (".html", ".htm") else data.decode("utf-8", errors="ignore"))
+        )
         sha = _sha(text)
         if sha == entry.get("sha256"):
             continue
@@ -421,8 +482,11 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--build-only", action="store_true", help="rebuild kb.json from snapshots, no network")
     parser.add_argument("--only", default="", help="comma-separated document ids to re-fetch")
-    parser.add_argument("--reextract", action="store_true",
-                        help="re-run text extraction on the saved raw snapshots (offline), then rebuild")
+    parser.add_argument(
+        "--reextract",
+        action="store_true",
+        help="re-run text extraction on the saved raw snapshots (offline), then rebuild",
+    )
     args = parser.parse_args(argv)
     if args.reextract:
         print(f"Re-extracting text from {RAW_SNAPSHOT_DIR} …")

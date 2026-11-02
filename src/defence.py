@@ -16,6 +16,7 @@ withheld, rewrote, replaced, removed something) and a one-line detail:
 A layer that merely passed something through did not act. "n/a" means the layer had no role on this
 turn (e.g. retrieval on an eligibility question).
 """
+
 from __future__ import annotations
 
 LAYERS = [
@@ -31,9 +32,22 @@ def _slice(status: str, acted: bool, detail: str) -> dict:
     return {"status": status, "acted": acted, "detail": detail}
 
 
-def assess(*, intent: str, draft: str, sources: list, sources_text: str, chunks_retrieved: int,
-           engine_ran: bool, readback: bool, computations: dict, compliance_record: dict,
-           pii_found: list, profile: dict, user_msg: str, guard: dict | None = None) -> dict:
+def assess(
+    *,
+    intent: str,
+    draft: str,
+    sources: list,
+    sources_text: str,
+    chunks_retrieved: int,
+    engine_ran: bool,
+    readback: bool,
+    computations: dict,
+    compliance_record: dict,
+    pii_found: list,
+    profile: dict,
+    user_msg: str,
+    guard: dict | None = None,
+) -> dict:
     from .agents.compliance import unsupported_numbers  # local import: compliance imports nothing from here
 
     out: dict = {}
@@ -61,8 +75,9 @@ def assess(*, intent: str, draft: str, sources: list, sources_text: str, chunks_
         if chunks_retrieved == 0:
             out["retrieval"] = _slice("no_source", True, "nothing relevant retrieved — no source to answer from")
         elif sources and not untraced:
-            out["retrieval"] = _slice("grounded", True,
-                                      f"{len(sources)} source(s) cited; every number in the draft traced to them")
+            out["retrieval"] = _slice(
+                "grounded", True, f"{len(sources)} source(s) cited; every number in the draft traced to them"
+            )
         elif untraced:
             out["retrieval"] = _slice("ungrounded", False, f"draft numbers not in the sources: {untraced}")
         else:
@@ -74,14 +89,20 @@ def assess(*, intent: str, draft: str, sources: list, sources_text: str, chunks_
     if intent == "eligibility":
         if engine_ran:
             narrated = unsupported_numbers(draft, "", computations, profile, user_msg)
-            out["engine"] = _slice("computed", True,
-                                   "eligibility decided by the engine" +
-                                   (f"; narration added numbers {narrated}" if narrated else
-                                    "; every number in the narration came from it"))
+            out["engine"] = _slice(
+                "computed",
+                True,
+                "eligibility decided by the engine"
+                + (
+                    f"; narration added numbers {narrated}"
+                    if narrated
+                    else "; every number in the narration came from it"
+                ),
+            )
         elif readback:
             out["engine"] = _slice("withheld", True, "engine held back until the customer confirms the parameters")
         else:
-            out["engine"] = _slice("withheld", True, "engine not run: details missing")
+            out["engine"] = _slice("withheld", True, "engine not run on this turn")
     else:
         out["engine"] = _slice("n/a", False, "no eligibility check on this turn")
 
@@ -90,10 +111,16 @@ def assess(*, intent: str, draft: str, sources: list, sources_text: str, chunks_
     if compliance_record.get("reviewer", "").startswith("code template"):
         out["compliance"] = _slice("skipped", False, "code-written template; LLM review not needed")
     elif verdict == "revise":
-        out["compliance"] = _slice("rewritten", True, "; ".join(i["detail"] for i in compliance_record.get("issues", []))[:300])
+        out["compliance"] = _slice(
+            "rewritten", True, "; ".join(i["detail"] for i in compliance_record.get("issues", []))[:300]
+        )
     elif verdict == "handoff":
-        out["compliance"] = _slice("replaced", True, "replaced with the banker handoff: " +
-                                   "; ".join(i["detail"] for i in compliance_record.get("issues", []))[:280])
+        out["compliance"] = _slice(
+            "replaced",
+            True,
+            "replaced with the banker handoff: "
+            + "; ".join(i["detail"] for i in compliance_record.get("issues", []))[:280],
+        )
     else:
         out["compliance"] = _slice("approved", False, "reviewed and passed through unchanged")
 
@@ -105,8 +132,9 @@ def assess(*, intent: str, draft: str, sources: list, sources_text: str, chunks_
     lex = compliance_record.get("lexicon") or {}
     if lex.get("action"):
         actions.append(f"banned words {lex['found']} → {lex['action']}")
-    out["output_filter"] = (_slice("acted", True, "; ".join(actions)) if actions
-                            else _slice("clean", False, "nothing to remove"))
+    out["output_filter"] = (
+        _slice("acted", True, "; ".join(actions)) if actions else _slice("clean", False, "nothing to remove")
+    )
     return out
 
 

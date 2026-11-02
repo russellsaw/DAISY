@@ -1,10 +1,11 @@
 """Build the knowledge base. Run from the repo root:
 
-    python scripts/ingest.py                # fetch all sources, then rebuild data/kb.json
-    python scripts/ingest.py --build-only   # rebuild from saved snapshots, no network
-    python scripts/ingest.py --only dbs-personal-loan
-    python scripts/ingest.py --reextract    # re-run text extraction on saved raw pages (offline)
+python scripts/ingest.py                # fetch all sources, then rebuild data/kb.json
+python scripts/ingest.py --build-only   # rebuild from saved snapshots, no network
+python scripts/ingest.py --only dbs-personal-loan
+python scripts/ingest.py --reextract    # re-run text extraction on saved raw pages (offline)
 """
+
 import sys
 from pathlib import Path
 
