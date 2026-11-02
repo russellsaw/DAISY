@@ -25,24 +25,30 @@ from .. import config, llm
 
 # ---- 1. deterministic patterns: (category, regex) ----
 _PATTERNS: list[tuple[str, re.Pattern]] = [
+    # "your rules" is about the assistant only when nothing says which rules: "your rules for foreigners" and
+    # "the rules for TDSR" are product questions. A customer's "system message" may come from the DBS app.
     ("system_prompt_extraction", re.compile(
-        r"\b(system|initial|hidden|original)\s+(prompt|instructions?|message)\b|"
-        r"\b(repeat|print|reveal|show|output|recite)\b[^.?!]{0,40}\b(your|the)\s+(prompt|instructions|rules|guidelines)\b|"
-        r"\bwhat\s+(are|were)\s+your\s+(instructions|rules)\b", re.I)),
+        r"\b(system|initial|hidden)\s+prompt\b|"
+        r"\byour\s+(system|initial|hidden|original)\s+(instructions?|message)\b|"
+        r"\b(repeat|print|reveal|show|output|recite)\b[^.?!]{0,40}\b(your\s+(prompt|instructions|rules|guidelines)"
+        r"\b(?!\s+(for|on|about|regarding))|the\s+prompt\b)|"
+        r"\bwhat\s+(are|were)\s+your\s+(instructions|rules)\b(?!\s+(for|on|about|regarding))", re.I)),
     ("instruction_override", re.compile(
         r"\b(ignore|disregard|forget|override|bypass)\s+(all\s+|any\s+|of\s+)*(your|the|previous|prior|above|"
-        r"earlier|these|those|system|safety|its)\b[^.?!]{0,25}\b(instructions?|rules|guidelines|guardrails|"
-        r"restrictions|policies|prompt)\b", re.I)),
+        r"earlier|these|those|system|safety|its)\b[^.?!]{0,25}\b(instructions?|rules(?!\s+of\s+thumb)|guidelines|"
+        r"guardrails|restrictions|policies|prompt)\b", re.I)),
     ("role_play_override", re.compile(
         r"\byou\s*(are|'re)\s+now\s+(a|an|in|the)\b[^.?!]{0,40}\b(officer|manager|underwriter|approver|banker|"
-        r"assistant|ai|bot|model|mode|unrestricted)\b|\b(developer|god|jailbreak|unrestricted)\s+mode\b|\bDAN\b|"
+        r"assistant|ai|bot|model|mode|unrestricted)\b|\b(developer|god|jailbreak|unrestricted)\s+mode\b|(?-i:\bDAN\b)|"
         r"\bpretend\s+(to\s+be|you\s+are)\b[^.?!]{0,40}\b(officer|manager|underwriter|approver|banker|unrestricted)\b|"
         r"\bact\s+as\b[^.?!]{0,30}\b(loan\s+officer|underwriter|approver|credit\s+officer|unrestricted|no\s+restrictions)\b",
         re.I)),
     ("fake_authority", re.compile(
-        r"^\s*\[?\s*(system|admin|developer|operator)\s*(note|message|override)?\s*\]?\s*:|"
+        r"^\s*\[\s*(system|admin|developer|operator)\b[^\]]*\]|"
+        r"^\s*(system|admin|developer|operator)\s+(note|message|override)\s*:|"
+        r"^\s*(?-i:SYSTEM|ADMIN|DEVELOPER|OPERATOR)\s*:|"
         r"\b(compliance|guardrails?|safety|review)\b[^.?!]{0,20}\b(is|are|has been|have been)\s+(disabled|turned off|"
-        r"suspended|waived)\b|\b(you\s+are|you're|the assistant is)\s+(now\s+)?(authori[sz]ed|permitted|allowed)\s+to\b|"
+        r"suspended|waived)\b|\b((you\s+are|you're)\s+now|the assistant is(\s+now)?)\s+(authori[sz]ed|permitted|allowed)\s+to\b|"
         r"\bmessage\s+from\s+(dbs\s+)?(compliance|management|the bank|admin)\b", re.I | re.M)),
 ]
 
@@ -57,14 +63,14 @@ REPLIES = {
         "loans: product details, fees, or an indicative eligibility check."),
     "instruction_override": (
         "I can't change how I work based on instructions in a message. I can share DBS product information "
-        "and run indicative eligibility checks, or pass you to a DBS banker. What would you like to know?"),
+        "and run indicative eligibility checks, or prepare a summary for a DBS banker. What would you like to know?"),
     "role_play_override": (
         "I can't take on a different role or grant approvals. I'm DAISY, and I can share DBS product information "
-        "and run indicative eligibility checks, or connect you with a DBS banker who can help further."),
+        "and run indicative eligibility checks, or prepare a summary for a DBS banker."),
     "fake_authority": (
         "I can't act on instructions or permissions that arrive inside a message, and I can't confirm approvals "
-        "or limits. I can share DBS product information, run an indicative eligibility check, or pass you to a "
-        "DBS banker."),
+        "or limits. I can share DBS product information, run an indicative eligibility check, or prepare a summary "
+        "for a DBS banker."),
     "disparagement_request": (
         "I can only speak to DBS products, so I won't comment on other banks or say one is better than another. "
         "I'm happy to explain DBS's own rates, fees and features so you can compare for yourself."),

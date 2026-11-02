@@ -1,4 +1,5 @@
 """Assistant page: the customer conversation, the live profile and the agent timeline."""
+import sys
 import threading
 import time
 
@@ -41,16 +42,17 @@ STEP_NAMES = {
 VERDICT_BADGE = {
     "approve": ":green-badge[:material/verified_user: Checked before sending]",
     "revise": ":orange-badge[:material/edit: Edited before sending]",
-    "handoff": ":red-badge[:material/support_agent: Passed to a banker]",
+    "handoff": ":red-badge[:material/support_agent: Referred to a banker]",
 }
+TEMPLATE_BADGE = ":gray-badge[:material/description: Standard wording, checked by code]"
 # What each safety check did, in plain words. The status values themselves come from src/defence.py.
 CHECK_WORDS = {
     "input_guard": {"clear": "Message checked", "pii removed": "Personal details removed",
-                    "blocked": "Message blocked", "escalated": "Passed to a banker"},
+                    "blocked": "Message blocked", "escalated": "Flagged for a banker"},
     "retrieval": {"grounded": "Matches DBS pages", "ungrounded": "Not matched to DBS pages",
                   "uncited": "No source cited", "no_source": "No DBS page found"},
     "engine": {"computed": "Eligibility calculated", "withheld": "Waiting for your details"},
-    "compliance": {"approved": "Reviewed", "rewritten": "Edited in review", "replaced": "Passed to a banker",
+    "compliance": {"approved": "Reviewed", "rewritten": "Edited in review", "replaced": "Referred to a banker",
                    "skipped": "Standard reply"},
     "output_filter": {"clean": "Wording checked", "acted": "Wording corrected"},
 }
@@ -105,7 +107,8 @@ def render_trace(result, label: str) -> None:
 
 def render_assistant(result, seconds: float | None) -> None:
     st.markdown(md_safe(result.response))
-    st.markdown(VERDICT_BADGE.get(result.compliance.get("verdict"), ""))
+    from_template = result.compliance.get("reviewer", "").startswith("code template")
+    st.markdown(TEMPLATE_BADGE if from_template else VERDICT_BADGE.get(result.compliance.get("verdict"), ""))
     if result.defence:  # Swiss cheese: which safety check acted on this reply
         badges = []
         for key, _ in defence.LAYERS:
@@ -122,15 +125,14 @@ def render_assistant(result, seconds: float | None) -> None:
             ns = ns if isinstance(ns, list) else ([ns] if ns else [])
             return ("".join(f"[{n}]" for n in ns) + " " if ns else "") + f"[{src['title']}]({src['url']})"
         st.caption(":material/link: Sources: " + ", ".join(label(src) for src in result.sources))
-    agents = len({ev.agent for ev in result.trace})
-    took = f" in {seconds:.0f} seconds" if seconds else ""
-    render_trace(result, f"Checked by {agents} agents{took}")
+    took = f" ({seconds:.0f} seconds)" if seconds else ""
+    render_trace(result, f"How this reply was checked{took}")
 
 
 # ---------------- Sidebar: live customer profile, eligibility, lead card ----------------
 with st.sidebar:
-    st.caption("Answers about DBS home loans, credit cards and personal loans. Product information only, "
-               "not financial advice.")
+    st.caption("DAISY is an AI prototype, not a DBS service. It answers about DBS home loans, credit cards and "
+               "personal loans. Product information only, not financial advice.")
 
     kb = retriever.load()
     if kb.ready:
@@ -172,7 +174,8 @@ with st.sidebar:
             for c in state.corrections:
                 st.markdown(md_safe(f"- **{c['field']}**: {c['from']} → {c['to']}"))
 
-    if state.last_eligibility:
+    # Only while the details still match what was checked: a changed detail waits for a new readback.
+    if state.last_eligibility and state.is_confirmed():
         st.subheader("Eligibility check", anchor=False)
         st.caption("Indicative only. This isn't a loan approval.")
         for r in state.last_eligibility:
@@ -181,32 +184,21 @@ with st.sidebar:
             st.badge(label, color=color, icon=icon)
 
     if state.handoff_card:
-        card = state.handoff_card
-        st.subheader("Summary for a banker", anchor=False)
-        with st.container(border=True):
-            st.markdown(md_safe(card["customer_summary"]))
-            st.markdown(f":gray[Next step]  \n{md_safe(card['suggested_next_step'])}")
-            st.badge(f"Priority: {card['urgency']}", color={"high": "red", "medium": "orange"}.get(card["urgency"], "gray"))
-            if card.get("paths") or card.get("no_clear_path_for"):
-                st.markdown(":gray[What could change the result]")
-                for path in card.get("paths", []):
-                    when = f"from {fmt_date(path['earliest_date'])}" if path["earliest_date"] else "if this changes"
-                    st.markdown(f"- {md_safe(path['description'])}, *{when}*")
-                for name in card.get("no_clear_path_for", []):
-                    st.markdown(f"- {name}: no clear way to meet today's criteria")
-                st.caption(f":material/history: Checked on {fmt_date(card['assessed_on'])} against criteria "
-                           f"version {card['criteria_version']}.")
-                st.caption(md_safe(card["banker_note"]))
-            with st.expander("All details", icon=":material/badge:"):
-                st.json(card)
+        st.caption(":material/support_agent: A summary is ready for a DBS banker. In this prototype it stays on the "
+                   "Banker view page and nothing is sent to DBS.")
 
-    st.caption(f":material/flight: Saved as `{state.conversation_id}`. You can replay it in Flight recorder.")
+    st.caption(":material/privacy_tip: Conversations are saved on this computer for review. NRIC/FIN and card numbers "
+               "are removed. Phone numbers and emails aren't, so please leave them out.")
     if st.button("New conversation", icon=":material/restart_alt:", width="stretch"):
         st.session_state.state = ConversationState()
         st.session_state.turns = []
         st.rerun()
 
 # ---------------- Main: conversation ----------------
+if not config.ANTHROPIC_API_KEY:
+    st.error("DAISY needs an API key to answer. Copy `.env.example` to `.env`, add your `ANTHROPIC_API_KEY` and "
+             "restart the app.", icon=":material/key:")
+
 if not st.session_state.turns:
     st.title(f"{config.ASSISTANT_NAME}", anchor=False)
     st.markdown(f"##### {config.ASSISTANT_TAGLINE}")
@@ -255,7 +247,7 @@ if prompt:
                 del state.messages[n_messages:]  # don't leave an unanswered user turn in the history
                 status.update(label="Something went wrong", state="error")
                 st.error("Sorry, something went wrong. Please try again.", icon=":material/error:")
-                st.caption(str(exc))
+                print(f"run_turn failed: {exc!r}", file=sys.stderr)  # details for the operator, not the customer
                 st.stop()
             finally:
                 state.listener = None

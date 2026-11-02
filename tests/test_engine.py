@@ -2,6 +2,8 @@
 import sys
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.rules.criteria import MAS, PRODUCTS  # noqa: E402
@@ -148,3 +150,91 @@ def test_every_verified_criterion_has_evidence():
         for key, item in prod.items():
             if isinstance(item, dict) and item.get("verified"):
                 assert item.get("evidence"), f"{pkey}.{key}"
+
+
+# ---------------- MSR counts every property loan (MAS: "all the borrower's property loans") ----------------
+
+SECOND_LOAN = dict(age=32, residency="pr", monthly_income=7000, property_type="hdb", property_price=550_000,
+                   home_loan_amount=240_000, tenure_years=25, existing_housing_loans=1)
+MORTGAGE = {"kind": "home loan", "monthly": 1800.0}
+
+
+def test_msr_counts_an_existing_mortgage():
+    r = check_home_loan(CustomerProfile(**SECOND_LOAN, commitments=[MORTGAGE]))
+    assert r.status == "not_eligible"
+    assert r.computations["msr"] == pytest.approx(0.4381, abs=1e-4)
+    assert any(c["rule"] == "msr" and not c["passed"] for c in r.checks)
+
+
+def test_existing_mortgage_is_counted_once_in_tdsr():
+    both = CustomerProfile(**SECOND_LOAN, commitments=[MORTGAGE], existing_property_loan_monthly=1800)
+    assert both.total_monthly_debt() == 1800
+
+
+def test_renovation_loan_counts_for_tdsr_but_not_msr():
+    p = CustomerProfile(**{**SECOND_LOAN, "existing_housing_loans": 0},
+                        commitments=[{"kind": "home renovation loan", "monthly": 500.0}])
+    r = check_home_loan(p)
+    assert p.property_loan_monthly() == 0
+    assert r.computations["msr"] < r.computations["tdsr"]
+
+
+def test_existing_housing_loan_without_its_repayment_needs_more_info():
+    r = check_home_loan(CustomerProfile(**SECOND_LOAN))
+    assert r.status == "need_more_info" and r.missing_fields == ["existing_property_loan_monthly"]
+
+
+def test_stated_mortgage_implies_a_housing_loan_for_ltv():
+    r = check_home_loan(CustomerProfile(**{k: v for k, v in SECOND_LOAN.items() if k != "existing_housing_loans"},
+                                        commitments=[MORTGAGE]))
+    assert r.computations["ltv_limit"] == 0.45
+
+
+def test_demo_persona_msr_is_28_7_percent():
+    # 2,005.78 / 7,000 = 28.654%. The figure the pitch quotes: it must round the same way everywhere.
+    r = check_home_loan(CustomerProfile(**DEMO))
+    assert f"{r.computations['msr']:.1%}" == "28.7%"
+    assert any("MSR 28.7%" in reason for reason in r.reasons)
+
+
+# ---------------- unsecured limit ----------------
+
+def test_personal_loan_over_the_limit_fails_with_balance_unknown():
+    r = check_personal_loan(CustomerProfile(age=30, residency="citizen", monthly_income=3000,
+                                            personal_loan_amount=100_000))
+    assert r.status == "not_eligible"
+    assert any(c["rule"] == "unsecured_utilisation" and not c["passed"] for c in r.checks)
+
+
+def test_personal_loan_within_the_limit_passes_and_says_balance_unknown():
+    r = check_personal_loan(CustomerProfile(age=30, residency="citizen", monthly_income=3000,
+                                            personal_loan_amount=20_000))
+    assert r.status == "eligible"
+    assert any("unsecured balances" in a for a in r.assumptions)
+
+
+# ---------------- what was assumed, and what is cited ----------------
+
+def test_unstated_loans_and_debts_are_reported_as_assumptions():
+    r = check_home_loan(CustomerProfile(age=40, residency="citizen", monthly_income=10_000, property_type="private",
+                                        property_price=1_000_000, home_loan_amount=750_000, tenure_years=25))
+    assert any("housing loans" in a for a in r.assumptions)
+    assert any("monthly repayments" in a for a in r.assumptions)
+
+
+def test_stated_no_loans_means_no_assumptions():
+    assert check_home_loan(CustomerProfile(**DEMO)).assumptions == []
+
+
+def test_condo_check_cites_the_private_page_and_mas_not_the_hdb_page():
+    r = check_home_loan(CustomerProfile(**{**DEMO, "property_type": "private", "property_price": 1_000_000}))
+    assert any("buy-private-property" in s for s in r.sources)
+    assert not any("hdb-loan" in s or "hdb.gov.sg" in s for s in r.sources)
+    assert sum("mas.gov.sg" in s for s in r.sources) == 3
+
+
+def test_every_cited_page_has_a_title():
+    from src.rules.criteria import SOURCE_TITLES
+    for p in (DEMO, {**DEMO, "property_type": "private"}):
+        assert all(s in SOURCE_TITLES for s in check_home_loan(CustomerProfile(**p)).sources)
+    assert all(s in SOURCE_TITLES for s in check_personal_loan(CustomerProfile(**DEMO)).sources)

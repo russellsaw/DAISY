@@ -31,6 +31,9 @@ ASSISTANT_NAME = os.getenv("ASSISTANT_NAME", "DAISY")
 ASSISTANT_TAGLINE = "DBS AI, Straight with You"
 BANK_NAME = "DBS"
 
+# Buttons that spend money or overwrite data (run the eval suite, re-fetch sources). Hidden unless switched on.
+STAFF_CONTROLS = os.getenv("DAISY_STAFF_CONTROLS", "").strip().lower() in ("1", "true", "yes")
+
 # ---- "Not now, but when" (counterfactual eligibility) ----
 # A counterfactual only counts as a path if every ratio rule that fails today (TDSR / MSR / LTV /
 # unsecured utilisation) clears its cap by at least this margin. Below it: "borderline", not a path.

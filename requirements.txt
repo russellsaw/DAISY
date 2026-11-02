@@ -1,10 +1,11 @@
-anthropic>=0.40
-streamlit>=1.38
-python-dotenv>=1.0
-rank_bm25>=0.2.2
-requests>=2.32
-beautifulsoup4>=4.12
-pypdf>=4.0
-cryptography>=42      # pypdf needs it to open the AES-encrypted DBS T&C PDFs
-pandas>=2.0
-pytest>=8.0
+# Exact versions the eval results were produced with (Python 3.14).
+anthropic==1.15.0
+streamlit==1.66.0
+python-dotenv==1.2.4
+rank-bm25==0.2.2
+requests==2.34.2
+beautifulsoup4==4.15.0
+pypdf==6.21.1
+cryptography==50.0.2     # pypdf needs it to open the AES-encrypted DBS T&C PDFs
+pandas==3.0.6
+pytest==9.1.1

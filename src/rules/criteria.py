@@ -27,7 +27,22 @@ _DBS_PL = "https://www.dbs.com.sg/personal/loans/instant-cash/personal-loan"
 _DBS_CASHLINE = "https://www.dbs.com.sg/personal/loans/instant-cash/cashline"
 _DBS_CARD_ELIG = "https://www.dbs.com.sg/personal/support/card-application-eligibility.html"
 _DBS_HDB_LOAN = "https://www.dbs.com.sg/personal/loans/home-loans/hdb-loan"
+_DBS_PRIVATE = "https://www.dbs.com.sg/i-bank/loans/homeloans/buy-private-property"
 _HDB_FAMILIES = "https://www.hdb.gov.sg/buying-a-flat/flat-grant-and-loan-eligibility/couples-and-families"
+
+# What each cited page is called in a reply's source list.
+SOURCE_TITLES = {
+    _MAS_LTV: "MAS: Loan Tenure and Loan-to-Value Limits",
+    _MAS_MSR_TDSR: "MAS: MSR and TDSR Rules",
+    _MAS_CALC_TDSR: "MAS: Calculating TDSR",
+    _DBS_UNSECURED_FAQ: "DBS: Credit Card and Unsecured Credit Rules FAQ",
+    _DBS_PL: "DBS Personal Loan",
+    _DBS_CASHLINE: "DBS Cashline",
+    _DBS_CARD_ELIG: "Eligibility for a DBS Credit Card",
+    _DBS_HDB_LOAN: "DBS HDB Loan",
+    _DBS_PRIVATE: "DBS Private Property Home Loan",
+    _HDB_FAMILIES: "HDB: Flat Eligibility for Couples and Families",
+}
 
 # Regulatory limits (MAS). Apply across all banks.
 MAS = {
@@ -188,6 +203,7 @@ PRODUCTS = {
         "notes": "Eligibility assessed on TDSR, MSR (HDB/EC), LTV, tenure and HDB residency rules. "
                  "Actual approval depends on credit assessment and valuation.",
         "source": _DBS_HDB_LOAN,
+        "source_private": _DBS_PRIVATE,
     },
 }
 

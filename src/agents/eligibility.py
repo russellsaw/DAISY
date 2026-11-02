@@ -14,8 +14,9 @@ from .. import config, llm
 from ..rules import assess_all
 from ..rules import counterfactual
 from ..rules.counterfactual import fmt_date
-from ..rules.engine import REQUIRED_FIELDS
-from ..state import PROFILE_FIELDS, ConversationState, CustomerProfile
+from ..rules.criteria import SOURCE_TITLES
+from ..rules.engine import missing_fields
+from ..state import PROFILE_FIELDS, ConversationState, CustomerProfile, is_property_loan
 from . import product_knowledge, prompts
 
 DEFAULT_PRODUCTS = ["personal_loan", "credit_card", "home_loan"]
@@ -43,9 +44,12 @@ _RESIDENCY = {"citizen": "Singapore Citizen", "pr": "Singapore PR", "foreigner":
 _PROPERTY = {"hdb": "HDB flat", "ec": "Executive Condominium", "private": "private property"}
 
 
-def readback_text(profile: CustomerProfile) -> str:
-    """The readback, written by code: exact values, nothing paraphrased by a model."""
+def readback_text(profile: CustomerProfile, products: list[str] | None = None) -> str:
+    """The readback, written by code: exact values, nothing paraphrased by a model. Anything the check
+    would otherwise treat as none is shown as such, so the customer can correct it before it runs."""
     d = profile.to_dict()
+    products = products or []
+    not_mentioned = "not mentioned, so treated as none"
     money = lambda v: f"S${v:,.0f}"  # noqa: E731
     lines = []
     if "age" in d:
@@ -59,18 +63,28 @@ def readback_text(profile: CustomerProfile) -> str:
     for c in d.get("commitments", []):
         ends = (f"ending {fmt_date(c['end_date'])} (you said \u201c{c['end_quote']}\u201d)" if c.get("end_date")
                 else "no end date given")
-        lines.append(f"{c['kind'].capitalize()}: {money(c['monthly'])} a month, {ends}")
-    if d.get("existing_monthly_debt"):
-        lines.append(f"Other monthly repayments: {money(d['existing_monthly_debt'])}")
+        label = f"Existing {c['kind']}" if is_property_loan(c["kind"]) else c["kind"].capitalize()
+        lines.append(f"{label}: {money(c['monthly'])} a month, {ends}")
+    if d.get("existing_property_loan_monthly") and not any(is_property_loan(c["kind"]) for c in profile.commitments):
+        lines.append(f"Existing property-loan repayments: {money(d['existing_property_loan_monthly'])} a month")
+    if "existing_monthly_debt" in d:
+        lines.append("Other monthly repayments: " + (money(d["existing_monthly_debt"]) if d["existing_monthly_debt"]
+                                                      else "none"))
+    elif "home_loan" in products and not profile.commitments:
+        lines.append(f"Other monthly repayments: {not_mentioned}")
     if "existing_unsecured_balance" in d:
         lines.append(f"Unsecured balances (cards, credit lines): {money(d['existing_unsecured_balance'])}")
+    elif "personal_loan" in products or "cashline" in products:
+        lines.append(f"Unsecured balances (cards, credit lines): {not_mentioned}")
     if "property_type" in d or "property_price" in d:
         prop = _PROPERTY.get(d.get("property_type"), "property")
         lines.append(f"Property: {prop}" + (f" at {money(d['property_price'])}" if "property_price" in d else ""))
     if "existing_housing_loans" in d:
         lines.append(f"Existing housing loans: {d['existing_housing_loans'] or 'none'}")
+    elif "home_loan" in products and not profile.property_loan_monthly():
+        lines.append(f"Existing housing loans: {not_mentioned}")
     if "home_loan_amount" in d:
-        lines.append(f"Home loan: {money(d['home_loan_amount'])}"
+        lines.append(f"New home loan: {money(d['home_loan_amount'])}"
                      + (f" over {d['tenure_years']} years" if "tenure_years" in d else ""))
     if "personal_loan_amount" in d:
         lines.append(f"Personal loan: {money(d['personal_loan_amount'])}")
@@ -93,11 +107,11 @@ def readback_numbers(profile: CustomerProfile) -> dict:
 def assess(state: ConversationState, user_msg: str, products: list[str], today: date | None = None,
            search_query: str = "") -> dict:
     keys = products or DEFAULT_PRODUCTS
-    ready = [k for k in keys if not state.profile.missing(REQUIRED_FIELDS[k])]
+    ready = [k for k in keys if not missing_fields(state.profile, k)]
 
-    # 1. Missing details: ask for them. Decided from REQUIRED_FIELDS — the engine is not called.
+    # 1. Missing details: ask for them. Decided from the required fields — the engine is not called.
     if not ready:
-        missing = sorted({f for k in keys for f in state.profile.missing(REQUIRED_FIELDS[k])},
+        missing = sorted({f for k in keys for f in missing_fields(state.profile, k)},
                          key=list(PROFILE_FIELDS).index)
         labels = [f"{PROFILE_FIELDS[f][0]} — {PROFILE_FIELDS[f][1]}" for f in missing]
         # The published criteria relevant to the question ("can I get a card at 66?"), so the reply can
@@ -112,7 +126,7 @@ def assess(state: ConversationState, user_msg: str, products: list[str], today: 
         )
         draft = llm.chat(prompts.ELIGIBILITY_ASK, [{"role": "user", "content": prompt}], model=config.MODEL_MAIN)
         sources, cited = product_knowledge.cited_sources(draft, chunks)
-        state.last_counterfactuals = []
+        state.last_counterfactuals, state.last_eligibility = [], []
         state.add_trace("Eligibility", f"needs {', '.join(missing)} before anything can run (engine not called)",
                         product_knowledge.hits_detail(user_msg, search_query, keys, chunks, cited))
         return {"draft": draft, "results": [], "computations": readback_numbers(state.profile),
@@ -123,10 +137,10 @@ def assess(state: ConversationState, user_msg: str, products: list[str], today: 
     #    has said yes to exactly these parameters.
     if not state.is_confirmed():
         state.start_readback(ready)
-        state.last_counterfactuals = []
+        state.last_counterfactuals, state.last_eligibility = [], []
         state.add_trace("Readback", f"read back the parameters for {', '.join(ready)}; engine waits for a yes",
                         state.readback_profile)
-        return {"draft": readback_text(state.profile), "results": [], "computations": readback_numbers(state.profile),
+        return {"draft": readback_text(state.profile, ready), "results": [], "computations": readback_numbers(state.profile),
                 "counterfactuals": [], "engine_ran": False, "readback": True}
 
     # 3. Confirmed: run the engine.
@@ -178,6 +192,8 @@ def assess(state: ConversationState, user_msg: str, products: list[str], today: 
         computations.update({f"{r.product}.{k}": v for k, v in r.computations.items()})
     computations.update(counterfactual.numbers_in(cfs))
     computations.update(readback_numbers(state.profile))
-    sources = [{"n": None, "title": r.product_name, "url": r.sources[0]} for r in runnable if r.sources]
+    # Every page behind the checks that ran: the product page and the MAS/HDB rules applied to it.
+    urls = dict.fromkeys(url for r in runnable for url in r.sources)
+    sources = [{"n": None, "title": SOURCE_TITLES.get(url, url), "url": url} for url in urls]
     return {"draft": draft, "results": state.last_eligibility, "computations": computations, "sources": sources,
             "counterfactuals": cfs, "engine_ran": True}

@@ -56,7 +56,7 @@ def assess(*, intent: str, draft: str, sources: list, sources_text: str, chunks_
         out["input_guard"] = _slice("clear", False, "nothing blocked, escalated or removed")
 
     # (a) retrieval grounding
-    if intent in ("product_qa", "comparison"):
+    if intent in ("product_qa", "comparison") or (intent == "advice_seeking" and sources):
         untraced = unsupported_numbers(draft, sources_text, {}, profile, user_msg)
         if chunks_retrieved == 0:
             out["retrieval"] = _slice("no_source", True, "nothing relevant retrieved — no source to answer from")

@@ -6,6 +6,7 @@ engine reads from it; the UI side panel displays it.
 from __future__ import annotations
 
 import copy
+import re
 import time
 import uuid
 from dataclasses import asdict, dataclass, field
@@ -20,6 +21,7 @@ PROFILE_FIELDS: dict[str, tuple[str, str]] = {
     "employment_type": ("Employment", "One of: salaried, self_employed, variable, unemployed."),
     "existing_monthly_debt": ("Other monthly debt (S$)", "Monthly repayments the customer gave only as a total, NOT itemised as a commitment."),
     "existing_housing_loans": ("Existing housing loans", "Number of outstanding housing loans (integer, 0 if none)."),
+    "existing_property_loan_monthly": ("Existing property-loan repayments (S$)", "Total monthly repayment on the customer's existing housing or property loans."),
     "property_type": ("Property type", "One of: hdb, ec, private."),
     "property_price": ("Property price (S$)", "Purchase price of the property."),
     "home_loan_amount": ("Home loan amount (S$)", "Housing loan amount the customer wants for the property."),
@@ -28,6 +30,15 @@ PROFILE_FIELDS: dict[str, tuple[str, str]] = {
     "existing_unsecured_balance": ("Existing unsecured balance (S$)", "Outstanding balance across all unsecured credit (cards, personal loans, credit lines)."),
     "commitments": ("Existing commitments", "Itemised monthly commitments (car loan, student loan, ...), each with an end date only if the customer stated one."),
 }
+
+# Commitments that are property loans count towards MSR as well as TDSR. A renovation loan is not a property loan.
+_PROPERTY_LOAN = re.compile(r"home|mortgage|housing|hdb|property|condo|flat", re.IGNORECASE)
+
+
+def is_property_loan(kind: str | None) -> bool:
+    kind = kind or ""
+    return bool(_PROPERTY_LOAN.search(kind)) and "renovation" not in kind.lower()
+
 
 RESIDENCY_ALIASES = {
     "singaporean": "citizen", "singapore citizen": "citizen", "citizen": "citizen", "sc": "citizen",
@@ -44,6 +55,7 @@ class CustomerProfile:
     employment_type: Optional[str] = None
     existing_monthly_debt: Optional[float] = None
     existing_housing_loans: Optional[int] = None
+    existing_property_loan_monthly: Optional[float] = None
     property_type: Optional[str] = None
     property_price: Optional[float] = None
     home_loan_amount: Optional[float] = None
@@ -58,9 +70,17 @@ class CustomerProfile:
         # Own copies: a profile must never share commitment dicts with the caller (or another profile).
         self.commitments = [dict(c) for c in self.commitments]
 
+    def property_loan_monthly(self) -> float:
+        """Repayments on existing property loans: the MSR numerator, besides the loan being applied for.
+        The customer may have given them as a total or as a commitment; the larger is used, so one
+        mortgage stated both ways isn't counted twice."""
+        itemised = sum(c.get("monthly") or 0.0 for c in self.commitments if is_property_loan(c.get("kind")))
+        return max(self.existing_property_loan_monthly or 0.0, itemised)
+
     def total_monthly_debt(self) -> float:
         """Every monthly obligation the TDSR numerator counts."""
-        return (self.existing_monthly_debt or 0.0) + sum(c.get("monthly") or 0.0 for c in self.commitments)
+        other = sum(c.get("monthly") or 0.0 for c in self.commitments if not is_property_loan(c.get("kind")))
+        return (self.existing_monthly_debt or 0.0) + other + self.property_loan_monthly()
 
     def update(self, updates: dict[str, Any]) -> list[str]:
         """Apply extracted updates; returns the list of fields that changed."""
@@ -84,7 +104,7 @@ class CustomerProfile:
                     value = int(value)
                 except (TypeError, ValueError):
                     continue
-            if key in ("monthly_income", "existing_monthly_debt", "property_price",
+            if key in ("monthly_income", "existing_monthly_debt", "existing_property_loan_monthly", "property_price",
                        "home_loan_amount", "personal_loan_amount", "existing_unsecured_balance"):
                 try:
                     value = float(value)

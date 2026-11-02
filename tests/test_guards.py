@@ -28,6 +28,27 @@ def test_numbers_from_sources_and_engine_pass():
     assert flagged == []
 
 
+def test_percentage_needs_a_percentage_in_the_source():
+    # "3 years" on a page doesn't support an invented "3% p.a."; a real "3%" does, including inside a range.
+    assert unsupported_numbers("The rate is 3% p.a.", "Tenure is 3 years. See [1].", {}, {}, "") == ["3%"]
+    assert unsupported_numbers("The rate is 3% p.a.", "A rate of 3% p.a. applies", {}, {}, "") == []
+    assert unsupported_numbers("From 3% p.a.", "Rebates of 3-5% on dining", {}, {}, "") == []
+    assert unsupported_numbers("The rate is 3 percent.", "Tenure is 3 years.", {}, {}, "") == ["3%"]
+
+
+def test_plain_number_may_trace_to_a_percentage():
+    assert unsupported_numbers("The floor is 4 per cent, or 4.", "a 4% floor", {}, {}, "") == []
+
+
+def test_invented_small_amount_of_money_is_flagged():
+    assert unsupported_numbers("The late fee is S$25.", "", {}, {}, "") == ["25"]
+    assert unsupported_numbers("The late fee is S$25.", "A fee of S$25 applies", {}, {}, "") == []
+
+
+def test_engine_ratio_counts_as_a_percentage():
+    assert unsupported_numbers("MSR is 28.7%.", "", {"msr": 0.28654}, {}, "") == []
+
+
 # ---------------- PII guard ----------------
 
 def test_nric_and_card_removed():

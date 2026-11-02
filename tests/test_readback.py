@@ -125,6 +125,52 @@ def test_readback_lists_every_parameter_and_is_clean():
     assert compliance.banned_phrases(text) == []
 
 
+def test_readback_shows_what_will_be_treated_as_none():
+    text = readback_text(CustomerProfile(**PERSONA), ["home_loan"])
+    assert "Existing housing loans: not mentioned, so treated as none" in text
+    assert "Other monthly repayments: not mentioned, so treated as none" in text
+    stated = readback_text(CustomerProfile(**PERSONA, existing_housing_loans=0, existing_monthly_debt=0), ["home_loan"])
+    assert "Existing housing loans: none" in stated and "Other monthly repayments: none" in stated
+    assert "not mentioned" not in stated
+
+
+def test_readback_shows_unknown_unsecured_balance_for_a_personal_loan():
+    p = CustomerProfile(age=30, residency="citizen", monthly_income=3000, personal_loan_amount=20000)
+    assert "Unsecured balances (cards, credit lines): not mentioned" in readback_text(p, ["personal_loan"])
+
+
+def test_readback_tells_existing_mortgage_from_the_new_loan():
+    text = readback_text(CustomerProfile(**PERSONA, commitments=[{"kind": "home loan", "monthly": 1800.0}]), ["home_loan"])
+    assert "Existing home loan: S$1,800 a month" in text and "New home loan: S$700,000" in text
+
+
+def test_mortgage_stated_two_ways_is_read_back_once():
+    p = CustomerProfile(**PERSONA, commitments=[{"kind": "home loan", "monthly": 1800.0}],
+                        existing_property_loan_monthly=1800)
+    assert readback_text(p, ["home_loan"]).count("S$1,800") == 1
+
+
+@pytest.mark.parametrize("msg,updates,expected", [
+    ("I'd borrow $380k and I have no other loans.", {"existing_unsecured_balance": 0},
+     {"existing_housing_loans": 0, "existing_monthly_debt": 0}),
+    ("I have no credit card balance and no other loans", {"existing_unsecured_balance": 0},
+     {"existing_housing_loans": 0, "existing_monthly_debt": 0, "existing_unsecured_balance": 0}),
+    ("I'd borrow $380k", {"age": 32}, {"age": 32}),
+    ("No other loans, but one housing loan", {"existing_housing_loans": 1},
+     {"existing_housing_loans": 1, "existing_monthly_debt": 0}),
+])
+def test_no_other_loans_is_recorded_as_stated(msg, updates, expected):
+    assert orchestrator._apply_no_other_loans(updates, msg) == expected
+
+
+def test_changed_details_clear_the_old_result(bot):
+    send, state, calls = bot
+    send("details", PERSONA)
+    assert send("yes").eligibility
+    r = send("what if I borrow less", {"home_loan_amount": 600_000})
+    assert r.readback and r.eligibility == [] and state.last_eligibility == []
+
+
 @pytest.mark.parametrize("msg,ok", [("yes", True), ("Yes, that's right.", True), ("yep thanks", True),
                                     ("looks good", True), ("yes but my income is 6500", False),
                                     ("no", False), ("what is TDSR?", False)])

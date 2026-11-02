@@ -1,6 +1,7 @@
 """Orchestrator: routes intent and extracts profile facts from the latest message."""
 from __future__ import annotations
 
+import re
 from datetime import date
 
 from .. import commitments as commitment_rules
@@ -21,6 +22,7 @@ _FIELD_TYPES = {
     "employment_type": {"type": "string", "enum": ["salaried", "self_employed", "variable", "unemployed"]},
     "existing_monthly_debt": {"type": "number"},
     "existing_housing_loans": {"type": "integer"},
+    "existing_property_loan_monthly": {"type": "number"},
     "property_type": {"type": "string", "enum": ["hdb", "ec", "private"]},
     "property_price": {"type": "number"},
     "home_loan_amount": {"type": "number"},
@@ -51,7 +53,8 @@ ROUTE_SCHEMA = {
             "type": "array",
             "description": "Each existing monthly commitment the latest message mentions (car loan, student loan, "
                            "renovation loan, ...). Never invent a date: only fill the end fields from the "
-                           "customer's own words, and copy those words exactly into end_quote.",
+                           "customer's own words, and copy those words exactly into end_quote. An existing "
+                           "mortgage goes here with kind 'home loan'.",
             "items": {
                 "type": "object",
                 "properties": {
@@ -102,6 +105,21 @@ ROUTE_SCHEMA = {
 }
 
 
+# "I have no other loans" is a fact about loans, and the check treats loans it wasn't told about as none, so the
+# readback must show it as stated. Decided in code: the fast model was unreliable here (it recorded a S$0 card balance).
+_NO_OTHER_LOANS = re.compile(r"\bno (other |existing |outstanding )?(loans?|debts?|commitments?)\b", re.IGNORECASE)
+_CARD_BALANCE = re.compile(r"\b(cards?|unsecured|credit lines?|cashline)\b", re.IGNORECASE)
+
+
+def _apply_no_other_loans(updates: dict, user_msg: str) -> dict:
+    if not _NO_OTHER_LOANS.search(user_msg):
+        return updates
+    updates = {"existing_housing_loans": 0, "existing_monthly_debt": 0, **updates}
+    if not updates.get("existing_unsecured_balance") and not _CARD_BALANCE.search(user_msg):
+        updates.pop("existing_unsecured_balance", None)
+    return updates
+
+
 def route(state: ConversationState, user_msg: str, today: date | None = None) -> dict:
     context = (
         f"Known customer profile so far:\n{state.profile.describe()}\n\n"
@@ -109,7 +127,7 @@ def route(state: ConversationState, user_msg: str, today: date | None = None) ->
         f"Latest customer message:\n{user_msg}"
     )
     decision = llm.structured(prompts.ORCHESTRATOR, context, ROUTE_SCHEMA)
-    updates = dict(decision.get("profile_updates") or {})
+    updates = _apply_no_other_loans(dict(decision.get("profile_updates") or {}), user_msg)
     resolved = [commitment_rules.resolve(c, user_msg, today or date.today()) for c in decision.get("commitments") or []]
     if resolved:
         updates["commitments"] = resolved

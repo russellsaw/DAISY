@@ -5,10 +5,16 @@ import re
 
 from .. import config, llm
 from ..knowledge import retriever
+from ..rules.counterfactual import fmt_date
 from ..state import ConversationState
 from . import prompts
 
 _CITE = re.compile(r"\[(\d+)\]")
+
+
+def _as_of(chunk: dict) -> str:
+    fetched = (chunk.get("fetched_at") or "")[:10]
+    return f"as of {fmt_date(fetched)}" if fetched else "date unknown"
 
 
 def search(user_msg: str, products: list[str], search_query: str = "", k: int | None = None) -> tuple[list[dict], str]:
@@ -17,8 +23,8 @@ def search(user_msg: str, products: list[str], search_query: str = "", k: int | 
     product = products[0] if len(products) == 1 else None
     chunks = retriever.retrieve(f"{user_msg} {search_query or ''}".strip(), k=k, product=product)
     excerpts = "\n\n".join(
-        f"[{i + 1}] {c['title']} ({c.get('publisher', 'DBS')}, as of {(c.get('fetched_at') or '')[:10]}) — "
-        f"{c['url']}\n{c['text']}" for i, c in enumerate(chunks)
+        f"[{i + 1}] {c['title']} ({c.get('publisher', 'DBS')}, {_as_of(c)}) — {c['url']}\n{c['text']}"
+        for i, c in enumerate(chunks)
     )
     return chunks, excerpts
 

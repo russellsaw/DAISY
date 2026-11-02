@@ -16,6 +16,7 @@ from dataclasses import dataclass, field
 from . import config, defence, llm, pii, recorder
 from .agents import compliance, eligibility, handoff, input_guard, orchestrator, product_knowledge, prompts
 from .rules import counterfactual
+from .rules.criteria import MAS
 from .state import ConversationState
 
 
@@ -23,9 +24,28 @@ _POOL = ThreadPoolExecutor(max_workers=4)
 
 HANDOFF_REQUEST_REPLY = (
     "I've put together a summary of our conversation for a DBS banker so you won't need to repeat yourself. "
-    "A banker can take it from here, walk you through the application and answer anything I couldn't. "
-    "Is there anything else you'd like me to add to the summary?"
+    "I can't promise an outcome, approval or timing."
 )
+# What really happens to a handoff. Written by code and appended after review, so no model can promise more.
+HANDOFF_NOTE = ("This is a prototype, so the summary stays on the Banker page: nothing is sent to DBS and no one "
+                "will contact you automatically. To speak to someone now, please contact DBS directly.")
+
+# DBS's calculator page quotes a lower rate than the MAS floor the eligibility check uses. A customer can see both.
+_STRESS_MENTION = re.compile(r"3\.5\s*%", re.IGNORECASE)
+_STRESS_CONTEXT = re.compile(r"medium[- ]term|calculator|stress|maximum loan", re.IGNORECASE)
+STRESS_NOTE = (f"A note on rates: 3.5% is what DBS's calculator page quotes. MAS sets a floor of "
+               f"{MAS['stress_rate']['value']:.0%} for residential property loans, and the eligibility check here "
+               "uses that floor, so the two can give different figures.")
+
+
+def _code_notes(intent: str, reply: str) -> str:
+    """Code-written lines that follow a reply: what the customer should know whatever the model wrote."""
+    notes = []
+    if intent == "handoff_request":
+        notes.append(HANDOFF_NOTE)
+    if _STRESS_MENTION.search(reply) and _STRESS_CONTEXT.search(reply):
+        notes.append(STRESS_NOTE)
+    return "\n\n".join(notes)
 
 
 # A bare "yes" to a readback. Anything longer is left to the orchestrator's readback_reply.
@@ -160,10 +180,19 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
 
         elif intent == "advice_seeking":
             card_job = start_card("customer sought personal financial advice")
+            # No recommendation, but still the facts: the same retrieval and citations as a product answer.
+            chunks, excerpts = product_knowledge.search(user_msg, products, decision.get("search_query", ""))
             draft = llm.chat(prompts.BOUNDARY, [{"role": "user", "content":
-                             f"Customer profile:\n{state.profile.describe()}\n\nCustomer message:\n{user_msg}"}],
-                             model=config.MODEL_MAIN, max_tokens=1500)
-            state.add_trace("Boundary", "advice-seeking: declined to advise, offered banker")
+                             f"Customer profile:\n{state.profile.describe()}\n\n"
+                             f"Source excerpts:\n{excerpts or '(none)'}\n\nCustomer message:\n{user_msg}"}],
+                             model=config.MODEL_MAIN, max_tokens=2500)
+            sources, cited = product_knowledge.cited_sources(draft, chunks)
+            sources_text = excerpts
+            out = {"chunks": chunks}
+            state.add_trace("Boundary", f"advice-seeking: declined to advise, gave cited facts, summary prepared "
+                                        f"(retrieved {len(chunks)} chunks, cited {len(cited)})",
+                            product_knowledge.hits_detail(user_msg, decision.get("search_query", ""), products,
+                                                          chunks, cited))
 
         elif intent == "handoff_request":
             card_job = start_card("customer may be in financial distress: prioritise a call back"
@@ -187,15 +216,22 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
         state.add_trace("Drafting", f"model declined to draft a reply ({exc}); using the banker handoff")
 
     is_readback = intent == "eligibility" and bool(out.get("readback"))
+    # "Not now, but when": the outcome lines and the fixed outcome sentence are written by code and
+    # appended after review, so no model can alter or omit them. The reviewer sees them, so it doesn't
+    # write them into the reply as well. Not shown if review replaced the reply.
+    outcome = counterfactual.outcome_block(cfs) if cfs else ""
     reviewed = compliance.review(state, user_msg, intent, draft, sources_text=sources_text,
                                  computations=computations, injection_suspected=injection,
-                                 deterministic=is_readback or draft == WHAT_TO_CHANGE_REPLY or intent == "blocked")
+                                 deterministic=is_readback or draft == WHAT_TO_CHANGE_REPLY or intent == "blocked",
+                                 appended="\n\n".join(x for x in (outcome, HANDOFF_NOTE if intent == "handoff_request"
+                                                                   else "") if x))
     final = reviewed["final"]
-
-    # "Not now, but when": the outcome lines and the fixed outcome sentence are written by code and
-    # appended after review, so no model can alter or omit them. Not shown if review replaced the reply.
-    if cfs and final != compliance.HANDOFF_FALLBACK:
-        final = final.rstrip() + "\n\n" + counterfactual.outcome_block(cfs)
+    if outcome and final != compliance.HANDOFF_FALLBACK:
+        final = final.rstrip() + "\n\n" + outcome
+    notes = _code_notes(intent, final)
+    if notes:
+        final = final.rstrip() + "\n\n" + notes
+        sources_text = "\n\n".join(x for x in (sources_text, notes) if x)  # so its numbers count as traced
     if any(not cf["paths"] for cf in cfs) and card_job is None:
         card_job = start_card(counterfactual.NO_PATH_TRIGGER)
 
@@ -207,7 +243,7 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
 
     layers = defence.assess(
         intent=intent, draft=draft, sources=sources, sources_text=sources_text,
-        chunks_retrieved=len(out.get("chunks", [])) if intent in ("product_qa", "comparison") else 0,
+        chunks_retrieved=len(out.get("chunks", [])) if intent in ("product_qa", "comparison", "advice_seeking") else 0,
         engine_ran=bool(intent == "eligibility" and out.get("engine_ran")), readback=is_readback,
         computations=computations, compliance_record=reviewed["record"], pii_found=pii_found,
         profile=state.profile.to_dict(), user_msg=user_msg, guard=guard)
@@ -219,7 +255,7 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
         response=final,
         intent=intent,
         sources=sources,
-        eligibility=state.last_eligibility if intent == "eligibility" else [],
+        eligibility=state.last_eligibility if intent == "eligibility" and out.get("engine_ran") else [],
         handoff_card=card,
         compliance=reviewed["record"],
         trace=list(state.trace),

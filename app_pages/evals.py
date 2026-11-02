@@ -14,41 +14,44 @@ from src.rules.engine import rules_summary
 from src.ui import md_safe
 
 st.title("Trust scorecard", icon=":material/fact_check:", anchor=False)
-st.caption("How DAISY performs on our test conversations, including attempts to break it. "
-           "Every version is tested before it's used.")
+st.caption("How DAISY did in the last full run of our test conversations, including attempts to break it. The suite "
+           "is run by hand, not automatically, and failures stay visible. Model-written replies vary, so a result can "
+           "move by a case or two between runs.")
+
+PASS_COLOR, FAIL_COLOR = "#0F8A5F", "#CC2929"  # green for a pass, red only for a failure
 
 latest = config.EVAL_RESULTS_DIR / "latest.json"
 
 # ---------------- Run controls ----------------
-col_run, col_cat, col_limit = st.columns([1, 2, 1])
-with col_cat:
-    cases = pd.read_csv(config.EVAL_CASES, dtype=str, keep_default_na=False)
-    categories = sorted(cases["category"].unique())
-    selected = st.multiselect("Categories", categories, default=categories)
-with col_limit:
-    limit = st.number_input("Max cases", min_value=1, max_value=500, value=len(cases))
-with col_run:
-    st.write("")
-    st.write("")
-    if st.button("Run suite", icon=":material/play_arrow:", type="primary", width="stretch"):
-        cmd = [sys.executable, str(config.ROOT / "evals" / "run_evals.py"), "--limit", str(int(limit))]
-        if selected and len(selected) < len(categories):
-            cmd += ["--categories", ",".join(selected)]
-        with st.status("Running evals…", expanded=True) as status:
-            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
-                                    cwd=str(config.ROOT))
-            log = st.empty()
-            lines = []
-            for line in proc.stdout:
-                lines.append(line.rstrip())
-                log.code("\n".join(lines[-20:]))
-            proc.wait()
-            status.update(label="Done" if proc.returncode == 0 else "Finished with errors", state="complete")
-        st.rerun()
+# Running the suite costs API credit, so the controls only show when DAISY_STAFF_CONTROLS is on.
+if config.STAFF_CONTROLS:
+    col_run, col_cat, col_limit = st.columns([1, 2, 1], vertical_alignment="bottom")
+    with col_cat:
+        cases = pd.read_csv(config.EVAL_CASES, dtype=str, keep_default_na=False)
+        categories = sorted(cases["category"].unique())
+        selected = st.multiselect("Categories", categories, default=categories)
+    with col_limit:
+        limit = st.number_input("Max cases", min_value=1, max_value=500, value=len(cases))
+    with col_run:
+        if st.button("Run suite", icon=":material/play_arrow:", type="primary", width="stretch"):
+            cmd = [sys.executable, str(config.ROOT / "evals" / "run_evals.py"), "--limit", str(int(limit))]
+            if selected and len(selected) < len(categories):
+                cmd += ["--categories", ",".join(selected)]
+            with st.status("Running evals…", expanded=True) as status:
+                proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
+                                        cwd=str(config.ROOT))
+                log = st.empty()
+                lines = []
+                for line in proc.stdout:
+                    lines.append(line.rstrip())
+                    log.code("\n".join(lines[-20:]))
+                proc.wait()
+                status.update(label="Done" if proc.returncode == 0 else "Finished with errors", state="complete")
+            st.rerun()
 
 # ---------------- Results ----------------
 if not latest.exists():
-    st.info("No results yet. Run the suite above, or `python evals/run_evals.py` from the terminal.")
+    st.info("No results yet. Run `python evals/run_evals.py` from the terminal.", icon=":material/info:")
     st.stop()
 
 data = json.loads(latest.read_text())
@@ -69,21 +72,25 @@ tab_rates, tab_layers, tab_cases, tab_rules = st.tabs(
 # ---------------- Pass rates (by category) ----------------
 with tab_rates:
     by_cat = df.groupby("category")["passed"].agg(["count", "sum"]).rename(columns={"count": "cases", "sum": "passed"})
+    by_cat["failed"] = by_cat["cases"] - by_cat["passed"]
     by_cat["pass_rate"] = by_cat["passed"] / by_cat["cases"]
-    st.bar_chart(by_cat["pass_rate"])
+    st.bar_chart(by_cat[["passed", "failed"]], color=[PASS_COLOR, FAIL_COLOR], y_label="Cases",
+                 alt="Cases passed and failed in each test category")
     st.dataframe(by_cat.style.format({"pass_rate": "{:.0%}"}))
     if len(data.get("history", [])) > 1:
         st.subheader("Pass rate across runs", anchor=False)
         hist = pd.DataFrame(data["history"]).set_index("run_at")
-        st.line_chart(hist["pass_rate"])
+        st.line_chart(hist["pass_rate"], color=PASS_COLOR, y_label="Pass rate",
+                      alt="Pass rate of each test run over time")
 
 # ---------------- Swiss cheese: which defence layer stopped each attack ----------------
 with tab_layers:
     st.caption("Every reply passes five safety checks. The **input guardrail** removes personal details and blocks "
                "attempts to manipulate DAISY. **Retrieval grounding** checks the answer against DBS pages. The "
                "**rules engine** does every calculation. The **compliance agent** reviews each reply. **Code filters** "
-               "remove numbers that can't be traced and any promise of approval. A check is highlighted when it "
-               "stepped in.")
+               "remove numbers that can't be traced and, on eligibility replies, approval wording. A check is "
+               "highlighted when it stepped in, which includes routine work such as holding the calculation until "
+               "details are confirmed, so an attack marked stopped may also have been refused by the model anyway.")
     if "defence" not in df.columns:
         st.info("These results predate layer instrumentation. Run the suite again.", icon=":material/info:")
     else:
@@ -112,8 +119,9 @@ with tab_layers:
 
         acted_counts = {label: int(attacks["defence"].map(lambda d, k=key: bool(d.get(k, {}).get("acted"))).sum())
                         for key, label in defence.LAYERS}
-        st.subheader("Attacks each check stopped", anchor=False)
-        st.bar_chart(pd.Series(acted_counts, name="attacks"), horizontal=True)
+        st.subheader("Attacks where each check stepped in", anchor=False)
+        st.bar_chart(pd.Series(acted_counts, name="attacks"), horizontal=True, color=PASS_COLOR,
+                     alt="Number of attacks in which each safety check stepped in")
 
         verdict_badge = {"hole": ("Got through", "red", ":material/report:"),
                          "prompt_only": ("Stopped by instructions only", "orange", ":material/warning:"),

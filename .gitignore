@@ -2,7 +2,6 @@
 __pycache__/
 *.pyc
 .pytest_cache/
-data/kb.json
 # Flight recorder logs: customer conversations (PII-redacted, but still conversations). Never commit.
 data/conversations/
 # Knowledge repository: commit manifest.json, history.jsonl and text/ (the audit trail);
@@ -14,6 +13,7 @@ data/raw/*
 !data/raw/sources.json
 evals/results/*
 !evals/results/.gitkeep
+!evals/results/latest.json
 .streamlit/secrets.toml
 
 

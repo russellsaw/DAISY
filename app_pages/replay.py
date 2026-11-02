@@ -15,8 +15,8 @@ ICONS = {
 
 st.title("Flight recorder", icon=":material/flight:", anchor=False)
 st.caption("Replay any conversation step by step: what the customer asked, what DAISY understood, which pages it "
-           "used, what it calculated, what the review changed and the final reply. Personal details are removed, "
-           "and logs stay on this computer.")
+           "used, what it calculated, what the review changed and the final reply. NRIC/FIN and card numbers are "
+           "removed; other details, such as phone numbers and emails, aren't. Logs stay on this computer.")
 
 
 @st.cache_data(ttl=10)

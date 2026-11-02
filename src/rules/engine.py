@@ -30,6 +30,8 @@ class EligibilityResult:
     # (value <= threshold, a fraction), "max" (value <= threshold), "min" (value >= threshold) or
     # "rule" (yes/no). The counterfactual search reads these; it never re-implements a rule.
     checks: list[dict] = field(default_factory=list)
+    # What the check took as read because the customer didn't say, so the reply can say so.
+    assumptions: list[str] = field(default_factory=list)
     criteria_version: str = field(default_factory=criteria_version)
     caveat: str = (
         "Indicative only, based on the information you have shared. "
@@ -52,6 +54,15 @@ REQUIRED_FIELDS = {
     "cashline": ["age", "residency", "monthly_income"],
     "credit_card": ["age", "residency", "monthly_income"],
 }
+
+
+def missing_fields(p: CustomerProfile, product: str) -> list[str]:
+    """REQUIRED_FIELDS, plus what MSR needs: someone with an existing housing loan must give its repayment."""
+    missing = p.missing(REQUIRED_FIELDS[product])
+    if (product == "home_loan" and p.existing_housing_loans and p.existing_property_loan_monthly is None
+            and not p.property_loan_monthly()):
+        missing.append("existing_property_loan_monthly")
+    return missing
 
 
 def _mas(key):
@@ -129,9 +140,19 @@ def _unsecured_cap_check(p: CustomerProfile, result: EligibilityResult, requeste
     result.computations["unsecured_borrowing_cap"] = round(cap, 2)
     result.computations["unsecured_cap_months"] = cap_months
     if p.existing_unsecured_balance is None:
+        result.assumptions.append("Existing unsecured balances weren't mentioned, so they aren't counted. "
+                                  "Any such balance would reduce the amount available under the limit.")
+        # The balance is unknown, but a request above the whole limit fails whatever the balance is.
+        if requested:
+            utilisation = requested / cap if cap > 0 else float("inf")
+            within = _check(result, "unsecured_utilisation", round(utilisation, 4), 1.0, "ratio", requested <= cap)
+            if not within:
+                result.reasons.append(f"Requested S${requested:,.0f} exceeds the industry-wide unsecured borrowing "
+                                      f"limit of {cap_months}x monthly income (S${cap:,.0f}).")
+                return False
         result.reasons.append(
             f"Industry-wide unsecured borrowing limit is {cap_months}x monthly income "
-            f"(S${cap:,.0f}); existing unsecured balance not provided, so headroom not checked."
+            f"(S${cap:,.0f}); existing unsecured balance not provided, so remaining headroom not checked."
         )
         return True
     headroom = cap - p.existing_unsecured_balance
@@ -156,8 +177,9 @@ def _unsecured_cap_check(p: CustomerProfile, result: EligibilityResult, requeste
 
 def _simple_unsecured(p: CustomerProfile, product_key: str, requested: float | None = None) -> EligibilityResult:
     prod = PRODUCTS[product_key]
-    result = EligibilityResult(product_key, prod["name"], "need_more_info", sources=[prod["source"]])
-    missing = p.missing(REQUIRED_FIELDS[product_key])
+    result = EligibilityResult(product_key, prod["name"], "need_more_info",
+                               sources=[prod["source"], MAS["unsecured_borrowing_cap_months"]["source"]])
+    missing = missing_fields(p, product_key)
     if missing:
         result.missing_fields = missing
         return result
@@ -179,7 +201,7 @@ def check_cashline(p: CustomerProfile) -> EligibilityResult:
 def check_credit_card(p: CustomerProfile) -> EligibilityResult:
     prod = PRODUCTS["credit_card"]
     result = EligibilityResult("credit_card", prod["name"], "need_more_info", sources=[prod["source"]])
-    missing = p.missing(REQUIRED_FIELDS["credit_card"])
+    missing = missing_fields(p, "credit_card")
     if missing:
         result.missing_fields = missing
         return result
@@ -192,16 +214,30 @@ def check_credit_card(p: CustomerProfile) -> EligibilityResult:
 def check_home_loan(p: CustomerProfile) -> EligibilityResult:
     prod = PRODUCTS["home_loan"]
     result = EligibilityResult("home_loan", prod["name"], "need_more_info", sources=[prod["source"]])
-    missing = p.missing(REQUIRED_FIELDS["home_loan"])
+    missing = missing_fields(p, "home_loan")
     if missing:
         result.missing_fields = missing
         return result
 
     ok = _age_check(p, "home_loan", result)
     ptype = p.property_type if p.property_type in ("hdb", "ec", "private") else "private"
-    n_loans = min(p.existing_housing_loans or 0, 2)
+    existing_property = p.property_loan_monthly()
+    # A stated mortgage repayment means at least one housing loan, even if the count wasn't given.
+    n_loans = min(p.existing_housing_loans if p.existing_housing_loans is not None else int(existing_property > 0), 2)
     existing_debt = p.total_monthly_debt()
     loan = p.home_loan_amount
+
+    # The pages behind the checks that follow: the product, then the rules applied to it.
+    result.sources = [prod["source_private"] if ptype == "private" else prod["source"], MAS["ltv"]["source"],
+                      MAS["msr_cap"]["source"], MAS["stress_rate"]["source"]]
+    if ptype == "hdb":
+        result.sources.append(MAS["hdb_buyer_residency"]["source"])
+    if p.existing_housing_loans is None and not existing_property:
+        result.assumptions.append("Existing housing loans weren't mentioned, so they were treated as none. "
+                                  "Having one would lower the loan-to-value limit.")
+    if not existing_debt and p.existing_monthly_debt is None:
+        result.assumptions.append("Other monthly repayments weren't mentioned, so they were treated as S$0. "
+                                  "Any such repayment would raise the debt ratios.")
 
     # --- HDB buyer residency ---
     allowed = _mas("hdb_buyer_residency")
@@ -268,20 +304,24 @@ def check_home_loan(p: CustomerProfile) -> EligibilityResult:
 
     # --- MSR (HDB / EC only) ---
     if ptype in ("hdb", "ec"):
-        msr = instalment / income
+        # MAS: "all the borrower's property loans", not only the one being applied for.
+        msr = (instalment + existing_property) / income
         cap = _mas("msr_cap")
-        result.computations.update({"msr": round(msr, 4), "msr_cap": cap})
-        if not _check(result, "msr", round(msr, 4), cap, "ratio", msr <= cap):
-            result.reasons.append(f"MSR {msr:.1%} exceeds the {cap:.0%} cap (S${instalment:,.0f} / S${income:,.0f}).")
+        working = (f"(S${instalment:,.0f} + S${existing_property:,.0f} existing property loans) / S${income:,.0f}"
+                   if existing_property else f"S${instalment:,.0f} / S${income:,.0f}")
+        result.computations.update({"msr": round(msr, 5), "msr_cap": cap,
+                                    "existing_property_loan_monthly": existing_property})
+        if not _check(result, "msr", round(msr, 5), cap, "ratio", msr <= cap):
+            result.reasons.append(f"MSR {msr:.1%} exceeds the {cap:.0%} cap ({working}).")
             ok = False
         else:
-            result.reasons.append(f"MSR {msr:.1%} is within the {cap:.0%} cap (S${instalment:,.0f} / S${income:,.0f}).")
+            result.reasons.append(f"MSR {msr:.1%} is within the {cap:.0%} cap ({working}).")
 
     # --- TDSR ---
     tdsr = (instalment + existing_debt) / income
     cap = _mas("tdsr_cap")
-    result.computations.update({"existing_monthly_debt": existing_debt, "tdsr": round(tdsr, 4), "tdsr_cap": cap})
-    if not _check(result, "tdsr", round(tdsr, 4), cap, "ratio", tdsr <= cap):
+    result.computations.update({"existing_monthly_debt": existing_debt, "tdsr": round(tdsr, 5), "tdsr_cap": cap})
+    if not _check(result, "tdsr", round(tdsr, 5), cap, "ratio", tdsr <= cap):
         result.reasons.append(
             f"TDSR {tdsr:.1%} exceeds the {cap:.0%} cap ((S${instalment:,.0f} + S${existing_debt:,.0f}) / S${income:,.0f})."
         )

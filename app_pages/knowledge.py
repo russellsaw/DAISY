@@ -50,7 +50,7 @@ kb = retriever.load()
 
 # ---------------- Summary + refresh controls ----------------
 if not manifest:
-    st.info("The repository is empty. Fetch the sources to build it.", icon=":material/info:")
+    st.info("The repository is empty. Run `python scripts/ingest.py` to build it.", icon=":material/info:")
 else:
     entries = list(manifest.values())
     live = [e for e in entries if e.get("status") != "retired"]
@@ -65,11 +65,13 @@ else:
         st.metric("Index built", (kb.meta.get("built_at") or kb.meta.get("built_on") or "–").replace("T", " ")[:16],
                   border=True)
 
-with st.container(horizontal=True, vertical_alignment="bottom"):
-    if st.button("Re-fetch all sources", icon=":material/cloud_download:", type="primary"):
-        run_ingest([], "Fetching sources and rebuilding the index…")
-    if st.button("Rebuild index from snapshots", icon=":material/build:"):
-        run_ingest(["--build-only"], "Rebuilding the index (no network)…")
+# These overwrite the saved pages and index, so they only show when DAISY_STAFF_CONTROLS is on.
+if config.STAFF_CONTROLS:
+    with st.container(horizontal=True, vertical_alignment="bottom"):
+        if st.button("Re-fetch all sources", icon=":material/cloud_download:", type="primary"):
+            run_ingest([], "Fetching sources and rebuilding the index…")
+        if st.button("Rebuild index from snapshots", icon=":material/build:"):
+            run_ingest(["--build-only"], "Rebuilding the index (no network)…")
 
 if not manifest:
     st.stop()
