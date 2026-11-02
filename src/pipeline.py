@@ -34,13 +34,14 @@ HANDOFF_NOTE = ("This is a prototype, so the summary stays on the Banker page: n
 # 4.65%, and the MAS floor the eligibility check uses. The maths is the same, so the rate is what moves the answer.
 _FLOOR = f"{MAS['stress_rate']['value']:.0%}"
 _PLANNER = f"{DBS_PLANNER_RATE['value']:.2%}"
+_TOOLS = f"[planning tools]({DBS_PLANNER_RATE['source']})"  # a link, so the customer can check the figure
 _STRESS_MENTION = re.compile(r"3\.5\s*%", re.IGNORECASE)
 _STRESS_CONTEXT = re.compile(r"medium[- ]term|calculator|stress|maximum loan", re.IGNORECASE)
-STRESS_NOTE = (f"A note on rates: 3.5% is what the DBS page I have quotes, but DBS's planning tools currently use "
+STRESS_NOTE = (f"A note on rates: 3.5% is what the DBS page I have quotes, but DBS's {_TOOLS} currently use "
                f"{_PLANNER}. MAS sets a floor of {_FLOOR} for residential property loans, and the eligibility check "
                "here uses that floor, so these can give different figures.")
 HOME_CHECK_NOTE = (f"A note on this check: it uses the {_FLOOR} floor MAS sets for residential property loans. DBS's own "
-                   f"planning tools currently assume {_PLANNER}, which can give a lower maximum loan, so a banker's "
+                   f"{_TOOLS} currently assume {_PLANNER}, which can give a lower maximum loan, so a banker's "
                    "figure may differ.")
 
 

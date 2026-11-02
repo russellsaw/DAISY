@@ -151,7 +151,7 @@ MAS = {
 # are told about the gap, because it can make DBS's maximum loan lower than this check suggests.
 DBS_PLANNER_RATE = {
     "value": 0.0465,
-    "source": "https://www.dbs.com.sg/personal/marketplace/property/plan/budgetSummary",
+    "source": "https://www.dbs.com.sg/personal/marketplace/property/plan/selection",
     "evidence": "DBS MyHome planning tools' calculations are currently based on the medium-term interest rate at 4.65% "
                 "and this may differ from your actual home loan eligibility.",
     "checked_on": "2026-11-02",

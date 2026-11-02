@@ -125,7 +125,7 @@ Design decisions worth knowing:
 | DeepEval RAG metrics (76 questions, Claude Sonnet as judge) | **74/76 passed.** Faithfulness 76/76 (mean 0.99), Answer Relevancy 75/76 (0.96), Contextual Recall 18/19 (0.97) | 2026-11-02 |
 | Helpfulness (50 broad questions, rated by a reviewer model; not re-run since) | good answers 27 → 39–40 after fixes, knowledge gaps 12 → 2–4, unsafe 0 | 2026-10-25 |
 | Offline unit tests | 163 passed | 2026-11-02 |
-@@CALC_README@@
+| Engine vs DBS's calculators | Instalments match on 5 of 5 personas. Maximum loans match at the same rate, but DBS's tools use 4.65% and the engine uses the MAS 4% floor: see below | 2026-11-02 |
 
 "Stopped" means the case passed and at least one check acted. It's weaker than "that check is what stopped it": a check
 can act on an attack the model would have refused anyway.
@@ -150,6 +150,10 @@ Plain `pytest` skips `tests/evals/`.
 
 ## Known limits
 
+- **The check uses the MAS floor, and DBS's own tools are stricter.** The engine uses the 4% floor MAS sets. DBS's planning
+  tools currently assume 4.65%, so their maximum loan is lower: S$372,089 for the demo persona, who passes here at S$380,000.
+  At the same rate the engine reproduces DBS's figures, so the maths isn't the difference. Every home-loan result says this.
+  Details: [`docs/CALCULATOR_CHECK.md`](docs/CALCULATOR_CHECK.md).
 - **Not a credit decision.** There's no credit bureau, documents or valuation. Results are indicative.
 - **Engine simplifications** are listed in the assumptions doc, §5. For example: no joint borrowers, the 4% floor rather
   than a package's thereafter rate, and guarantor obligations aren't counted.
@@ -190,5 +194,5 @@ data/sources/              manifest, plain-text snapshots of every page, change 
 evals/                     cases.csv, the runner, the LLM judge, latest results
 tests/                     offline unit tests; tests/evals/ is the DeepEval suite (calls the API)
 scripts/                   ingest, eval case generator, broad-question review, calculator check
-docs/                      assumptions and limitations, calculator check, broad-question review
+docs/                      assumptions and limitations, calculator check and its evidence, broad-question review
 ```
