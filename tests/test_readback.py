@@ -163,6 +163,16 @@ def test_no_other_loans_is_recorded_as_stated(msg, updates, expected):
     assert orchestrator._apply_no_other_loans(updates, msg) == expected
 
 
+def test_home_loan_result_carries_the_rate_note_and_its_numbers_trace(bot):
+    from src.agents.compliance import unsupported_numbers
+    from src.pipeline import HOME_CHECK_NOTE
+    send, state, calls = bot
+    send("details", PERSONA)
+    r = send("yes")
+    assert HOME_CHECK_NOTE in r.response
+    assert unsupported_numbers(HOME_CHECK_NOTE, r.sources_text, r.computations, state.profile.to_dict(), "") == []
+
+
 def test_changed_details_clear_the_old_result(bot):
     send, state, calls = bot
     send("details", PERSONA)

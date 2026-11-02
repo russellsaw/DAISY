@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 from . import config, defence, llm, pii, recorder
 from .agents import compliance, eligibility, handoff, input_guard, orchestrator, product_knowledge, prompts
 from .rules import counterfactual
-from .rules.criteria import MAS
+from .rules.criteria import DBS_PLANNER_RATE, MAS
 from .state import ConversationState
 
 
@@ -30,20 +30,28 @@ HANDOFF_REQUEST_REPLY = (
 HANDOFF_NOTE = ("This is a prototype, so the summary stays on the Banker page: nothing is sent to DBS and no one "
                 "will contact you automatically. To speak to someone now, please contact DBS directly.")
 
-# DBS's calculator page quotes a lower rate than the MAS floor the eligibility check uses. A customer can see both.
+# Three medium-term rates a customer can come across: the saved DBS page's 3.5%, DBS's planning tools' current
+# 4.65%, and the MAS floor the eligibility check uses. The maths is the same, so the rate is what moves the answer.
+_FLOOR = f"{MAS['stress_rate']['value']:.0%}"
+_PLANNER = f"{DBS_PLANNER_RATE['value']:.2%}"
 _STRESS_MENTION = re.compile(r"3\.5\s*%", re.IGNORECASE)
 _STRESS_CONTEXT = re.compile(r"medium[- ]term|calculator|stress|maximum loan", re.IGNORECASE)
-STRESS_NOTE = (f"A note on rates: 3.5% is what DBS's calculator page quotes. MAS sets a floor of "
-               f"{MAS['stress_rate']['value']:.0%} for residential property loans, and the eligibility check here "
-               "uses that floor, so the two can give different figures.")
+STRESS_NOTE = (f"A note on rates: 3.5% is what the DBS page I have quotes, but DBS's planning tools currently use "
+               f"{_PLANNER}. MAS sets a floor of {_FLOOR} for residential property loans, and the eligibility check "
+               "here uses that floor, so these can give different figures.")
+HOME_CHECK_NOTE = (f"A note on this check: it uses the {_FLOOR} floor MAS sets for residential property loans. DBS's own "
+                   f"planning tools currently assume {_PLANNER}, which can give a lower maximum loan, so a banker's "
+                   "figure may differ.")
 
 
-def _code_notes(intent: str, reply: str) -> str:
+def _code_notes(intent: str, reply: str, home_check: bool = False) -> str:
     """Code-written lines that follow a reply: what the customer should know whatever the model wrote."""
     notes = []
     if intent == "handoff_request":
         notes.append(HANDOFF_NOTE)
-    if _STRESS_MENTION.search(reply) and _STRESS_CONTEXT.search(reply):
+    if home_check:
+        notes.append(HOME_CHECK_NOTE)
+    elif _STRESS_MENTION.search(reply) and _STRESS_CONTEXT.search(reply):
         notes.append(STRESS_NOTE)
     return "\n\n".join(notes)
 
@@ -228,7 +236,8 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
     final = reviewed["final"]
     if outcome and final != compliance.HANDOFF_FALLBACK:
         final = final.rstrip() + "\n\n" + outcome
-    notes = _code_notes(intent, final)
+    home_check = bool(out.get("engine_ran")) and any(r["product"] == "home_loan" for r in out.get("results", []))
+    notes = _code_notes(intent, final, home_check) if final != compliance.HANDOFF_FALLBACK else ""
     if notes:
         final = final.rstrip() + "\n\n" + notes
         sources_text = "\n\n".join(x for x in (sources_text, notes) if x)  # so its numbers count as traced

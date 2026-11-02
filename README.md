@@ -1,26 +1,67 @@
 # DAISY — DBS AI, Straight with You
 
-> Multi-agent chatbot for DBS home loans, credit cards and personal loans. The model never produces a
-> number (a rules engine does), every response is reviewed by a compliance agent before the customer
-> sees it, and an adversarial eval suite scores every build.
+A prototype sales assistant for DBS home loans, credit cards and personal loans. It answers from DBS's own pages,
+checks eligibility with a deterministic rules engine, shows customers who don't qualify today what would change
+that, and prepares a summary for a banker. A compliance agent and code filters check replies before the customer
+sees them, and an adversarial eval suite measures the result.
 
-Hackathon MVP. See `PITCH.md` for the proposition and demo arc, and
-**[`docs/ASSUMPTIONS_AND_LIMITATIONS.md`](docs/ASSUMPTIONS_AND_LIMITATIONS.md)** for every assumption,
-limitation, criterion and design decision (the place to look when someone asks "why does it do that?").
+DAISY is an independent prototype: it isn't a DBS service and isn't connected to any DBS system.
+
+- [`PITCH.md`](PITCH.md): the proposition and the demo script.
+- [`docs/ASSUMPTIONS_AND_LIMITATIONS.md`](docs/ASSUMPTIONS_AND_LIMITATIONS.md): every assumption, limitation,
+  criterion and design decision.
+
+## Scope
+
+**In scope:** home loans, credit cards, Personal Loan, Cashline and Balance Transfer.
+
+**Investments and insurance are deliberately out of scope.** The brief's title mentions investments, but its project
+description covers "mortgages, credit cards and unsecured loans", and we followed the description. These are the
+products where the line between information and regulated financial advice is sharpest, so DAISY declines and points
+to the DBS page or a banker. The excluded pages are listed under `OUT_OF_SCOPE` in `src/knowledge/sources.py`, so the
+decision is visible.
 
 ## How DAISY meets the brief
 
 | The brief asks for | Where it is |
 |---|---|
-| Accurate product Q&A from public DBS information | Product Knowledge agent over 73 snapshotted DBS/POSB/MAS/HDB pages (`data/sources/`), a citation on every answer; 20 golden Q&A eval cases, 14 checking a figure quoted from the page |
-| Basic eligibility checks using rule-based logic | `src/rules/engine.py`: deterministic TDSR, MSR, LTV, tenure, income and unsecured-limit checks; every criterion in `src/rules/criteria.py` carries its source URL and quoted evidence. The model never produces a number |
-| Product discovery and comparison | `comparison` intent: side-by-side answers from the cited pages, needs-based shortlists without a recommendation (eval cases qa-004, qa-017, qa-020) |
-| A conversational chat interface | Streamlit app (`streamlit run app.py`), **Assistant** page, with the customer profile and agent timeline shown live |
-| Guardrails aligned to banking guidelines | PII redaction, input guardrail, compliance agent, code filters on numbers and approval wording, advice-boundary handoff to a banker (see *Swiss-cheese defence view* below) |
-| An evaluation framework | `evals/`: 129 cases (golden Q&A, eligibility, adversarial, boundary, scope, guardrail, …), LLM judge, results on the **Trust scorecard** page |
-| Scope: mortgages, cards, unsecured loans | Home loans, credit cards, Personal Loan, Cashline, Balance Transfer. Investments and insurance are out of scope: DAISY declines and points to the DBS page or a banker |
+| Accurate product Q&A from public DBS information | Product Knowledge agent over 73 snapshotted DBS, POSB, MAS and HDB pages (`data/sources/`), with citations; 20 golden Q&A cases, 14 checking a figure quoted from the page |
+| Basic eligibility checks using rule-based logic | `src/rules/engine.py`: deterministic TDSR, MSR, LTV, tenure, age, income and unsecured-limit checks. Each criterion in `src/rules/criteria.py` carries its source URL and quoted evidence |
+| Product discovery and comparison | `comparison` intent: side-by-side answers from the cited pages, and needs-based shortlists without a recommendation (cases qa-004, qa-017, qa-020) |
+| A conversational chat interface | Streamlit app, **Assistant** page |
+| Guardrails aligned to banking guidelines | PII redaction, input guardrail, compliance agent, code filters on numbers and approval wording, advice boundary with a banker summary |
+| An evaluation framework | `evals/` (136 cases and an LLM judge, shown on the **Trust scorecard** page) and `tests/evals/` (DeepEval RAG metrics) |
 
-## Architecture
+## Run it
+
+Tested on Python 3.14 with the exact versions in `requirements.txt`. You need an Anthropic API key. The knowledge base
+(`data/kb.json`) and the latest eval results ship with the project, so nothing needs building first.
+
+```bash
+python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+cp .env.example .env                                   # add your ANTHROPIC_API_KEY
+pytest -q                                              # 163 offline tests, no API key needed
+streamlit run app.py
+```
+
+| Page | For | What it shows |
+|---|---|---|
+| **Assistant** | Customer | The chat, the details DAISY has noted, and which checks acted on each reply |
+| **Banker view** | Bank staff | The summaries DAISY prepares: who the customer is, what they asked, their results, what's still open |
+| **Trust scorecard** | Bank staff | Eval results, including failures; the attacks and which checks acted; the criteria |
+| **Knowledge** | Bank staff | Every saved page, search as the assistant, the evidence for each rule, change history |
+| **Flight recorder** | Bank staff | Replay any conversation event by event |
+
+In this prototype all pages are open to anyone using the app. There's no login, and nothing is sent to DBS.
+
+The buttons that spend API credit or overwrite data (*Run suite*, *Re-fetch all sources*) are hidden unless you set
+`DAISY_STAFF_CONTROLS=1` in `.env`.
+
+**Try this:** *"I'm 32, a PR earning $7k a month. Can I get a home loan for a $550k HDB flat? I'd borrow $380k over 25
+years and have no other loans."* Reply yes to the readback, then ask what happens at $400k.
+
+## How it works
 
 ```
 customer message
@@ -29,213 +70,125 @@ customer message
 PII guard ─── strips NRIC/FIN and card numbers before any model sees the message
    │
    ▼
-Input guardrail ─── code patterns + LLM classifier (in parallel with the orchestrator):
-   │                block injection / prompt extraction / role-play / fake authority → code-written reply;
-   │                escalate a distressed customer to a banker; otherwise allow
+Input guardrail ─── code patterns + LLM classifier, in parallel with the orchestrator:
+   │                block injection / prompt extraction / role-play / fake authority with a code-written reply;
+   │                flag a distressed customer for a banker; otherwise allow
    ▼
-Orchestrator ─── intent, profile facts, commitments (+ customer's words for end dates), readback replies
+Orchestrator ─── intent, profile facts, commitments, replies to a readback
    │
-   ├─ product_qa / comparison ──▶ Product Knowledge agent (BM25 over 73 DBS/POSB/MAS/HDB sources, cites [n])
+   ├─ product_qa / comparison ──▶ Product Knowledge agent: BM25 over the saved pages, cites [n]
    ├─ eligibility ──────────────▶ Eligibility agent:
    │                                1. details missing  → ask (no engine)
    │                                2. not confirmed    → code-written readback (no engine)
-   │                                3. confirmed        → rules engine → counterfactual search ("not now, but when")
-   ├─ advice_seeking ───────────▶ Boundary response + Handoff agent (lead card, built in parallel)
-   ├─ handoff_request ──────────▶ Handoff reply + lead card
+   │                                3. confirmed        → rules engine → counterfactual search
+   ├─ advice_seeking ───────────▶ No recommendation; cited facts + banker summary
+   ├─ handoff_request ──────────▶ Handoff reply + banker summary
    └─ out_of_scope / chit_chat ─▶ short replies
    │
    ▼
 Compliance agent (LLM) ─── approve / revise / handoff on advice boundary, grounding, approval language,
-   │                        scope, fair dealing, prompt injection
-Code filters ─── every number must trace to engine / customer / cited page; approval words banned on
-   │             eligibility replies (one rewrite, else handoff)
-Code-written outcome lines ─── "not now, but when" paths + the fixed outcome sentence, appended after review
+   │                        scope, fair dealing, prompt injection (code-written templates skip this step)
+Code filters ─── untraceable numbers rewritten or replaced; on eligibility replies, approval words too
+Code-written lines ─── "not now, but when" outcomes and fixed notes, appended after review
    │
    ▼
-response + sources + agent trace + defence-layer record  →  Streamlit chat
-every event of the turn  →  flight-recorder log (data/conversations/)
+reply + sources + which checks acted  →  chat       every event of the turn  →  flight recorder
 ```
 
-```
-app.py                     entry point: page config, logo, top navigation (st.navigation)
-app_pages/chat.py          Assistant: chat, live agent timeline, profile side panel, lead card
-app_pages/evals.py         Trust scorecard: pass rates, drill-down, run button, rules-verification status
-app_pages/knowledge.py     Knowledge repository: documents, "search as the assistant", rule evidence, change history
-app_pages/replay.py        Flight recorder: pick a conversation or eval case, step through every event
-.streamlit/config.toml     DBS colours (red #FF3333, black #000000), light only; static/ holds the DAISY logo
-src/
-  config.py                models, paths, settings (.env)
-  llm.py                   Claude API wrapper; structured() uses structured outputs, effort per call,
-                           server-side refusal fallbacks on Sonnet; a final refusal becomes a banker handoff
-  state.py                 CustomerProfile + ConversationState
-  pii.py                   strips NRIC/FIN and card numbers from every message before any agent sees it
-  agents/input_guard.py    input guardrail: blocks injection-type attacks, escalates distressed customers
-  defence.py               Swiss-cheese record: which defence layer acted on each response
-  recorder.py              flight recorder: per-conversation JSONL event log + readers
-  commitments.py           turns a customer's stated end date into a date — in code, from their own words
-  pipeline.py              run_turn(): orchestrator → agent → compliance
-  agents/                  orchestrator, product_knowledge, eligibility, compliance, handoff, prompts
-  rules/criteria.py        every eligibility number, each with verified flag, source URL and quoted evidence
-  rules/engine.py          deterministic checks: age, income, TDSR, MSR, LTV, tenure, unsecured cap
-  rules/counterfactual.py  "not now, but when": counterfactual search over the same engine
-  knowledge/sources.py     allow-list: ~65 DBS/POSB/MAS/HDB pages and PDFs (+ explicit out-of-scope list)
-  knowledge/ingest.py      fetch → snapshot (data/sources/) → strip boilerplate → chunk → data/kb.json
-  knowledge/retriever.py   BM25 retrieval (no embeddings API needed)
-evals/
-  cases.csv                the suite: golden_qa, eligibility, boundary, adversarial, scope, handoff
-  run_evals.py             runs cases through the live pipeline, writes results/latest.json
-  judge.py                 LLM-as-judge for behavioural checks
-tests/                     118 offline unit tests: engine, guards, counterfactual, readback, defence, recorder,
-                           input guard, retrieval
-scripts/ingest.py          build the knowledge base
-scripts/write_starter_cases.py   regenerates the starter cases.csv
-scripts/ask_questions.py   asks a question list (evals/broad_questions.csv), reviews every answer, writes a report
-scripts/calculator_check.py  prints the engine's numbers for the DBS-calculator comparison (docs/CALCULATOR_CHECK.md)
-```
+Design decisions worth knowing:
 
-## Setup
+- **Eligibility numbers come from the engine, not the model.** The model narrates what the engine computed. On every
+  reply, a code filter checks that numbers trace to the engine, the customer or a retrieved page. It checks every
+  percentage and amount of money; bare whole numbers below 32 are exempt, because they're usually list markers, ages or
+  years. It checks that a number exists in those places, not that it's attached to the right fact, which is the
+  compliance agent's job.
+- **Read back before running.** The engine runs only on details the customer has confirmed. Anything it would treat as
+  none because the customer didn't mention it is shown in the readback, and repeated with the result.
+- **Not now, but when.** When the engine says no, `src/rules/counterfactual.py` runs the same forward engine on changed
+  profiles to find the smallest realistic change. Only a debt with a stated end date gets a date, computed in code from
+  the customer's own words. Everything else is a labelled "what if". A change has to clear a failing ratio by 3 points
+  to count as a path.
+- **Information, not advice.** `advice_seeking` is its own intent. DAISY gives the facts and a banker summary, and never
+  says which product to pick or where rates are going.
+- **Honest handoff.** DAISY collects no contact details, so it doesn't promise a call. It prepares the summary and a
+  code-written note says what happens next.
+- **Keyword retrieval on purpose.** BM25 over 73 pages is fast and easy to debug, and needs no second API. Its limit is
+  paraphrased questions: see the known limits below.
+- **Everything is traceable.** Each reply records which of five checks acted (`src/defence.py`). The flight recorder
+  (`src/recorder.py`) logs every turn to `data/conversations/`, with NRIC/FIN and card numbers removed.
+
+## Results
+
+| Measure | Result | Date |
+|---|---|---|
+| Eval suite (`evals/`) | **136/136 passed** in one run. 20 attacks: 20 stopped, 0 got through. No ordinary question was blocked | 2026-11-02 |
+| DeepEval RAG metrics (76 questions, Claude Sonnet as judge) | **74/76 passed.** Faithfulness 76/76 (mean 0.99), Answer Relevancy 75/76 (0.96), Contextual Recall 18/19 (0.97) | 2026-11-02 |
+| Helpfulness (50 broad questions, rated by a reviewer model; not re-run since) | good answers 27 → 39–40 after fixes, knowledge gaps 12 → 2–4, unsafe 0 | 2026-10-25 |
+| Offline unit tests | 163 passed | 2026-11-02 |
+@@CALC_README@@
+
+"Stopped" means the case passed and at least one check acted. It's weaker than "that check is what stopped it": a check
+can act on an attack the model would have refused anyway.
+
+The two DeepEval failures, which we left in rather than lowering a threshold: b26 (the judge marked down the as-of date
+and disclaimers that DAISY's rules require), and gen-07 (DAISY gave the correct steps for the mobile app when the expected
+answer was the web route).
+
+Model-written replies vary between runs, so treat one or two eval cases either way as noise. See
+[`docs/ASSUMPTIONS_AND_LIMITATIONS.md`](docs/ASSUMPTIONS_AND_LIMITATIONS.md) §13 for how the suite works and what it can't tell you.
 
 ```bash
-python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-cp .env.example .env                                   # add your ANTHROPIC_API_KEY
-python scripts/ingest.py                               # fetches the sources and builds data/kb.json
-                                                       # (--build-only rebuilds from saved snapshots, offline)
-pytest -q                                              # rules engine tests, no API needed
-streamlit run app.py
+python evals/run_evals.py --workers 4                  # the eval suite (calls the API)
+
+pip install -r requirements-dev.txt                    # DeepEval, not needed to run the app
+deepeval test run tests/evals/test_daisy.py --num-processes 4 --identifier my-run
+python tests/evals/summarize.py
 ```
 
-If a page blocks scripted fetches, save it from your browser into `data/raw/` (HTML or PDF),
-describe it in `data/raw/sources.json` (`{"file.pdf": {"url": "...", "title": "...", "publisher": "DBS",
-"products": ["home_loan"]}}`), and re-run ingest.
+Both call the API. A DeepEval run takes about 9 minutes and costs about US$5 in judge calls, plus DAISY's own calls.
+Plain `pytest` skips `tests/evals/`.
 
-## The knowledge repository
+## Known limits
 
-Everything the assistant can cite is kept in `data/sources/`, so any answer can be traced back to
-the exact text it was grounded on:
+- **Not a credit decision.** There's no credit bureau, documents or valuation. Results are indicative.
+- **Engine simplifications** are listed in the assumptions doc, §5. For example: no joint borrowers, the 4% floor rather
+  than a package's thereafter rate, and guarantor obligations aren't counted.
+- **Retrieval misses some paraphrased questions.** "Can a foreigner buy an HDB flat?" doesn't reach the page that answers
+  it, so DAISY says it doesn't have a clear answer.
+- **Some DBS pages aren't captured** because they only render in a browser: home-loan fees and documents, and the card
+  late-fee table.
+- **PII:** phone numbers and emails aren't redacted. Logs are local files with no encryption or retention policy.
+- **Latency:** about 10 s per turn at the median and 16 s at the 90th percentile in the last eval run. Several model calls run in sequence on each turn.
+- **Criteria:** 20 of 21 were checked against the cited page on 2026-10-20 and carry the evidence. The HDB buyer rule was read from the live page, but the saved copy holds only menus, so it can't be re-read offline. The home-loan minimum age is unverified because no DBS page states it.
+- **Not production-ready:** no authentication, rate limiting or monitoring.
 
-| Path | What it holds |
-|---|---|
-| `manifest.json` | one entry per document: URL, publisher, products, status, characters, sha256, last fetch, last change |
-| `text/<id>.md` | the extracted text the model reads, with a provenance header. Plain text — diff it in git |
-| `raw/<id>.html\|pdf` | the bytes as fetched, for audit (git-ignored) |
-| `history.jsonl` | every add / change / failed fetch / retirement, timestamped |
+## Refreshing the knowledge base
 
-A failed fetch never wipes a good snapshot: the document is marked `stale` and its last good text
-stays in the index. Re-run `python scripts/ingest.py` before demo day and check `history.jsonl`
-(or the Knowledge page's *Change history* tab): a `changed` row means a DBS/MAS page was edited, and
-any rate, fee or criterion citing it needs re-checking.
-
-Things learned from the source audit (details in `src/knowledge/sources.py`):
-- DBS landing pages are rendered by JavaScript, so a script only gets menus. The product detail
-  pages (e.g. `/personal/loans/instant-cash/personal-loan`) are server-rendered and carry the criteria.
-- DBS returns HTTP 200 for URLs that don't exist. Check `chars`/`status` in the manifest; `thin`
-  means under 800 characters.
-- The brief's combined Personal Loan / Card / Cashline T&Cs PDF link is dead (returns HTML).
-
-Run the evals from the terminal (`python evals/run_evals.py`, parallel with `--workers`) or from the
-Trust scorecard page.
-
-## Before demo day — the checklist that matters
-
-1. **Re-verify the criteria** in `src/rules/criteria.py`. 20 of 21 were checked against the cited
-   MAS/HDB/DBS page on 2026-10-20 and carry the quoted evidence; the home-loan minimum age is still
-   unverified (no DBS page states it). Re-run ingest first and re-check anything whose source changed.
-2. **Validate the engine against DBS's own online calculators**: fill in `docs/CALCULATOR_CHECK.md` (five
-   personas, engine side done; DBS side by hand). It's a slide.
-3. ~~Fill the `must_contain` fields for the `golden_qa` cases.~~ Done 2026-10-29: 20 golden cases, 14 with
-   a fact quoted from a DBS/MAS page, the rest judged for behaviour (including a comparison and a
-   needs-based discovery question).
-4. **Grow the suite** (129 cases now). Every failure you find during rehearsal becomes a case.
-5. **Freeze the code 24h before.** Rehearse the live red-team with someone who hasn't seen the bot.
-
-## Design decisions worth saying out loud
-
-- **The LLM never produces a number.** Eligibility comes from `rules/engine.py`; the model narrates.
-  The compliance agent additionally flags any number in a draft that doesn't trace to a source,
-  the engine, or the customer's own words.
-- **Information, not advice.** `advice_seeking` is a first-class intent. The assistant explains products
-  and criteria; it never says which product to pick or where rates are going (FAA / Fair Dealing).
-- **Scope is a compliance feature.** Investments, insurance and endowment are deliberately excluded —
-  `knowledge/sources.py` lists them under `OUT_OF_SCOPE` so the decision is visible.
-- **Keyword retrieval on purpose.** BM25 over a few dozen pages is fast, debuggable and needs no second
-  API. Swap for embeddings only if recall is measurably a problem.
-- **Trust is measured.** The eval suite has adversarial cases (hallucination bait, approval pressure,
-  prompt injection, PII fishing, competitor disparagement). The scorecard shows failures, not just wins.
-
-## "Not now, but when" — counterfactual eligibility
-
-When the engine says *not eligible*, `src/rules/counterfactual.py` searches for the smallest realistic
-change that would clear today's criteria — by running the **same forward engine** on modified copies of
-the profile (no inverse logic anywhere).
-
-- **Dated levers** remove a commitment the customer stated *with* an end date. Only these carry a date,
-  and it is exactly the stated end date. Dates are computed by code (`src/commitments.py`) and only from
-  a verbatim quote of the customer that contains a time expression; "assume it's paid off" never dates.
-- **What-if levers** (income higher, smaller loan, other tenure, undated debt cleared) are never dated.
-- A lever is a **path** only if every ratio failing today clears by `CF_MARGIN` (3 points, `src/config.py`);
-  otherwise it is **borderline**. Single levers first, pairs only if none works, never three. No path →
-  banker handoff ("no clear path on today's criteria").
-- The outcome lines and the fixed sentence are written by code and appended **after** compliance review;
-  the LLM only explains the binding rule and the levers. Approval vocabulary is hard-banned in code, and
-  every number in every reply must trace to the engine, the customer or a cited page (output filter).
-- Every result carries `criteria_version`, so a criteria change visibly invalidates stored paths.
-
-Scenario 2 note: for an HDB flat the binding rule is MSR, which counts only property loans, so a S$600
-car loan can't block the demo persona's HDB loan (TDSR 37.2%). The dated-path demo therefore uses the same
-person buying a S$1M condo with S$700k over 30 years: TDSR 56.3% today, 47.7% once the car loan ends.
-
-## Swiss-cheese defence view
-
-Every response records which of five defence layers acted on it (`src/defence.py`): **input guardrail**
-(PII, injection, escalation), **retrieval grounding**, **rules engine**, **compliance agent**, **code filters**
-(numbers and wording out). The
-chat shows the slices under each reply; the Trust scorecard's *Defence layers* tab shows, for every
-adversarial eval case, the four slices with the ones that acted highlighted, and surfaces any **hole
-alignment** (an attack that got through every layer) at the top, followed by attacks held only by the
-model's own instructions. Definitions and the first run's findings are in
-[`docs/ASSUMPTIONS_AND_LIMITATIONS.md`](docs/ASSUMPTIONS_AND_LIMITATIONS.md) §8.
-
-## DeepEval build loop
-
-`tests/evals/` scores DAISY's product Q&A as a RAG chatbot with [DeepEval](https://www.deepeval.com), and is
-the ground truth for what to change next: run it, read the lowest metric's reasons and the failing goldens'
-flight-recorder logs, make the smallest app change, re-run (plus `python evals/run_evals.py` as the
-regression gate). Never lower a threshold or drop a failing golden.
+Optional. It re-crawls the sources and moves their "as of" dates.
 
 ```bash
-pip install -r requirements-dev.txt                    # DeepEval; not needed to run the app
-deepeval test run tests/evals/test_daisy.py --num-processes 4 --identifier round-2
-python tests/evals/summarize.py                        # per-metric stats + every failure's reason
+python scripts/ingest.py                               # fetch and rebuild
+python scripts/ingest.py --build-only                  # rebuild from the saved snapshots, offline
 ```
 
-- Goldens: 57 from `evals/cases.csv` (golden Q&A + product broad questions) and 19 synthesised from DBS page
-  chunks by `tests/evals/generate_goldens.py` (`goldens_generated.json`, read and vetted before use).
-- Metrics (Claude Sonnet 5.5 as judge): Faithfulness ≥ 0.8, Answer Relevancy ≥ 0.7, Contextual Recall ≥ 0.7
-  (goldens with an expected answer). Contextual Relevancy is left out on purpose: see `test_daisy.py`.
-- Local only (no Confident AI), telemetry off (`DEEPEVAL_TELEMETRY_OPT_OUT=1`). A full run takes ~9 minutes
-  and about US$5 of judge calls, plus DAISY's own calls. Plain `pytest` skips `tests/evals/`.
+A failed fetch never wipes a good snapshot. A `changed` row in `data/sources/history.jsonl` means a page was edited, so
+any rate, fee or criterion citing it needs re-checking. If a page blocks scripted fetches, save it from a browser into
+`data/raw/` and describe it in `data/raw/sources.json`.
 
-## Flight recorder
+## Project layout
 
-Every turn is appended to `data/conversations/<conversation_id>.jsonl` (git-ignored; eval runs write
-`data/conversations/evals/<run>/<case_id>.jsonl`): the customer's message, what the orchestrator extracted,
-retrieval hits with URLs, the rules-engine input and output, **every counterfactual engine run**, the draft,
-the compliance verdict and reasons, and the final reply, with timings. The **Flight recorder** page replays
-any conversation (or eval case) event by event. Identifiers are redacted before agents see the message and
-again on every log line. Details and limits: `docs/ASSUMPTIONS_AND_LIMITATIONS.md` §9.
-
-## 50 broad questions ("retraining")
-
-DAISY isn't retrained like a model: it's a fixed Claude model answering from DBS's pages under coded rules.
-Improving it means asking real questions, fixing what the answers expose (knowledge, retrieval, routing,
-wording), and locking the questions in as regression tests. `scripts/ask_questions.py` asks 50 broad
-questions and has a reviewer model rate every answer; the first round took DAISY from 27 to 39–40 good
-answers (knowledge gaps 12 → 2–4, wrong handling 1 → 0, unsafe 0). Full write-up, every answer, and what's
-still weak: [`docs/broad_questions/README.md`](docs/broad_questions/README.md).
-
-## Demo persona
-
-32-year-old PR, S$7,000/month, first HDB purchase at S$550k, S$380k home loan over 25 years.
-Passes TDSR and MSR. (At S$400k the stressed instalment is S$2,111 — 30.2% of income — which fails
-MSR by a hair. That's a good live moment: nudge the loan amount and watch the engine flip.)
+```
+app.py                     entry point and navigation
+app_pages/                 chat (Assistant), banker, evals (Trust scorecard), knowledge, replay (Flight recorder)
+src/pipeline.py            run_turn(): one message in, one reviewed reply out
+src/agents/                orchestrator, input guard, product knowledge, eligibility, compliance, handoff, prompts
+src/rules/                 criteria (the numbers and their evidence), engine, counterfactual search
+src/knowledge/             source list, ingest, BM25 retriever
+src/pii.py, defence.py, recorder.py, commitments.py, state.py, llm.py, config.py
+data/kb.json               the search index
+data/sources/              manifest, plain-text snapshots of every page, change history
+evals/                     cases.csv, the runner, the LLM judge, latest results
+tests/                     offline unit tests; tests/evals/ is the DeepEval suite (calls the API)
+scripts/                   ingest, eval case generator, broad-question review, calculator check
+docs/                      assumptions and limitations, calculator check, broad-question review
+```

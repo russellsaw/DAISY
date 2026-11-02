@@ -173,6 +173,13 @@ def test_reviewer_is_told_about_text_appended_after_it(pipeline_stubs, monkeypat
 def test_stress_rate_note_only_when_the_calculator_rate_is_quoted():
     from src.pipeline import STRESS_NOTE, _code_notes
     assert _code_notes("product_qa", "DBS uses a medium-term 3.5% interest rate [1].") == STRESS_NOTE
-    assert "4%" in STRESS_NOTE
+    assert "4%" in STRESS_NOTE and "4.65%" in STRESS_NOTE
     assert _code_notes("product_qa", "Earn 3.5% cashback on dining [1].") == ""
     assert _code_notes("product_qa", "The fee is S$120 [1].") == ""
+
+
+def test_home_loan_result_says_which_rate_it_used():
+    from src.pipeline import HOME_CHECK_NOTE, _code_notes
+    assert _code_notes("eligibility", "MSR is 28.7%.", home_check=True) == HOME_CHECK_NOTE
+    assert "4%" in HOME_CHECK_NOTE and "4.65%" in HOME_CHECK_NOTE
+    assert _code_notes("eligibility", "MSR is 28.7%.") == ""

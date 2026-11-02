@@ -8,8 +8,8 @@ No API calls. For each persona it runs the same forward engine DAISY uses (src/r
   - the monthly instalment at the stress rate (compare with DBS's Home Loan Repayment Calculator at that rate)
   - the largest loan the engine passes, found by searching the loan amount with the forward engine
     (compare with the maximum loan from DBS's MyHome Planner)
-The maximum loan is also shown at a 3.5% stress rate, because DBS's calculator page still says it uses
-"a medium-term 3.5% interest rate" while MAS's rule (and the engine) use a 4% floor.
+The maximum loan is also shown at 4.65%, the medium-term rate DBS's planning tools currently use, while MAS's
+rule (and the engine) use a 4% floor.
 """
 from __future__ import annotations
 
@@ -72,7 +72,7 @@ def money(x: float | None) -> str:
 def main() -> None:
     stress = MAS["stress_rate"]["value"]
     print(f"| # | Persona | Status | Instalment at {stress:.0%} | MSR | TDSR | LTV cap | Max loan at {stress:.0%} "
-          f"| Max loan at 3.5% |")
+          f"| Max loan at 4.65% |")
     print("|---|---|---|---|---|---|---|---|---|")
     for pid, label, fields in PERSONAS:
         r = engine.check_home_loan(CustomerProfile(**fields))
@@ -81,7 +81,7 @@ def main() -> None:
         tdsr = f"{c['tdsr']:.1%}" if "tdsr" in c else "n/a"
         print(f"| {pid} | {label} | {r.status} | S${c.get('stressed_monthly_instalment', 0):,.2f} | {msr} | {tdsr} "
               f"| {c['ltv_limit']:.0%} ({money(c['max_loan_by_ltv'])}) | {money(max_loan(fields))} "
-              f"| {money(max_loan_at(0.035, fields))} |")
+              f"| {money(max_loan_at(0.0465, fields))} |")
     print("\nInputs:")
     for pid, _, f in PERSONAS:
         debt = CustomerProfile(**f).total_monthly_debt()
