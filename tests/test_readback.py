@@ -53,11 +53,11 @@ def bot(monkeypatch):
     script = {}
 
     def fake_route(st, msg):
-        updates, reply = script.pop("next")
+        updates, reply, products = script.pop("next")
         changed = st.profile.update(updates or {})
         return {
             "intent": "eligibility",
-            "products": ["home_loan"],
+            "products": products or ["home_loan"],
             "injection_suspected": False,
             "readback_reply": reply,
             "profile_changed": changed,
@@ -65,8 +65,8 @@ def bot(monkeypatch):
 
     monkeypatch.setattr(orchestrator, "route", fake_route)
 
-    def send(msg, updates=None, reply="not_a_reply"):
-        script["next"] = (updates, reply)
+    def send(msg, updates=None, reply="not_a_reply", products=None):
+        script["next"] = (updates, reply, products)
         return run_turn(state, msg)
 
     return send, state, calls
@@ -288,6 +288,25 @@ def test_home_loan_check_asks_about_employment_instead_of_assuming_a_salary(bot)
     assert r.readback and "Self-employed" in r.response
 
 
+def test_a_home_loan_asked_with_a_card_is_not_checked_on_an_assumed_salary(bot):
+    """Both named, employment not given: the card can be checked now, the home loan only once employment is known.
+    The engine alone would run the home loan counting income in full, overstating a self-employed customer."""
+    send, state, calls = bot
+    both = ["home_loan", "credit_card"]
+    r = send("A home loan and a card?", {k: v for k, v in PERSONA.items() if k != "employment_type"}, products=both)
+    assert r.readback and calls["engine"] == 0
+    assert "can't include the DBS Home Loan in this check yet. It also needs: employment." in r.response
+    r = send("yes", reply="confirm", products=both)
+    assert r.engine_ran
+    by_product = {e["product"]: e for e in r.eligibility}
+    assert by_product["home_loan"]["status"] == "need_more_info"
+    assert by_product["home_loan"]["missing_fields"] == ["employment_type"]
+    assert by_product["home_loan"]["computations"] == {}  # not run at all, so no figure to show
+    assert by_product["credit_card"]["status"] == "eligible"
+    r = send("I'm salaried", {"employment_type": "salaried"}, products=both)
+    assert r.readback and "can't include" not in r.response  # now complete: read back again, then both run
+
+
 def test_debt_without_an_amount_is_asked_about_then_counted(bot):
     send, state, calls = bot
     r = send("I also have a car loan", {**PERSONA, "commitments": [{"kind": "car loan"}]})
@@ -308,3 +327,42 @@ def test_a_total_repayment_covers_debts_without_an_amount():
     p = CustomerProfile(commitments_missing_amount=["car loan"])
     assert "commitments" in p.update({"existing_monthly_debt": 800})
     assert p.commitments_missing_amount == []
+
+
+@pytest.mark.parametrize(
+    "msg,expected",
+    [
+        ("I'm 40, a citizen, salaried, $10k a month. Can I get a loan for a $1M condo?", 10000),  # rb-008
+        ("I'm 32, a PR earning $7,000 a month", 7000),
+        ("my income is about S$120k a year", 10000),
+        ("self-employed, making $8.5k monthly", 8500),
+        ("I have a car loan of $600 a month", None),  # a repayment, not income
+        ("what if I earned $12k a month?", None),  # a hypothetical
+    ],
+)
+def test_a_stated_income_fills_the_gap(msg, expected):
+    got = orchestrator._apply_stated_income({}, msg, CustomerProfile()).get("monthly_income")
+    assert got == expected
+
+
+def test_a_stated_income_never_overrides_the_model_or_the_profile():
+    assert orchestrator._apply_stated_income({"monthly_income": 9000}, "earning $7k a month", CustomerProfile()) == {
+        "monthly_income": 9000
+    }
+    assert orchestrator._apply_stated_income({}, "earning $7k a month", CustomerProfile(monthly_income=6500)) == {}
+
+
+@pytest.mark.parametrize(
+    "msg,kept",
+    [
+        ("I'm 40, a citizen, salaried, $10k a month. Can I get a loan for a $1M condo?", False),  # rb-008: never said
+        ("I have no other loans", True),
+        ("nope, nothing else", True),
+        ("my card balance is $0", True),
+        ("it's my first home", True),
+    ],
+)
+def test_a_zero_debt_needs_the_customer_to_say_so(msg, kept):
+    zeros = {"existing_monthly_debt": 0, "existing_housing_loans": 0, "existing_unsecured_balance": 0.0, "age": 40}
+    out = orchestrator._drop_unstated_zeros(zeros, msg)
+    assert out == (zeros if kept else {"age": 40})

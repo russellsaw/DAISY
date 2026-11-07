@@ -16,7 +16,8 @@ data/conversations/evals/<run>/<case_id>.jsonl). Every turn appends, in time ord
   final           the reply the customer saw, sources, timings
 
 Everything written passes through the PII redactor once more, so an NRIC or card number the redactor recognises
-can't reach disk even if some agent detail carried one. Phone numbers and emails aren't redacted. Logs are local, git-ignored, and contain customer
+can't reach disk even if some agent detail carried one (it also removes Singapore phone numbers and emails).
+Logs are local, git-ignored, and contain customer
 conversations: treat them as such.
 """
 
@@ -138,7 +139,7 @@ def list_conversations(folder: Path) -> list[dict]:
     for path in sorted(Path(folder).glob("*.jsonl"), key=lambda p: p.stat().st_mtime, reverse=True):
         try:
             events = load(path)
-        except OSError, json.JSONDecodeError:
+        except (OSError, json.JSONDecodeError):
             continue
         first = next((e for e in events if e["type"] == "user_turn"), None)
         out.append(
@@ -159,7 +160,7 @@ def latest_leads(folder: Path) -> list[dict]:
     for path in sorted(Path(folder).glob("*.jsonl"), key=lambda p: p.stat().st_mtime, reverse=True):
         try:
             events = load(path)
-        except OSError, json.JSONDecodeError:
+        except (OSError, json.JSONDecodeError):
             continue
         cards = [e["data"] for e in events if e["type"] == "handoff" and e.get("data")]
         if cards:

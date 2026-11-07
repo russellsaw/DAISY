@@ -2,7 +2,7 @@
 
 Keyword retrieval is deliberately simple: no embeddings API, no vector DB,
 nothing to break at 3am. Tuned after the 50-question review (2026-10-25):
-  - light stemming, so "cards"/"card" and "application"/"apply" match;
+  - light stemming, so "cards"/"card", "application"/"apply" and "reprice"/"repricing" match;
   - page titles count twice, so "Cashline" finds the Cashline page;
   - the product the orchestrator names BOOSTS matching chunks instead of filtering
     the rest out (a balance-transfer question tagged "credit card" lost the
@@ -83,7 +83,7 @@ _PRODUCT_BOOST = 1.25
 SAME_DOC_DECAY = 0.8
 
 
-def _stem(token: str) -> str:
+def _strip_suffix(token: str) -> str:
     if token in _NORMAL:
         return _NORMAL[token]
     if len(token) <= 3 or not token.isalpha():
@@ -95,6 +95,14 @@ def _stem(token: str) -> str:
         if token.endswith(suffix) and len(token) - len(suffix) >= 3 and not token.endswith(("ss", "us", "is")):
             return _NORMAL.get(token[: -len(suffix)] + keep, token[: -len(suffix)] + keep)
     return token
+
+
+def _stem(token: str) -> str:
+    stem = _strip_suffix(token)
+    # "-ing"/"-ed" take the final "e" with them (repricing -> repric), so the base word drops its "e" too:
+    # reprice/repricing, waive/waived and charge/charging then meet. Words of 4 letters or fewer keep it
+    # (fee, rate, home, free), which also keeps "note" apart from "not" and "care" from "car".
+    return stem[:-1] if len(stem) > 4 and stem.endswith("e") and stem.isalpha() else stem
 
 
 def tokenize(text: str) -> list[str]:
@@ -146,7 +154,8 @@ class KnowledgeBase:
 
 @lru_cache(maxsize=1)
 def _load(mtime: float) -> KnowledgeBase:  # keyed on mtime so a re-ingest is picked up without restart
-    data = json.loads(config.KB_PATH.read_text())
+    # ingest writes kb.json to a temp file and swaps it in, so this never reads half a rebuild.
+    data = json.loads(config.KB_PATH.read_text(encoding="utf-8"))
     return KnowledgeBase(data.get("chunks", []), {k: v for k, v in data.items() if k != "chunks"})
 
 

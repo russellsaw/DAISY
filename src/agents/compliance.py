@@ -87,6 +87,31 @@ HANDOFF_FALLBACK = (
 )
 
 
+APPENDED_LABEL = (
+    "TEXT THE SYSTEM APPENDS AFTER THE REPLY (written by code from verified criteria; not part of the draft and not "
+    "under review: don't flag it or repeat it):"
+)
+_SAME_START = 48  # characters: a line starting like a code-written line is a copy of it, even if its end was reworded
+_LABEL = re.compile(r"^(.{3,40}?:)\s")  # "A note on this check: ...": a label before a colon near the start
+
+
+def _without_appended(text: str, appended: str) -> str:
+    """A rewrite can copy in the code-written text the reviewer was shown, sometimes reworded, sometimes with the label
+    that introduced it. The pipeline appends that text itself, so the customer would read it twice, or read our prompt.
+    Lines that start like a code-written line are taken out, and the label with them."""
+    starts = {line.strip()[:_SAME_START] for line in appended.splitlines() if len(line.strip()) >= _SAME_START}
+    # A code-written line that opens with a label ("A note on this check:", "Next step:") owns that label: a rewrite
+    # once paraphrased the rate note under it, so the customer read two notes that said different things.
+    labels = tuple({m[1] for line in appended.splitlines() if (m := _LABEL.match(line.strip()))})
+
+    def copied(line: str) -> bool:
+        line = line.strip()
+        return (len(line) >= _SAME_START and line[:_SAME_START] in starts) or bool(labels and line.startswith(labels))
+
+    kept = [line for line in text.replace(APPENDED_LABEL, "").splitlines() if not copied(line)]
+    return re.sub(r"\n{3,}", "\n\n", "\n".join(kept)).strip()
+
+
 def _mentions(text: str) -> set[tuple[str, bool]]:
     """(number, is_percentage) pairs, commas stripped."""
     text = text or ""
@@ -166,7 +191,7 @@ def review(
         f"Engine computations available:\n{computations or '(none)'}\n\n"
         f"DRAFT RESPONSE:\n{draft}"
         + (
-            f"\n\nTEXT THE SYSTEM APPENDS AFTER THE REPLY (fixed, not part of the draft, don't repeat it):\n{appended}"
+            f"\n\n{APPENDED_LABEL}\n{appended}"
             if appended
             else ""
         )
@@ -176,17 +201,19 @@ def review(
             verdict = {"verdict": "approve", "issues": [], "deterministic_template": True}
         else:
             verdict = llm.structured(prompts.COMPLIANCE, context, REVIEW_SCHEMA, max_tokens=8000, effort="medium")
-    except llm.Refusal as exc:  # a reviewer that won't review fails closed
+    except (llm.Refusal, RuntimeError, ValueError) as exc:
+        # A reviewer that won't review, or whose verdict is cut off or malformed, fails closed. An API outage isn't
+        # caught here: the chat page rolls the turn back so the customer can try again.
         verdict = {
             "verdict": "handoff",
-            "issues": [{"rule": "fair_dealing", "detail": f"reviewer model declined ({exc})"}],
+            "issues": [{"rule": "fair_dealing", "detail": f"reviewer gave no usable verdict ({exc})"}],
         }
 
     revision_flags: list[str] = []
     if verdict["verdict"] == "approve":
         final = draft
     elif verdict["verdict"] == "revise" and verdict.get("revised_response"):
-        final = verdict["revised_response"]
+        final = _without_appended(verdict["revised_response"], appended)
         # The rewrite goes straight to the customer, so it gets the same number check. Numbers the
         # reviewer kept from the draft were already judged; a NEW unsupported number is not allowed.
         revision_flags = [

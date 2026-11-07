@@ -4,7 +4,7 @@ import pandas as pd
 import streamlit as st
 
 from src import recorder
-from src.ui import md_safe
+from src.ui import md_escape, md_safe
 
 ICONS = {
     "conversation_start": ":material/flag:",
@@ -26,8 +26,8 @@ ICONS = {
 st.title("Flight recorder", icon=":material/flight:", anchor=False)
 st.caption(
     "Replay any conversation step by step: what the customer asked, what DAISY understood, which pages it "
-    "used, what it calculated, what the review changed and the final reply. NRIC/FIN and card numbers are "
-    "removed; other details, such as phone numbers and emails, aren't. Logs stay on this computer."
+    "used, what it calculated, what the review changed and the final reply. NRIC/FIN, card numbers, Singapore "
+    "phone numbers and emails are removed; names and addresses aren't. Logs stay on this computer."
 )
 
 
@@ -48,26 +48,30 @@ if source == "Eval runs":
     if not runs:
         st.info("No eval run has been recorded yet. Run the suite from the Trust scorecard.", icon=":material/info:")
         st.stop()
-    folder = st.selectbox("Eval run", runs, format_func=lambda p: p.name)
+    folder = st.selectbox("Eval run", runs, format_func=lambda p: p.name, key="eval_run")
 
-convs = conversations(str(folder))
+convs = {c["id"]: c for c in conversations(str(folder))}
 if not convs:
     st.info("No conversations recorded yet. Chat with DAISY on the Assistant page.", icon=":material/info:")
     st.stop()
 
-conv = st.selectbox(
-    "Conversation",
-    convs,
-    format_func=lambda c: (
-        f"{c['started'].replace('T', ' ')}, {c['turns']} turn(s): {c['first_message'][:60]} ({c['id']})"
-    ),
-)
+# The dropdowns are keyed, offer stable values (ids, turn numbers) and use labels that don't change as a conversation
+# grows (the browser sends back the label it shows). Otherwise a new turn or conversation, which re-sorts the list,
+# makes the choice jump back to the newest within the 10 s cache window.
+labels = {cid: f"{c['started'].replace('T', ' ')}: {c['first_message'][:60]} ({cid})" for cid, c in convs.items()}
+conv = convs[
+    st.selectbox(
+        "Conversation", list(convs), format_func=lambda cid: labels.get(cid, cid), key=f"conversation::{folder}"
+    )
+]
 path = recorder.Path(conv["path"])
 events = events_of(str(path), path.stat().st_mtime)
 turns = sorted({e["turn"] for e in events})
 
 with st.container(horizontal=True, vertical_alignment="bottom"):
-    turn = st.selectbox("Turn", turns, index=len(turns) - 1, format_func=lambda t: f"Turn {t}")
+    turn = st.selectbox(
+        "Turn", turns, index=len(turns) - 1, format_func=lambda t: f"Turn {t}", key=f"turn::{folder}::{conv['id']}"
+    )
     mode = st.segmented_control("View", ["Step through", "Whole turn"], default="Step through")
 turn_events = [e for e in events if e["turn"] == turn]
 
@@ -76,8 +80,8 @@ def render(e: dict) -> None:
     d = e.get("data") or {}
     kind = e["type"]
     if kind == "user_turn":
-        with st.chat_message("user"):
-            st.markdown(md_safe(d.get("message", "")))
+        with st.chat_message("user"):  # the customer's exact words, shown as typed: never rendered as Markdown
+            st.markdown(md_escape(d.get("message", "")))
         if d.get("pii_removed"):
             st.badge(
                 f"PII removed before any agent saw it: {', '.join(d['pii_removed'])}",
@@ -94,7 +98,7 @@ def render(e: dict) -> None:
             if d.get("injection_suspected"):
                 st.badge("injection suspected", color="red", icon=":material/warning:")
         if d.get("reasoning"):
-            st.caption(md_safe(d["reasoning"]))
+            st.caption(md_escape(d["reasoning"]))
         st.markdown("**Extracted from this message**")
         st.json(
             {
@@ -110,7 +114,7 @@ def render(e: dict) -> None:
             st.json(d.get("profile_after"))
     elif kind == "retrieval":
         st.markdown(
-            f"**Searched for:** {md_safe(d.get('query', ''))}  \n:gray[Product boost:] `{d.get('product_boost')}`"
+            f"**Searched for:** {md_escape(d.get('query', ''))}  \n:gray[Product boost:] `{d.get('product_boost')}`"
         )
         hits = d.get("hits") or []
         if hits:
@@ -159,8 +163,8 @@ def render(e: dict) -> None:
         if runs:
             st.dataframe(pd.DataFrame(runs).astype(str), hide_index=True, height=240)
     elif kind == "draft":
-        with st.container(border=True):
-            st.markdown(md_safe(d.get("text", "")))
+        with st.container(border=True):  # unreviewed model output, so shown literally (the final reply renders)
+            st.markdown(md_escape(d.get("text", "")))
     elif kind == "compliance":
         verdict = d.get("verdict")
         color = {"approve": "green", "revise": "orange", "handoff": "red"}.get(verdict, "gray")
@@ -168,7 +172,7 @@ def render(e: dict) -> None:
             st.badge(f"verdict: {verdict}", color=color)
             st.badge(f"reviewer: {d.get('reviewer', 'llm')}", color="gray")
         for issue in d.get("issues") or []:
-            st.markdown(f"- `{issue.get('rule')}` {md_safe(issue.get('detail', ''))}")
+            st.markdown(f"- `{issue.get('rule')}` {md_escape(issue.get('detail', ''))}")
         st.json(
             {k: d.get(k) for k in ("unsupported_numbers", "revision_unsupported_numbers", "output_filter", "lexicon")},
             expanded=False,
@@ -178,9 +182,9 @@ def render(e: dict) -> None:
             for key, layer in d.items():
                 st.badge(f"{key}: {layer['status']}", color="green" if layer["acted"] else "gray")
         for key, layer in d.items():
-            st.caption(f"{key}: {md_safe(layer['detail'])}")
+            st.caption(f"{key}: {md_escape(layer['detail'])}")
     elif kind == "final":
-        with st.chat_message("assistant", avatar="static/daisy-mark.svg"):
+        with st.chat_message("assistant", avatar="static/daisy-mark.svg"):  # as the customer saw it
             st.markdown(md_safe(d.get("response", "")))
         st.caption(
             f"Took {d.get('elapsed_s')} seconds. Question type: {d.get('intent')}. Read back: "
@@ -196,7 +200,8 @@ def render(e: dict) -> None:
 
 
 def header(e: dict) -> str:
-    return f"{e['agent']} at +{e['t_ms']:,} ms: {e['summary']}"
+    """One line per event. The summary can quote the customer, so the whole line is shown literally."""
+    return md_escape(f"{e['agent']} at +{e['t_ms']:,} ms: {e['summary']}")
 
 
 if mode == "Step through":
@@ -213,7 +218,7 @@ if mode == "Step through":
     event = turn_events[min(st.session_state[key], len(turn_events) - 1)]
     with st.container(border=True):
         st.subheader(md_safe(f"{event['agent']}: {event['type'].replace('_', ' ')}"), anchor=False)
-        st.caption(md_safe(header(event)))
+        st.caption(header(event))
         render(event)
     st.caption(
         "Timeline: "
@@ -223,7 +228,7 @@ if mode == "Step through":
     )
 else:
     for e in turn_events:
-        with st.expander(md_safe(header(e)), type="step", icon=ICONS.get(e["type"])):
+        with st.expander(header(e), type="step", icon=ICONS.get(e["type"])):
             render(e)
 
 with st.expander("Raw log for this turn (JSON lines)", icon=":material/data_object:"):

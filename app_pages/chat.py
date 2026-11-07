@@ -1,6 +1,7 @@
 """Assistant page: the customer conversation, the live profile and the agent timeline."""
 
 import copy
+import dataclasses
 import sys
 import threading
 import time
@@ -73,6 +74,7 @@ SUGGESTIONS = {
     ":material/payments: Cashline or personal loan?": "How does Cashline differ from a personal loan?",
     ":material/credit_card: Credit card annual fees": "Is there an annual fee on DBS credit cards?",
 }
+CONFIRM_REPLY = "Yes, that's right."
 
 
 def step_name(agent: str) -> str:
@@ -86,12 +88,38 @@ _saved = st.session_state.get("state")
 if not isinstance(_saved, ConversationState) or not all(
     hasattr(_saved, f) for f in ConversationState.__dataclass_fields__
 ):
+    st.session_state.turns = []  # turns first: if a click cuts in between, the next run resets both again
     st.session_state.state = ConversationState()
-    st.session_state.turns = []
 if "turns" not in st.session_state:
     st.session_state.turns = []  # list of {"user": str, "result": TurnResult, "seconds": float}
 
+# From here on both are changed in place, never reassigned. Every st.session_state read or write is a point where
+# Streamlit can stop the script because the customer clicked something; a plain attribute or list change is not.
 state: ConversationState = st.session_state.state
+turns: list[dict] = st.session_state.turns
+# A message queued by a widget callback, which runs before this script. Known before anything is drawn, so the
+# buttons can be drawn disabled while its turn runs.
+prompt: str | None = st.session_state.pop("queued_prompt", None)
+busy = prompt is not None
+
+
+def adopt(target: ConversationState, source: ConversationState) -> None:
+    """Give target every field of source, in place, so the session's state changes in one step it can't be stopped
+    half-way through (see `turns` above)."""
+    for f in dataclasses.fields(ConversationState):
+        setattr(target, f.name, getattr(source, f.name))
+
+
+def queue_turn(text: str | None) -> None:
+    """Widget callback. Callbacks run before the page script, so this leaves the script the message to answer."""
+    if text:
+        st.session_state.queued_prompt = text
+
+
+def pick_suggestion() -> None:
+    picked = st.session_state.suggestion
+    st.session_state.suggestion = None  # used once: an old pick must never fire again on a later rerun
+    queue_turn(SUGGESTIONS.get(picked))
 
 
 def render_assistant(result, seconds: float | None) -> None:
@@ -196,12 +224,12 @@ with st.sidebar:
         )
 
     st.caption(
-        ":material/privacy_tip: Conversations are saved on this computer for review. NRIC/FIN and card numbers "
-        "are removed. Phone numbers and emails aren't, so please leave them out."
+        ":material/privacy_tip: Conversations are saved on this computer for review. NRIC/FIN, card numbers, "
+        "Singapore phone numbers and emails are removed first. Please leave out other personal details."
     )
-    if st.button("New conversation", icon=":material/restart_alt:", width="stretch"):
-        st.session_state.state = ConversationState()
-        st.session_state.turns = []
+    if st.button("New conversation", icon=":material/restart_alt:", width="stretch", disabled=busy):
+        adopt(state, ConversationState())
+        turns.clear()
         st.rerun()
 
 # ---------------- Main: conversation ----------------
@@ -212,7 +240,7 @@ if not config.ANTHROPIC_API_KEY:
         icon=":material/key:",
     )
 
-if not st.session_state.turns:
+if not turns:
     st.title(f":primary[{config.ASSISTANT_NAME}]", anchor=False)
     st.markdown(f"##### {config.ASSISTANT_TAGLINE}")
     st.markdown("Ask me about DBS home loans, credit cards and personal loans.")
@@ -222,29 +250,36 @@ if not st.session_state.turns:
         "or a loan approval."
     )
 
-for turn in st.session_state.turns:
+for turn in turns:
     with st.chat_message("user"):
         st.markdown(md_safe(turn["user"]))
     with st.chat_message("assistant", avatar=AVATAR):
         render_assistant(turn["result"], turn.get("seconds"))
 
-prompt = st.chat_input("Ask about home loans, cards or personal loans", submit_mode="disable")
-if st.session_state.turns and state.pending_readback:
-    if st.button("Yes, that's right", icon=":material/check:", type="primary"):
-        prompt = "Yes, that's right."
-if not st.session_state.turns:
-    suggestions = st.empty()
-    # A new key after a failed turn, so the old pick doesn't fire again and override what's typed next.
-    picked = suggestions.pills(
-        "Try asking",
-        list(SUGGESTIONS),
-        label_visibility="collapsed",
-        key=f"suggestion_{st.session_state.get('failed_turns', 0)}",
+if st.session_state.pop("turn_failed", False):
+    st.error(
+        "Sorry, something went wrong and your last message wasn't answered. Please try again.", icon=":material/error:"
     )
-    if picked:
-        prompt = SUGGESTIONS[picked]
-    if prompt:
-        suggestions.empty()
+
+# While a turn runs its widgets are drawn disabled, so a click can't cut it short (the top navigation still can).
+st.chat_input(
+    "Ask about home loans, cards or personal loans",
+    key="message",
+    submit_mode="disable",
+    disabled=busy,
+    on_submit=lambda: queue_turn(st.session_state.message),
+)
+if turns and state.pending_readback:
+    st.button(
+        "Yes, that's right",
+        icon=":material/check:",
+        type="primary",
+        disabled=busy,
+        on_click=queue_turn,
+        args=(CONFIRM_REPLY,),
+    )
+if not turns and not busy:
+    st.pills("Try asking", list(SUGGESTIONS), label_visibility="collapsed", key="suggestion", on_change=pick_suggestion)
 
 if prompt:
     with st.chat_message("user"):
@@ -259,23 +294,28 @@ if prompt:
                 status.update(label=f":shimmer[{step_name(ev.agent)}]")
                 st.status(step_name(ev.agent), type="step", state="complete")
 
-            before_turn = copy.deepcopy(state)  # a failed turn must leave nothing behind: details, readback, count
-            state.listener = on_event
+            # The turn runs on a copy; the session keeps its own state until the turn is done. A click while it runs
+            # (the top navigation, a stale button) makes Streamlit raise RerunException, or StopException, at the
+            # next st.* call, such as the status update above. Neither is an Exception, so it passes straight through
+            # and Streamlit reruns with the conversation exactly as it was. A failed turn leaves nothing behind either:
+            # details, readback, count. A lead card still being written for an abandoned copy does no harm.
+            working = copy.deepcopy(state)
+            working.listener = on_event
             started = time.time()
             try:
-                result = run_turn(state, prompt)
+                result = run_turn(working, prompt)
             except Exception as exc:  # noqa: BLE001
-                st.session_state.state = before_turn
-                st.session_state.failed_turns = st.session_state.get("failed_turns", 0) + 1
-                status.update(label="Something went wrong", state="error")
-                st.error("Sorry, something went wrong. Please try again.", icon=":material/error:")
                 print(f"run_turn failed: {exc!r}", file=sys.stderr)  # details for the operator, not the customer
-                st.stop()
+                st.session_state.turn_failed = True
+                st.rerun()  # not st.stop(): a fresh run brings back the widgets this one drew disabled
             finally:
-                state.listener = None
+                working.listener = None
             seconds = time.time() - started
+            # Keep the finished turn before any other st.* call or session_state access, so a click from now on can't
+            # lose a turn the flight recorder has already logged. Store the redacted message, so an NRIC or card number
+            # typed in never stays in the session.
+            adopt(state, working)
+            turns.append({"user": result.user_msg or prompt, "result": result, "seconds": seconds})
             status.update(label=f"Checked in {seconds:.0f} seconds", state="complete")
         st.markdown(md_safe(result.response))
-    # Store the redacted message, so an NRIC or card number typed in never stays in the session.
-    st.session_state.turns.append({"user": result.user_msg or prompt, "result": result, "seconds": seconds})
     st.rerun()

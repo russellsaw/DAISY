@@ -15,8 +15,8 @@ from datetime import date
 from .. import config, llm
 from ..rules import assess_all, counterfactual, max_loan
 from ..rules.counterfactual import fmt_date
-from ..rules.criteria import SOURCE_TITLES
-from ..rules.engine import missing_fields
+from ..rules.criteria import PRODUCTS, SOURCE_TITLES
+from ..rules.engine import EligibilityResult, missing_fields
 from ..state import PROFILE_FIELDS, ConversationState, CustomerProfile, is_property_loan
 from ..ui import EMPLOYMENT_LABELS, PROPERTY_LABELS, RESIDENCY_LABELS
 from . import product_knowledge, prompts
@@ -68,9 +68,34 @@ def _to_ask(profile: CustomerProfile, product: str) -> list[str]:
     return missing
 
 
-def readback_text(profile: CustomerProfile, products: list[str] | None = None, max_loan_check: bool = False) -> str:
+def _not_checked(profile: CustomerProfile, product: str) -> EligibilityResult:
+    """A product the customer named that still needs details: reported as such, never run on an assumption. The engine
+    alone would run a home loan without employment (counting income in full), so this is decided here, from _to_ask."""
+    prod = PRODUCTS[product]
+    return EligibilityResult(
+        product, prod["name"], "need_more_info", missing_fields=_to_ask(profile, product), sources=[prod["source"]]
+    )
+
+
+def _waiting_lines(waiting: dict[str, list[str]]) -> str:
+    """Named products the check will leave out, and what each still needs, so the customer knows before saying yes."""
+    lines = []
+    for product, fields in waiting.items():
+        labels = [PROFILE_FIELDS[f][0][0].lower() + PROFILE_FIELDS[f][0][1:] for f in fields]
+        name = PRODUCTS[product]["name"]
+        lines.append(f"I can't include the {name} in this check yet. It also needs: {', '.join(labels)}.")
+    return "".join(f"\n\n{line}" for line in lines)
+
+
+def readback_text(
+    profile: CustomerProfile,
+    products: list[str] | None = None,
+    max_loan_check: bool = False,
+    waiting: dict[str, list[str]] | None = None,
+) -> str:
     """The readback, written by code: exact values, nothing paraphrased by a model. Anything the check
-    would otherwise treat as none is shown as such, so the customer can correct it before it runs."""
+    would otherwise treat as none is shown as such, so the customer can correct it before it runs.
+    waiting: products the customer named that this check leaves out, with the details each still needs."""
     d = profile.to_dict()
     products = products or []
     not_mentioned = "not mentioned, so treated as none"
@@ -137,6 +162,7 @@ def readback_text(profile: CustomerProfile, products: list[str] | None = None, m
     return (
         "Before I run the eligibility check, here's what I've noted. Is it all right?\n\n"
         + body
+        + _waiting_lines(waiting or {})
         + "\n\nReply **yes** if that's right, or tell me what to change. I won't run the check until you do."
     )
 
@@ -254,8 +280,9 @@ def assess(
             f"read back the parameters for {', '.join(ready)}; engine waits for a yes",
             state.readback_profile,
         )
+        waiting = {k: _to_ask(state.profile, k) for k in keys if k not in ready} if products else {}
         return {
-            "draft": readback_text(state.profile, ready),
+            "draft": readback_text(state.profile, ready, waiting=waiting),
             "results": [],
             "computations": readback_numbers(state.profile),
             "counterfactuals": [],
@@ -263,8 +290,11 @@ def assess(
             "readback": True,
         }
 
-    # 3. Confirmed: run the engine.
-    results = assess_all(state.profile, keys)
+    # 3. Confirmed: run the engine on each product whose details are complete. A named product still waiting on
+    #    something (e.g. employment for a home loan, asked about together with a card) comes back as needing more
+    #    details instead of being run on an assumed salary.
+    checked = {r.product: r for r in assess_all(state.profile, ready)}
+    results = [checked[k] if k in checked else _not_checked(state.profile, k) for k in keys if k in PRODUCTS]
     state.last_eligibility = [r.to_dict() for r in results]
     runnable = [r for r in results if r.status != "need_more_info"]
     blocked = [r for r in results if r.status == "need_more_info"]

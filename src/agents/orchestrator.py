@@ -188,6 +188,49 @@ def _apply_stated_property(updates: dict, user_msg: str, profile: CustomerProfil
     return {**{k: v for k, v in found.items() if getattr(profile, k) is None and v}, **updates}
 
 
+# "salaried, $10k a month", "earning $7,000 monthly", "income of S$120k a year": the fast model has left a stated income
+# out, and the customer was asked for what they'd just said (rb-008). Read only after an income word, so "a car loan of
+# $600 a month" is never taken for income. Only fills a gap; the readback shows it before anything runs.
+_INCOME = re.compile(
+    r"\b(?:earn(?:s|ing)?|mak(?:e|es|ing)|salary|income|paid|salaried|self[- ]employed|take[- ]home)\b[^$.?!]{0,20}?"
+    r"S?\$\s?(\d[\d,]*(?:\.\d+)?)\s*(k)?\s*(?:a|per|/|each)?\s*(month|mth|monthly|year|yr|annum|annually)\b",
+    re.IGNORECASE,
+)
+
+
+def _apply_stated_income(updates: dict, user_msg: str, profile: CustomerProfile) -> dict:
+    if "monthly_income" in updates or profile.monthly_income is not None or _WHAT_IF.search(user_msg):
+        return updates
+    m = _INCOME.search(user_msg)
+    if not m:
+        return updates
+    amount = float(m[1].replace(",", "")) * (1000 if m[2] else 1)
+    monthly = amount / 12 if m[3].lower().startswith(("y", "a")) else amount
+    return {**updates, "monthly_income": round(monthly, 2)} if monthly > 0 else updates
+
+
+# The fast model has recorded debts as 0 when the customer said nothing about them (rb-008). The readback then shows
+# "none" as if the customer had said it, instead of "not mentioned, so treated as none". A zero needs words that mean
+# none; "no other loans" itself is handled by _apply_no_other_loans.
+_DEBT_FIELDS = (
+    "existing_monthly_debt",
+    "existing_housing_loans",
+    "existing_property_loan_monthly",
+    "existing_unsecured_balance",
+)
+_SAYS_NONE = re.compile(
+    r"\b(no|none|nope|nah|zero|nil|nothing|not any|don'?t have|do not have|debt[- ]free)\b|\$\s?0\b|\b0\b|"
+    r"\bfirst[- ](home|house|property|flat|condo)\b",
+    re.IGNORECASE,
+)
+
+
+def _drop_unstated_zeros(updates: dict, user_msg: str) -> dict:
+    if _SAYS_NONE.search(user_msg):
+        return updates
+    return {k: v for k, v in updates.items() if not (k in _DEBT_FIELDS and v == 0)}
+
+
 def route(state: ConversationState, user_msg: str, today: date | None = None) -> dict:
     context = (
         f"Known customer profile so far:\n{state.profile.describe()}\n\n"
@@ -196,9 +239,11 @@ def route(state: ConversationState, user_msg: str, today: date | None = None) ->
     )
     decision = llm.structured(prompts.ORCHESTRATOR, context, ROUTE_SCHEMA)
     resolved = [commitment_rules.resolve(c, user_msg, today or date.today()) for c in decision.get("commitments") or []]
-    updates = _apply_no_other_loans(dict(decision.get("profile_updates") or {}), user_msg, state.profile, resolved)
+    updates = _drop_unstated_zeros(dict(decision.get("profile_updates") or {}), user_msg)
+    updates = _apply_no_other_loans(updates, user_msg, state.profile, resolved)
     if decision.get("intent") == "eligibility":
         updates = _apply_stated_property(updates, user_msg, state.profile)
+        updates = _apply_stated_income(updates, user_msg, state.profile)
     if resolved:
         updates["commitments"] = resolved
     decision["commitments_resolved"] = resolved

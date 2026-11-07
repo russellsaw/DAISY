@@ -42,3 +42,7 @@ linkColor = "#DC1F1F"
 
 [client]
 toolbarMode = "minimal"
+
+[server]
+# Share deliberately: `streamlit run app.py --server.address 0.0.0.0`. Hosted deployments may need this line removed.
+address = "localhost"  # this computer only: the staff pages show customer conversations and have no login

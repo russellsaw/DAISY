@@ -156,9 +156,11 @@ def run_turn(state: ConversationState, user_msg: str) -> TurnResult:
     guard_job = _POOL.submit(input_guard.check, user_msg)
     try:
         decision = orchestrator.route(state, user_msg)
-    except llm.Refusal as exc:
+    except (llm.Refusal, RuntimeError, ValueError) as exc:
+        # Declined, cut off or malformed: there's no reliable intent, so the reply is the banker handoff. The routing
+        # call fails before the profile is touched. An API outage isn't caught: the chat page rolls the turn back.
         decision = {"intent": "refused", "products": [], "injection_suspected": True}
-        state.add_trace("Orchestrator", f"model declined to route the message ({exc})")
+        state.add_trace("Orchestrator", f"no usable routing ({type(exc).__name__}: {exc})")
     guard = guard_job.result()
     intent = decision["intent"]
     products = decision.get("products") or []

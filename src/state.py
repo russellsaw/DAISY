@@ -149,7 +149,7 @@ class CustomerProfile:
             if key in ("age", "existing_housing_loans", "tenure_years"):
                 try:
                     value = int(value)
-                except TypeError, ValueError:
+                except (TypeError, ValueError):
                     continue
                 if value < 0 or (key != "existing_housing_loans" and value == 0):  # no age or tenure of 0
                     continue
@@ -164,7 +164,7 @@ class CustomerProfile:
             ):
                 try:
                     value = float(value)
-                except TypeError, ValueError:
+                except (TypeError, ValueError):
                     continue
                 if value < 0:
                     continue
@@ -195,7 +195,7 @@ class CustomerProfile:
             if item.get("monthly") not in (None, ""):
                 try:
                     monthly = float(item["monthly"])
-                except TypeError, ValueError:
+                except (TypeError, ValueError):
                     monthly = None
                 if monthly is not None and monthly != existing["monthly"]:
                     existing["monthly"] = monthly

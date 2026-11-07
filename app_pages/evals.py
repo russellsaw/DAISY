@@ -1,6 +1,7 @@
 """Trust scorecard: pass rates, Swiss-cheese defence layers, case drill-down, live run."""
 
 import json
+import re
 import subprocess
 import sys
 from datetime import datetime
@@ -22,6 +23,23 @@ PASS_COLOR, FAIL_COLOR = "#0F8A5F", "#DC1F1F"  # green for a pass, red only for 
 
 latest = config.EVAL_RESULTS_DIR / "latest.json"
 
+
+def run_outcome(returncode: int, lines: list[str]) -> tuple[str, str]:
+    """(kind, message) for a finished run. run_evals.py exits 0 when every case passed, 1 when some failed and
+    2 when it crashed; an exit 1 without the closing "x/y passed" line is a crash too (Python's own exit code)."""
+    summary = next((m for line in reversed(lines) if (m := re.match(r"(\d+)/(\d+) passed", line.strip()))), None)
+    if returncode not in (0, 1) or summary is None:
+        return "error", f"The eval script crashed (exit code {returncode}) before finishing. Its last output is below."
+    done, total = int(summary.group(1)), int(summary.group(2))
+    if any(line.startswith("Partial run:") for line in lines):
+        where = " This was a partial run, so the scorecard below still shows the last full run."
+    else:
+        where = " The scorecard below now shows this run."
+    if returncode == 0:
+        return "success", f"Finished: all {total} cases passed.{where}"
+    return "warning", f"Finished: {total - done} of {total} cases failed.{where}"
+
+
 # ---------------- Run controls ----------------
 # Running the suite costs API credit, so the controls only show when DAISY_STAFF_CONTROLS is on.
 if config.STAFF_CONTROLS:
@@ -30,11 +48,21 @@ if config.STAFF_CONTROLS:
         cases = pd.read_csv(config.EVAL_CASES, dtype=str, keep_default_na=False)
         categories = sorted(cases["category"].unique())
         selected = st.multiselect("Categories", categories, default=categories)
+    n_selected = int(cases["category"].isin(selected).sum())
     with col_limit:
-        limit = st.number_input("Max cases", min_value=1, max_value=500, value=len(cases))
+        limit = st.number_input("Max cases", min_value=1, max_value=max(1, len(cases)), value=max(1, len(cases)))
+    # Only a run of every case replaces the scorecard, so say up front whether this one will.
+    n_run = min(int(limit), n_selected)
+    if n_run >= len(cases):
+        st.caption(f"Runs all {len(cases)} cases and updates the scorecard below.")
+    else:
+        st.caption(f"Runs {n_run} of {len(cases)} cases. A partial run is saved but doesn't change the scorecard.")
     with col_run:
         if st.button("Run suite", icon=":material/play_arrow:", type="primary", width="stretch", disabled=not selected):
-            cmd = [sys.executable, str(config.ROOT / "evals" / "run_evals.py"), "--limit", str(int(limit))]
+            cmd = [sys.executable, str(config.ROOT / "evals" / "run_evals.py")]
+            # Pass --limit only when it actually cuts the run short: run_evals treats any real cut as partial.
+            if int(limit) < n_selected:
+                cmd += ["--limit", str(int(limit))]
             if selected and len(selected) < len(categories):
                 cmd += ["--categories", ",".join(selected)]
             with st.status("Running evals…", expanded=True) as status:
@@ -47,8 +75,19 @@ if config.STAFF_CONTROLS:
                     lines.append(line.rstrip())
                     log.code("\n".join(lines[-20:]))
                 proc.wait()
-                status.update(label="Done" if proc.returncode == 0 else "Finished with errors", state="complete")
+                kind, message = run_outcome(proc.returncode, lines)
+                status.update(label=message, state="error" if kind == "error" else "complete")
+            # The page reruns straight away to load the new results, so keep the outcome to show after it.
+            st.session_state["eval_run_outcome"] = (kind, message, lines[-20:] if kind == "error" else [])
             st.rerun()
+
+    outcome = st.session_state.pop("eval_run_outcome", None)
+    if outcome:
+        kind, message, tail = outcome
+        icon = {"success": ":material/check_circle:", "warning": ":material/warning:", "error": ":material/error:"}
+        getattr(st, kind)(message, icon=icon[kind])
+        if tail:
+            st.code("\n".join(tail))
 
 # ---------------- Results ----------------
 if not latest.exists():
@@ -95,16 +134,28 @@ with tab_rates:
 # ---------------- Swiss cheese: which defence layer stopped each attack ----------------
 with tab_layers:
     st.caption(
-        "There are five safety checks, and each reply shows the ones that applied to it. The **input guardrail** removes personal details and blocks "
-        "attempts to manipulate DAISY. **Retrieval grounding** checks the answer against DBS pages. The "
-        "**rules engine** does every calculation. The **compliance agent** reviews each reply. **Code filters** "
-        "remove numbers that can't be traced and, on eligibility and advice replies, approval wording. A check is "
-        "highlighted when it stepped in, which includes routine work such as holding the calculation until "
-        "details are confirmed, so an attack marked stopped may also have been refused by the model anyway."
+        "There are five safety checks, and each reply shows the ones that applied to it. The **input "
+        "guardrail** removes personal details and blocks attempts to manipulate DAISY. **Retrieval grounding** "
+        "checks the answer against DBS pages. The **rules engine** does every calculation. The **compliance "
+        "agent** reviews each reply. **Code filters** remove numbers that can't be traced and, on eligibility "
+        "and advice replies, approval wording. A check shows green when it stepped in: it blocked, removed, held "
+        "back, rewrote or replaced something. Routine work, such as an answer matched to DBS pages or a "
+        "calculation by the engine, shows blue and doesn't count as stopping an attack. Stepping in includes "
+        "holding the calculation until details are confirmed, so an attack marked stopped may also have been "
+        "refused by the model anyway."
     )
     if "defence" not in df.columns:
         st.info("These results predate layer instrumentation. Run the suite again.", icon=":material/info:")
     else:
+        # Classified here from the stored layer records rather than read from the stored label, so a change to
+        # what counts as stepping in shows without re-running the suite.
+        checks = df["checks"] if "checks" in df.columns else [None] * len(df)
+        df["defended"] = [
+            defence.classify(d, defence.held(c if isinstance(c, list) else None, bool(p)))
+            if isinstance(d, dict) and d
+            else "hole"
+            for d, p, c in zip(df["defence"], df["passed"], checks)
+        ]
         include_all = st.toggle("Include non-adversarial cases", value=False)
         attacks = df if include_all else df[df["adversarial"].fillna(False).astype(bool)]
         order = {"hole": 0, "prompt_only": 1, "stopped": 2}
@@ -128,13 +179,13 @@ with tab_layers:
         if len(prompt_only):
             st.warning(
                 f"{len(prompt_only)} attack(s) were stopped only by DAISY's own instructions, with no check "
-                "stepping in. That's acceptable, but nothing would catch it if it changed: "
+                "stepping in. That's acceptable, but it relies on the model refusing the same way next time: "
                 + ", ".join(prompt_only["id"]),
                 icon=":material/warning:",
             )
 
         acted_counts = {
-            label: int(attacks["defence"].map(lambda d, k=key: bool(d.get(k, {}).get("acted"))).sum())
+            label: int(attacks["defence"].map(lambda d, k=key: k in defence.stopped_by(d)).sum())
             for key, label in defence.LAYERS
         }
         st.subheader("Attacks where each check stepped in", anchor=False)
@@ -159,8 +210,10 @@ with tab_layers:
                 with st.container(horizontal=True):
                     for key, name in defence.LAYERS:
                         layer = row["defence"].get(key, {"status": "n/a", "acted": False})
-                        if layer["acted"]:
+                        if defence.intervened(key, layer):
                             st.badge(f"{name}: {layer['status']}", color="green", icon=":material/shield:")
+                        elif layer.get("acted"):  # routine work (grounded, computed): verified, didn't step in
+                            st.badge(f"{name}: {layer['status']}", color="blue", icon=":material/check:")
                         elif row["defended"] == "hole" and layer["status"] != "n/a":
                             st.badge(f"{name}: {layer['status']}", color="red", icon=":material/close:")
                         else:

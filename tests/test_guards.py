@@ -3,6 +3,8 @@
 import sys
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src import pii  # noqa: E402
@@ -118,8 +120,31 @@ def test_nric_and_card_removed():
     assert kinds == ["card_number", "nric"]
 
 
-def test_amounts_and_phone_numbers_kept():
-    msg = "Call me on 91234567 about a S$550,000 flat, loan 380000"
+def test_phone_numbers_and_emails_removed_amounts_kept():
+    text, kinds = pii.redact("Call me on 91234567 or email alex.tan+loans@example.com.sg about a S$550,000 flat")
+    assert text == "Call me on [phone number removed] or email [email removed] about a S$550,000 flat"
+    assert kinds == ["email", "phone"]
+
+
+@pytest.mark.parametrize(
+    "phone", ["91234567", "9123 4567", "9123-4567", "+65 9123 4567", "+6591234567", "65 6123 4567", "8123 4567."]
+)
+def test_singapore_phone_formats_removed(phone):
+    text, kinds = pii.redact(f"my number is {phone}")
+    assert kinds == ["phone"] and not any(ch.isdigit() for ch in text)
+
+
+@pytest.mark.parametrize(
+    "msg",
+    [
+        "a S$550,000 flat, loan 380000 over 25 years",
+        "I earn $9,000 a month and have S$91234567.50 in total",  # touching a "$": an amount
+        "reference 1234 5678 9012 3456",  # grouped digits, not a phone
+        "it ends on 20281231",  # a date-like number that doesn't start 6, 8 or 9
+        "price 1,680,000 and 88,000,000",
+    ],
+)
+def test_amounts_and_references_kept(msg):
     assert pii.redact(msg) == (msg, [])
 
 

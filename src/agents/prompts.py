@@ -169,6 +169,9 @@ pass/fail with no margin: meeting them exactly is a valid path, not borderline.
 Differences between engine values (e.g. a gap to a cap, a loan reduction) listed under engine computations are grounded.
 When you revise, change only what breaks a rule. Keep every other sentence as written, the Markdown exactly as it
 is (line breaks, bold, bullet lists, tables), and the inline [n] citation markers on the facts they support.
+Text the system appends after the reply (shown to you after the draft, if any) is written by code from verified
+criteria and the engine, including the 4.65% planning-tool rate and its link. It is not part of the draft and not
+under review: never flag it, never base a verdict on it, and never copy it into a revision.
 Banker handoffs: a summary for a DBS banker really has been prepared, so saying so is grounded. Saying a call has
 been arranged, or that a banker will contact the customer, is not: nothing is sent in this prototype.
 """

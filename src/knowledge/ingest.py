@@ -21,8 +21,9 @@ be rebuilt offline from the snapshots.
 Pages that block scripted fetches: save them from your browser into data/raw/ (html, pdf,
 txt) and describe them in data/raw/sources.json:
   {"my-file.pdf": {"url": "https://...", "title": "...", "publisher": "DBS",
-                   "products": ["home_loan"]}}
-(a bare URL string as the value also works).
+                   "products": ["home_loan"], "saved_on": "2026-11-02"}}
+(a bare URL string as the value also works). A saved page is dated by `saved_on`, or failing
+that by the file's modified time, and keeps that date until its text changes.
 """
 
 from __future__ import annotations
@@ -30,12 +31,15 @@ from __future__ import annotations
 import hashlib
 import io
 import json
+import os
 import re
 import sys
+import tempfile
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime
 from html import unescape
+from pathlib import Path
 
 import requests
 from bs4 import BeautifulSoup, NavigableString
@@ -47,6 +51,7 @@ HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; DAISY-kb-builder/0.2; prototy
 CHUNK_CHARS = 900
 OVERLAP_CHARS = 150
 THIN_DOC_CHARS = 800  # below this a page is probably JS-rendered or a soft 404
+HEADER_MAX_CHARS = 300  # a longer first row is content, not column names
 
 SOURCES_DIR = config.DATA_DIR / "sources"
 TEXT_DIR = SOURCES_DIR / "text"
@@ -105,42 +110,84 @@ def pdf_to_text(data: bytes) -> str:
     from pypdf import PdfReader
 
     reader = PdfReader(io.BytesIO(data), strict=False)
-    if reader.is_encrypted:
-        reader.decrypt("")  # DBS T&C PDFs are owner-locked with an empty user password
+    # DBS T&C PDFs are owner-locked with an empty user password. Anything else can't be read: say so plainly
+    # rather than fail later on the first page.
+    if reader.is_encrypted and not reader.decrypt(""):
+        raise ValueError("PDF is password-protected (an empty password did not open it)")
     pages = [(page.extract_text() or "") for page in reader.pages]
     text = "\n".join(pages)
     text = re.sub(r"[ \t ]+", " ", text)
     return "\n".join(l.strip() for l in text.splitlines() if l.strip())
 
 
+def _is_table_row(line: str) -> bool:
+    return " | " in line
+
+
+def _names_columns(first: str, second: str) -> bool:
+    """Whether a table's first row is its header. Wider tables open with one (a header one cell short of the row
+    below has lost its empty top-left cell). A two-column table only when the row reads like column names
+    ("Type of loan | Medium-term interest rate"), not like a label and its value ("Age | Must be 21 to 75")."""
+    if len(first) > HEADER_MAX_CHARS:
+        return False
+    cells = first.split(" | ")
+    if len(cells) >= 3 or second.count(" | ") > first.count(" | "):
+        return True
+    return all(len(c) <= 80 and not re.search(r"\d", c) and not c.endswith((".", ":")) for c in cells)
+
+
+def _with_headers(lines: list[tuple[str, str | None]]) -> list[tuple[str, str | None]]:
+    """Put a table's header back in front of its rows wherever they turn up without it."""
+    out: list[tuple[str, str | None]] = []
+    for line, header in lines:
+        if header and all(seen != header for seen, _ in out):
+            out.append((header, None))
+        out.append((line, header))
+    return out
+
+
 def chunk(text: str) -> list[str]:
-    """Pack whole lines into ~CHUNK_CHARS chunks, carrying a short overlap tail forward."""
+    """Pack whole lines into ~CHUNK_CHARS chunks, carrying a short overlap tail forward.
+
+    A table row is one line ("DBS Live Fresh Card | S$196.20 | S$98.10 | ..."). When a chunk boundary falls inside
+    a table that has a header row, every chunk holding its rows (overlap included) repeats that header, so the
+    model never has to guess which column is which."""
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
     chunks: list[str] = []
-    buf: list[str] = []
+    buf: list[tuple[str, str | None]] = []  # (line, header of the table it is a row of)
     size = 0
-    for line in text.splitlines():
-        line = line.strip()
-        if not line:
-            continue
+    header = None  # header row of the table the current line belongs to, if it has one
+    for i, line in enumerate(lines):
+        opens_table = _is_table_row(line) and (i == 0 or not _is_table_row(lines[i - 1]))
+        if opens_table:
+            nxt = lines[i + 1] if i + 1 < len(lines) else ""
+            header = line if _is_table_row(nxt) and _names_columns(line, nxt) else None
+        elif not _is_table_row(line):
+            header = None
+        row_of = header if not opens_table else None
         while len(line) > CHUNK_CHARS:  # one very long line (common in PDFs): hard split
             head, line = line[:CHUNK_CHARS], line[CHUNK_CHARS - OVERLAP_CHARS :]
             if buf:
-                chunks.append("\n".join(buf))
+                chunks.append("\n".join(t for t, _ in buf))
                 buf, size = [], 0
-            chunks.append(head)
+            chunks.append(f"{row_of}\n{head}" if row_of else head)
         starts_section = line.startswith("## ") and size > CHUNK_CHARS // 2
         if buf and (size + len(line) + 1 > CHUNK_CHARS or starts_section):
-            chunks.append("\n".join(buf))
-            tail: list[str] = []
+            chunks.append("\n".join(t for t, _ in buf))
+            tail: list[tuple[str, str | None]] = []
             for prev in reversed(buf):  # overlap: last lines up to OVERLAP_CHARS
-                if sum(len(t) for t in tail) + len(prev) > OVERLAP_CHARS:
+                if sum(len(t) for t, _ in tail) + len(prev[0]) > OVERLAP_CHARS:
                     break
                 tail.insert(0, prev)
-            buf, size = tail, sum(len(t) + 1 for t in tail)
-        buf.append(line)
+            buf = _with_headers(tail)
+            size = sum(len(t) + 1 for t, _ in buf)
+        if row_of and all(t != row_of for t, _ in buf):  # this chunk starts mid-table
+            buf.append((row_of, None))
+            size += len(row_of) + 1
+        buf.append((line, row_of))
         size += len(line) + 1
     if buf:
-        chunks.append("\n".join(buf))
+        chunks.append("\n".join(t for t, _ in buf))
     return [c for c in chunks if len(c) > 80]
 
 
@@ -151,8 +198,29 @@ def _sha(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+def _write_atomic(path: Path, text: str) -> None:
+    """Write to a temp file in the same folder, then swap it in. A customer turn that loads kb.json while staff
+    press Rebuild (ingest runs as a separate process) sees the old file or the new one, never half of one."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            f.write(text)
+            f.flush()
+            os.fsync(f.fileno())
+        os.chmod(tmp, 0o644)  # mkstemp makes it owner-only
+        os.replace(tmp, path)
+    except BaseException:
+        Path(tmp).unlink(missing_ok=True)
+        raise
+
+
 def load_manifest() -> dict:
-    return json.loads(MANIFEST_PATH.read_text()) if MANIFEST_PATH.exists() else {}
+    return json.loads(MANIFEST_PATH.read_text(encoding="utf-8")) if MANIFEST_PATH.exists() else {}
+
+
+def _save_manifest(manifest: dict) -> None:
+    _write_atomic(MANIFEST_PATH, json.dumps(dict(sorted(manifest.items())), indent=1, ensure_ascii=False))
 
 
 def _log(event: str, did: str, **extra) -> None:
@@ -182,7 +250,7 @@ def _write_snapshot(entry: dict, text: str) -> None:
             "---",
         ]
     )
-    (TEXT_DIR / f"{entry['id']}.md").write_text(f"{header}\n\n{text}\n", encoding="utf-8")
+    _write_atomic(TEXT_DIR / f"{entry['id']}.md", f"{header}\n\n{text}\n")
 
 
 def read_snapshot(did: str) -> str:
@@ -225,7 +293,7 @@ def _fetch_one(src: dict) -> dict:
 def _local_sources() -> list[dict]:
     """Files saved by hand into data/raw/, described by data/raw/sources.json."""
     mapping_path = config.RAW_DIR / "sources.json"
-    mapping = json.loads(mapping_path.read_text()) if mapping_path.exists() else {}
+    mapping = json.loads(mapping_path.read_text(encoding="utf-8")) if mapping_path.exists() else {}
     out = []
     if not config.RAW_DIR.exists():
         return out
@@ -248,14 +316,13 @@ def _local_sources() -> list[dict]:
                 "products": meta.get("products", ["general"]),
                 "kind": "pdf" if suffix == ".pdf" else "html" if suffix in (".html", ".htm") else "txt",
                 "local_path": str(path),
+                "saved_on": meta.get("saved_on"),
             }
         )
     return out
 
 
 def _read_local(src: dict) -> dict:
-    from pathlib import Path
-
     did = doc_id(src)
     path = Path(src["local_path"])
     try:
@@ -266,7 +333,17 @@ def _read_local(src: dict) -> dict:
             text = html_to_text(data)
         else:
             text = data.decode("utf-8", errors="ignore")
-        return {"id": did, "src": src, "ok": True, "text": text, "raw": data, "ext": path.suffix.lstrip(".")}
+        # The page is as old as the day it was saved, not the day we read the file.
+        saved_at = src.get("saved_on") or datetime.fromtimestamp(path.stat().st_mtime).isoformat(timespec="seconds")
+        return {
+            "id": did,
+            "src": src,
+            "ok": True,
+            "text": text,
+            "raw": data,
+            "ext": path.suffix.lstrip("."),
+            "saved_at": str(saved_at),
+        }
     except Exception as exc:  # noqa: BLE001
         return {"id": did, "src": src, "ok": False, "error": f"{type(exc).__name__}: {exc}"[:300]}
 
@@ -307,14 +384,21 @@ def fetch(only: set[str] | None = None, verbose: bool = True) -> dict:
         if res["ok"]:
             text = res["text"]
             sha = _sha(text)
+            unchanged = prev.get("sha256") == sha
+            as_of = now
+            if "local_path" in src:
+                # A hand-saved page keeps its date until its text changes: re-reading the same file mustn't move the
+                # "as of" date the customer sees. A saved_on in sources.json always wins.
+                kept = prev.get("last_good_fetch") if unchanged and not src.get("saved_on") else None
+                as_of = kept or res["saved_at"]
             entry.update(
                 {
                     "status": "thin" if len(text) < THIN_DOC_CHARS else "ok",
                     "fetched_at": now,
-                    "last_good_fetch": now,
+                    "last_good_fetch": as_of,
                     "sha256": sha,
                     "chars": len(text),
-                    "last_changed": prev.get("last_changed", now) if prev.get("sha256") == sha else now,
+                    "last_changed": prev.get("last_changed", now) if unchanged else now,
                     "error": None,
                 }
             )
@@ -345,8 +429,7 @@ def fetch(only: set[str] | None = None, verbose: bool = True) -> dict:
                 entry["status"] = "retired"
                 _log("retired", did, url=entry.get("url"))
 
-    SOURCES_DIR.mkdir(parents=True, exist_ok=True)
-    MANIFEST_PATH.write_text(json.dumps(dict(sorted(manifest.items())), indent=1, ensure_ascii=False))
+    _save_manifest(manifest)
     return manifest
 
 
@@ -432,8 +515,7 @@ def build(verbose: bool = True) -> dict:
         "boilerplate_lines_removed": len(noise),
         "duplicate_chunks_removed": dropped_dupes,
     }
-    config.DATA_DIR.mkdir(exist_ok=True)
-    config.KB_PATH.write_text(json.dumps(kb, ensure_ascii=False, indent=1))
+    _write_atomic(config.KB_PATH, json.dumps(kb, ensure_ascii=False, indent=1))
     if verbose:
         print(f"\n{len(chunks)} chunks from {len(docs)} documents -> {config.KB_PATH}")
         print(f"  removed {len(noise)} boilerplate lines, {dropped_dupes} duplicate chunks")
@@ -450,29 +532,41 @@ def build(verbose: bool = True) -> dict:
 
 def reextract(verbose: bool = True) -> int:
     """Re-run text extraction over the saved raw snapshots (after an extraction fix), offline.
-    Logged as `reextracted`, not `changed`: the page itself didn't change, our reading of it did."""
+    Logged as `reextracted`, not `changed`: the page itself didn't change, our reading of it did.
+    A document that can't be read is skipped and reported (`reextract_failed`); it keeps its previous text."""
     manifest = load_manifest()
-    count = 0
+    count, skipped = 0, []
     for did, entry in manifest.items():
         raw = next(iter(RAW_SNAPSHOT_DIR.glob(f"{did}.*")), None)
         if entry.get("status") not in ("ok", "thin", "stale") or raw is None:
             continue
-        data = raw.read_bytes()
-        text = (
-            pdf_to_text(data)
-            if raw.suffix == ".pdf"
-            else (html_to_text(data) if raw.suffix in (".html", ".htm") else data.decode("utf-8", errors="ignore"))
-        )
-        sha = _sha(text)
-        if sha == entry.get("sha256"):
+        try:
+            data = raw.read_bytes()
+            text = (
+                pdf_to_text(data)
+                if raw.suffix == ".pdf"
+                else (html_to_text(data) if raw.suffix in (".html", ".htm") else data.decode("utf-8", errors="ignore"))
+            )
+            sha = _sha(text)
+            if sha == entry.get("sha256"):
+                continue
+            updated = {**entry, "sha256": sha, "chars": len(text)}
+            _write_snapshot(updated, text)
+        except Exception as exc:  # noqa: BLE001 — one unreadable file mustn't stop the rest
+            error = f"{type(exc).__name__}: {exc}"[:300]
+            skipped.append(did)
+            _log("reextract_failed", did, error=error, kept_previous_snapshot=True)
+            if verbose:
+                print(f"  SKIP {did:<55} {error[:70]}")
             continue
-        entry.update({"sha256": sha, "chars": len(text)})
-        _write_snapshot(entry, text)
+        entry.update(updated)  # only once its snapshot is written, so the manifest always matches the text on disk
         _log("reextracted", did, chars=len(text), reason="text extraction improved; source unchanged")
         count += 1
         if verbose:
             print(f"  re-extracted {did:<55} {len(text):>8,} chars")
-    MANIFEST_PATH.write_text(json.dumps(dict(sorted(manifest.items())), indent=1, ensure_ascii=False))
+    _save_manifest(manifest)
+    if verbose and skipped:
+        print(f"  {len(skipped)} document(s) could not be re-read and kept their previous text: {', '.join(skipped)}")
     return count
 
 

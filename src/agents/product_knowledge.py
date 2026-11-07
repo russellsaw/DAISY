@@ -11,6 +11,7 @@ from ..state import ConversationState
 from . import prompts
 
 _CITE = re.compile(r"\[(\d+)\]")
+_CITE_WITH_SPACE = re.compile(r"[ \t]*" + _CITE.pattern)  # so "4% [2]." becomes "4%."
 
 
 def _as_of(chunk: dict) -> str:
@@ -31,14 +32,25 @@ def search(user_msg: str, products: list[str], search_query: str = "", k: int | 
 
 
 def cited_sources(draft: str, chunks: list[dict]) -> tuple[list[dict], set[int]]:
-    """One entry per cited page, with every [n] that points at it (two excerpts can share a page)."""
-    cited = {int(n) for n in _CITE.findall(draft)}
+    """One entry per cited page, with every [n] that points at it (two excerpts can share a page), and the set of
+    [n] that point at a retrieved excerpt. A marker with no excerpt behind it ("[11]" of 10) counts for neither."""
+    cited = {n for n in (int(m) for m in _CITE.findall(draft)) if 1 <= n <= len(chunks)}
     by_url: dict[str, dict] = {}
     for n in sorted(cited):
-        if 1 <= n <= len(chunks):
-            c = chunks[n - 1]
-            by_url.setdefault(c["url"], {"n": [], "title": c["title"], "url": c["url"]})["n"].append(n)
+        c = chunks[n - 1]
+        by_url.setdefault(c["url"], {"n": [], "title": c["title"], "url": c["url"]})["n"].append(n)
     return list(by_url.values()), cited
+
+
+def without_citations(history: list[dict]) -> list[dict]:
+    """Earlier replies with their [n] markers taken out. Those numbers belonged to an earlier search: left in, the
+    model may reuse "[2]" and it would be linked to whatever excerpt 2 is now. Copies; the conversation is untouched."""
+    return [
+        {**m, "content": _CITE_WITH_SPACE.sub("", m["content"])}
+        if m.get("role") == "assistant" and isinstance(m.get("content"), str)
+        else m
+        for m in history
+    ]
 
 
 def hits_detail(user_msg: str, search_query: str, products: list[str], chunks: list[dict], cited: set[int]) -> dict:
@@ -76,7 +88,7 @@ def answer(state: ConversationState, user_msg: str, products: list[str], search_
         f"Source excerpts:\n{excerpts if excerpts else '(no relevant excerpts found)'}\n\n"
         f"Customer question:\n{user_msg}"
     )
-    history = state.recent_history(config.MAX_HISTORY_TURNS)[:-1]  # exclude current user msg
+    history = without_citations(state.recent_history(config.MAX_HISTORY_TURNS)[:-1])  # exclude current user msg
     messages = history + [{"role": "user", "content": user_block}]
     draft = llm.chat(prompts.PRODUCT_KNOWLEDGE, messages, model=config.MODEL_MAIN, max_tokens=4096, effort="medium")
 

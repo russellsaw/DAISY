@@ -418,6 +418,7 @@ def outcome_block(cfs: list[dict]) -> str:
                     f"- *Borderline, not a path*: if {near['description']}, it would only just clear "
                     f"({near['headroom'] * 100:.1f} points inside the limit), so I wouldn't rely on it."
                 )
+            lines.append("")  # a paragraph of its own, or Markdown runs it into the last bullet
             lines.append("Each line above is a separate scenario, not a forecast.")
             lines.append(OUTCOME_TEMPLATE.format(assessed_on=fmt_date(cf["assessed_on"])))
             parts.append("\n".join(lines))

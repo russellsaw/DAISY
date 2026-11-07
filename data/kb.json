@@ -1,6 +1,6 @@
 {
- "built_on": "2026-11-02",
- "built_at": "2026-11-02T18:13:34",
+ "built_on": "2026-11-07",
+ "built_at": "2026-11-07T21:20:28",
  "chunks": [
   {
    "id": "2cdec6ba68-0",
@@ -696,7 +696,7 @@
     "credit_card"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "One-time administration fee 1 | - | 4.5%\nOne-time administration fee amount | - | S$450\nInterest | S$2,400 | $0\nYou could save S$1,950!\nThis is an example based on a 24% p.a. interest rate charged by other banks on credit card balances over 12 months.\nYou will receive an SMS and the approval letter to your mailing address registered with the bank.\nYou can apply up to 93% of your available credit limit. You may apply for multiple Balance Transfer as long as there is available credit limit.\nThere must not be any credit balance (excess payment – i.e. your available credit limit is more than your assigned credit limit) or GIRO arrangement in all your Credit Card or Cashline account for Balance Transfer application.\nLearn how to transfer your credit balance from Cashline to your own DBS/POSB Savings account here."
+   "text": "Bank XYZ | DBS\nOne-time administration fee 1 | - | 4.5%\nOne-time administration fee amount | - | S$450\nInterest | S$2,400 | $0\nYou could save S$1,950!\nThis is an example based on a 24% p.a. interest rate charged by other banks on credit card balances over 12 months.\nYou will receive an SMS and the approval letter to your mailing address registered with the bank.\nYou can apply up to 93% of your available credit limit. You may apply for multiple Balance Transfer as long as there is available credit limit.\nThere must not be any credit balance (excess payment – i.e. your available credit limit is more than your assigned credit limit) or GIRO arrangement in all your Credit Card or Cashline account for Balance Transfer application.\nLearn how to transfer your credit balance from Cashline to your own DBS/POSB Savings account here."
   },
   {
    "id": "ac04f529db-7",
@@ -3068,7 +3068,7 @@
     "credit_card"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "DBS Live Fresh Card | S$196.20 | S$98.10 | 1 Year Annual Fee Waiver\nDBS Live Fresh Student Card | S$196.20 | N.A. | 5 Year Annual Fee Waiver\nDBS yuu Visa Card | S$196.20 | S$98.10 | 1 Year Annual Fee Waiver\nDBS yuu American Express Card | S$196.20 | S$98.10 | 1 Year Annual Fee Waiver\nDBS MasterCard Platinum Card (Only for ANZ migrated customers) | S$196.20 | S$98.10 | 1 Year Annual Fee Waiver *Charge a minimum of S$25,000 to your DBS MasterCard Platinum Card each year to receive the annual fee waiver for the following year.\nDBS Woman’s MasterCard® Card | S$163.50 | S$81.75 | 1 Year Annual Fee Waiver *Charge a minimum of S$15,000 to your DBS Woman’s MasterCard® Card each year to receive the annual fee waiver for the following year."
+   "text": "Card Name | Principal Card's Annual Fee | Supplementary Card's Annual Fee | Fee Waiver\nDBS Live Fresh Card | S$196.20 | S$98.10 | 1 Year Annual Fee Waiver\nDBS Live Fresh Student Card | S$196.20 | N.A. | 5 Year Annual Fee Waiver\nDBS yuu Visa Card | S$196.20 | S$98.10 | 1 Year Annual Fee Waiver\nDBS yuu American Express Card | S$196.20 | S$98.10 | 1 Year Annual Fee Waiver\nDBS MasterCard Platinum Card (Only for ANZ migrated customers) | S$196.20 | S$98.10 | 1 Year Annual Fee Waiver *Charge a minimum of S$25,000 to your DBS MasterCard Platinum Card each year to receive the annual fee waiver for the following year.\nDBS Woman’s MasterCard® Card | S$163.50 | S$81.75 | 1 Year Annual Fee Waiver *Charge a minimum of S$15,000 to your DBS Woman’s MasterCard® Card each year to receive the annual fee waiver for the following year."
   },
   {
    "id": "4bc401aeb9-2",
@@ -3080,7 +3080,7 @@
     "credit_card"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "DBS Woman’s World MasterCard® Card | S$196.20 | S$98.10 | 1 Year Annual Fee Waiver *Charge a minimum of S$25,000 to your DBS Woman’s World MasterCard® Card each year to receive the annual fee waiver for the following year. With effect from 1 August 2026 , the Annual Fee waiver eligibility upon meeting the retail spend of S$25,000 in the previous card year will be ceased.\nDBS Esso Card | S$196.20 | S$98.10 | 1 Year Annual Fee Waiver\nDBS Treasures Black Elite Card | S$545.00 | N.A. | Waived as long as Principal cardholder maintains a DBS Treasures relationship. Note: With effect from 1 January 2023, we will not be accepting applications for new DBS Treasures Black Elite Card."
+   "text": "Card Name | Principal Card's Annual Fee | Supplementary Card's Annual Fee | Fee Waiver\nDBS Woman’s World MasterCard® Card | S$196.20 | S$98.10 | 1 Year Annual Fee Waiver *Charge a minimum of S$25,000 to your DBS Woman’s World MasterCard® Card each year to receive the annual fee waiver for the following year. With effect from 1 August 2026 , the Annual Fee waiver eligibility upon meeting the retail spend of S$25,000 in the previous card year will be ceased.\nDBS Esso Card | S$196.20 | S$98.10 | 1 Year Annual Fee Waiver\nDBS Treasures Black Elite Card | S$545.00 | N.A. | Waived as long as Principal cardholder maintains a DBS Treasures relationship. Note: With effect from 1 January 2023, we will not be accepting applications for new DBS Treasures Black Elite Card."
   },
   {
    "id": "4bc401aeb9-3",
@@ -3092,7 +3092,7 @@
     "credit_card"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "DBS Vantage Card | S$599.50 | N.A. | While the Annual Fee is strictly non-waivable for the first year, you will enjoy a waiver in the subsequent years if a minimum of S$60,000 worth of retail spend is made in the preceding Card Year. With effect from 1 August 2026 , the Annual Fee waiver eligibility upon meeting the retail spend of S$60,000 in the previous card year will be ceased. Please note that the 12,500 DBS Points (25,000 miles) will not be awarded if the Annual Fee is waived.\nDBS Altitude Visa Signature Card | S$196.20 | S$98.10 | 1 Year Annual Fee Waiver *Charge a minimum of S$25,000 to your DBS Altitude Visa Signature Card each year to receive the annual fee waiver for the following year. With effect from 1 August 2026 , the Annual Fee waiver eligibility upon meeting the retail spend of S$25,000 in the previous card year will be ceased."
+   "text": "Card Name | Principal Card's Annual Fee | Supplementary Card's Annual Fee | Fee Waiver\nDBS Vantage Card | S$599.50 | N.A. | While the Annual Fee is strictly non-waivable for the first year, you will enjoy a waiver in the subsequent years if a minimum of S$60,000 worth of retail spend is made in the preceding Card Year. With effect from 1 August 2026 , the Annual Fee waiver eligibility upon meeting the retail spend of S$60,000 in the previous card year will be ceased. Please note that the 12,500 DBS Points (25,000 miles) will not be awarded if the Annual Fee is waived."
   },
   {
    "id": "4bc401aeb9-4",
@@ -3104,7 +3104,19 @@
     "credit_card"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "DBS Altitude American Express® Card | S$196.20 | S$98.10 | 1 Year Annual Fee Waiver *Charge a minimum of S$25,000 to your DBS Altitude American Express ® Card each year to receive the annual fee waiver for the following year. With effect from 1 August 2026 , the Annual Fee waiver eligibility upon meeting the retail spend of S$25,000 in the previous card year will be ceased.\nPOSB Everyday Card | S$196.20 | S$98.10 | 1 Year Annual Fee Waiver\nSAFRA DBS Card | No annual fee, so long as you remain a SAFRA member. SAFRA membership fee applies. Click here for more details.\nRequest for Waiver of Charges\nCheck Credit Card Transaction Details\nCards for Life: Credit Card Eligibility for 65 years old and above\nRequest for Waiver of Charges\nCheck Credit Card Transaction Details\nCards for Life: Credit Card Eligibility for 65 years old and above"
+   "text": "Card Name | Principal Card's Annual Fee | Supplementary Card's Annual Fee | Fee Waiver\nDBS Altitude Visa Signature Card | S$196.20 | S$98.10 | 1 Year Annual Fee Waiver *Charge a minimum of S$25,000 to your DBS Altitude Visa Signature Card each year to receive the annual fee waiver for the following year. With effect from 1 August 2026 , the Annual Fee waiver eligibility upon meeting the retail spend of S$25,000 in the previous card year will be ceased.\nDBS Altitude American Express® Card | S$196.20 | S$98.10 | 1 Year Annual Fee Waiver *Charge a minimum of S$25,000 to your DBS Altitude American Express ® Card each year to receive the annual fee waiver for the following year. With effect from 1 August 2026 , the Annual Fee waiver eligibility upon meeting the retail spend of S$25,000 in the previous card year will be ceased."
+  },
+  {
+   "id": "4bc401aeb9-5",
+   "doc_id": "dbs-credit-card-annual-fee",
+   "url": "https://www.dbs.com.sg/personal/support/card-charges-and-fees-annual-fee.html",
+   "title": "DBS Credit Card Annual Fee",
+   "publisher": "DBS",
+   "products": [
+    "credit_card"
+   ],
+   "fetched_at": "2026-10-27T17:56:54",
+   "text": "Card Name | Principal Card's Annual Fee | Supplementary Card's Annual Fee | Fee Waiver\nPOSB Everyday Card | S$196.20 | S$98.10 | 1 Year Annual Fee Waiver\nSAFRA DBS Card | No annual fee, so long as you remain a SAFRA member. SAFRA membership fee applies. Click here for more details.\nRequest for Waiver of Charges\nCheck Credit Card Transaction Details\nCards for Life: Credit Card Eligibility for 65 years old and above\nRequest for Waiver of Charges\nCheck Credit Card Transaction Details\nCards for Life: Credit Card Eligibility for 65 years old and above"
   },
   {
    "id": "690c8f7dd0-0",
@@ -3344,7 +3356,7 @@
     "credit_card"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Dividend or Interest income | Income Tax Notice of Assessment in SGD and/ or Annual personal bank statement in SGD showing Dividend or interest income | 1 year\nCPF Life Payout | CPF monthly payouts history statement showing CPF Life payout or Personal Bank statement in SGD showing CPF Life payout. | 1 month\nRetirement Sum Scheme (RSS) | CPF Transaction History showing RSS payout and RSS Balance | 1 year\nSalary Employees with length of service more than 3 months | Computerized payslip in SGD or Salary Crediting bank statements in SGD For salary credited into DBS/POSB account, indicate your personal Savings/Current account number under the Income Information Submission section on the application form (available at our branches or call our customer centre) | 3 months"
+   "text": "Income | Document(s) required | Period (months/year)\nDividend or Interest income | Income Tax Notice of Assessment in SGD and/ or Annual personal bank statement in SGD showing Dividend or interest income | 1 year\nCPF Life Payout | CPF monthly payouts history statement showing CPF Life payout or Personal Bank statement in SGD showing CPF Life payout. | 1 month\nRetirement Sum Scheme (RSS) | CPF Transaction History showing RSS payout and RSS Balance | 1 year\nSalary Employees with length of service more than 3 months | Computerized payslip in SGD or Salary Crediting bank statements in SGD For salary credited into DBS/POSB account, indicate your personal Savings/Current account number under the Income Information Submission section on the application form (available at our branches or call our customer centre) | 3 months"
   },
   {
    "id": "168f861795-3",
@@ -3356,7 +3368,7 @@
     "credit_card"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Salary Employees with length of service less than 3 months | Latest computerised payslip or Company letter certifying employment and salary in SGD (signed copy by HR and you) and a copy of Staff Pass | -\nVariable/ Commission-based Employees/ Self-Employed | Income Tax Notice of Assessment in SGD | 1 year (2 years preferred)\nYou can provide income document(s) that sum up to a minimum of S$1,250 monthly income ($15,000 annual income)\nWe don't accept Assets Under Management (AUM) in place of income for unsecured credit card applications. However, you may consider applying for a Secured Credit Card by placing a Fixed Deposit. Learn more about Secured cards.\nCredit limit is determined at DBS' discretion. However, we will take your preferred limit into consideration and assign a credit limit not exceeding your preferred limit.\nApplication Process"
+   "text": "Income | Document(s) required | Period (months/year)\nSalary Employees with length of service less than 3 months | Latest computerised payslip or Company letter certifying employment and salary in SGD (signed copy by HR and you) and a copy of Staff Pass | -\nVariable/ Commission-based Employees/ Self-Employed | Income Tax Notice of Assessment in SGD | 1 year (2 years preferred)\nYou can provide income document(s) that sum up to a minimum of S$1,250 monthly income ($15,000 annual income)\nWe don't accept Assets Under Management (AUM) in place of income for unsecured credit card applications. However, you may consider applying for a Secured Credit Card by placing a Fixed Deposit. Learn more about Secured cards.\nCredit limit is determined at DBS' discretion. However, we will take your preferred limit into consideration and assign a credit limit not exceeding your preferred limit."
   },
   {
    "id": "168f861795-4",
@@ -3440,7 +3452,7 @@
     "credit_card"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Administrative fee charged by respective card associations | 1.00% | 0.60%\nAdministrative fee charged by bank | 2.25% | 2.65%\nTotal administrative fee on top of the prevailing foreign exchange rate determined by respective card associations | 3.25% | 3.25%\nThese administrative fees apply to all foreign currency transactions, including purchases, refunds and reversals.\nHow are foreign currency transactions converted?\nForeign currency transactions are converted to SGD using exchange rates determined by the respective card associations (American Express, Mastercard, Visa and UnionPay).\nAmerican Express, Mastercard and Visa Cards\nTransactions in US Dollar (USD) are converted directly to Singapore Dollar (SGD).\nTransactions in other foreign currencies are first converted to USD, then converted to SGD.\nUnionPay Cards"
+   "text": "Foreign Currency Transaction Fees | American Express / Mastercard / Visa Cards | UnionPay Cards\nAdministrative fee charged by respective card associations | 1.00% | 0.60%\nAdministrative fee charged by bank | 2.25% | 2.65%\nTotal administrative fee on top of the prevailing foreign exchange rate determined by respective card associations | 3.25% | 3.25%\nThese administrative fees apply to all foreign currency transactions, including purchases, refunds and reversals.\nHow are foreign currency transactions converted?\nForeign currency transactions are converted to SGD using exchange rates determined by the respective card associations (American Express, Mastercard, Visa and UnionPay).\nAmerican Express, Mastercard and Visa Cards\nTransactions in US Dollar (USD) are converted directly to Singapore Dollar (SGD)."
   },
   {
    "id": "3cb6215acb-6",
@@ -3452,7 +3464,7 @@
     "credit_card"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Transactions in other foreign currencies are first converted to USD, then converted to SGD.\nUnionPay Cards\nTransactions in USD, Chinese Yuan (CNY) and Brunei Dollar (BND) are converted directly to SGD.\nTransactions in other foreign currencies are first converted to USD, then converted to SGD.\nWhat exchange rate is used?\nThe exchange rate is determined by the respective card associations (American Express, Mastercard, Visa and UnionPay) based on the prevailing exchange rate at the time of conversion. This may differ from the exchange rate on the transaction date, due to market fluctuations.\nWhen is my foreign currency transaction converted to SGD?\nTransactions are typically converted when they are processed by the respective card association (American Express, Mastercard, Visa and UnionPay), which may be a few days after the purchase date."
+   "text": "American Express, Mastercard and Visa Cards\nTransactions in US Dollar (USD) are converted directly to Singapore Dollar (SGD).\nTransactions in other foreign currencies are first converted to USD, then converted to SGD.\nUnionPay Cards\nTransactions in USD, Chinese Yuan (CNY) and Brunei Dollar (BND) are converted directly to SGD.\nTransactions in other foreign currencies are first converted to USD, then converted to SGD.\nWhat exchange rate is used?\nThe exchange rate is determined by the respective card associations (American Express, Mastercard, Visa and UnionPay) based on the prevailing exchange rate at the time of conversion. This may differ from the exchange rate on the transaction date, due to market fluctuations.\nWhen is my foreign currency transaction converted to SGD?"
   },
   {
    "id": "3cb6215acb-7",
@@ -3464,7 +3476,7 @@
     "credit_card"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Are fees charged on both the purchase and the refund/reversal?\nYes. Each transaction (purchases, refund or reversal) is processed separately. This means that the applicable foreign currency transaction fees are charged both when the sales transaction is made and when it is refunded/reversed.\nWhy is the refund amount different from the original charge?\nRefund/reversal amounts may differ from the original amount charge due to the following reasons:\nExchange rate fluctuations between purchase and refund/reversal processing date.\nApplicable foreign currency transaction fees charged on both transactions at time of processing.\nWhy does the exchange rate on my foreign currency transaction differ from what I see online?"
+   "text": "When is my foreign currency transaction converted to SGD?\nTransactions are typically converted when they are processed by the respective card association (American Express, Mastercard, Visa and UnionPay), which may be a few days after the purchase date.\nAre fees charged on both the purchase and the refund/reversal?\nYes. Each transaction (purchases, refund or reversal) is processed separately. This means that the applicable foreign currency transaction fees are charged both when the sales transaction is made and when it is refunded/reversed.\nWhy is the refund amount different from the original charge?\nRefund/reversal amounts may differ from the original amount charge due to the following reasons:\nExchange rate fluctuations between purchase and refund/reversal processing date.\nApplicable foreign currency transaction fees charged on both transactions at time of processing."
   },
   {
    "id": "3cb6215acb-8",
@@ -3476,7 +3488,7 @@
     "credit_card"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Why does the exchange rate on my foreign currency transaction differ from what I see online?\nThese exchange rates are determined by the respective card associations and (American Express, Mastercard, Visa and UnionPay) may differ from publicly available exchange rates (e.g. online sources) as they are determined at the time of processing (not point of purchase).\nDoes this apply to online overseas transactions as well?\nYes. These foreign currency transaction fees and exchange rates apply to both:\nIn-store overseas purchases\nOnline transactions charged in foreign currencies\nDynamic Currency Conversion (DCC)\nWhat is Dynamic Currency Conversion (DCC)?\nDCC is a service offered by some overseas merchants or websites that allows your purchase to be converted into Singapore Dollars (SGD) at the point of payment.\nWhat fees apply to DCC transactions?"
+   "text": "Applicable foreign currency transaction fees charged on both transactions at time of processing.\nWhy does the exchange rate on my foreign currency transaction differ from what I see online?\nThese exchange rates are determined by the respective card associations and (American Express, Mastercard, Visa and UnionPay) may differ from publicly available exchange rates (e.g. online sources) as they are determined at the time of processing (not point of purchase).\nDoes this apply to online overseas transactions as well?\nYes. These foreign currency transaction fees and exchange rates apply to both:\nIn-store overseas purchases\nOnline transactions charged in foreign currencies\nDynamic Currency Conversion (DCC)\nWhat is Dynamic Currency Conversion (DCC)?"
   },
   {
    "id": "3cb6215acb-9",
@@ -3488,7 +3500,7 @@
     "credit_card"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "What fees apply to DCC transactions?\nDCC transactions are subject to administrative fees on the SGD amount charged. Details of the fees are illustrated in the table below.\nDynamic Currency Conversion (DCC) Transaction Fees | Credit Cards (Mastercard/Visa) | Debit Cards (Mastercard/Visa)\nAdministrative fee charged by respective card associations | 1.00% | 1.00%\nAdministrative fee charged by bank | - | 1.80%\nTotal administrative fee on top of the prevailing foreign exchange rate determined by respective card associations | 1.00% | 2.80%\nThese fees apply to all DCC transactions (including purchases, refunds and reversals). As refunds/reversals are processed as separate transactions, fees apply to both the original transaction and the refunded/reversed transaction.\nWhat exchange rate is used?"
+   "text": "Online transactions charged in foreign currencies\nDynamic Currency Conversion (DCC)\nWhat is Dynamic Currency Conversion (DCC)?\nDCC is a service offered by some overseas merchants or websites that allows your purchase to be converted into Singapore Dollars (SGD) at the point of payment.\nWhat fees apply to DCC transactions?\nDCC transactions are subject to administrative fees on the SGD amount charged. Details of the fees are illustrated in the table below.\nDynamic Currency Conversion (DCC) Transaction Fees | Credit Cards (Mastercard/Visa) | Debit Cards (Mastercard/Visa)\nAdministrative fee charged by respective card associations | 1.00% | 1.00%\nAdministrative fee charged by bank | - | 1.80%\nTotal administrative fee on top of the prevailing foreign exchange rate determined by respective card associations | 1.00% | 2.80%"
   },
   {
    "id": "3cb6215acb-10",
@@ -3500,7 +3512,7 @@
     "credit_card"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "What exchange rate is used?\nThe exchange rate is determined by the overseas merchant or their DCC service provider, and not by the Bank or the respective card association.\nAre fees charged for both the purchase and the refund?\nYes. Each transaction (purchase, refund or reversal) is processed separately. This means that the applicable DCC transaction fees are charged both when the sales transaction is made and when it is refunded/reversed.\nWhy is the DCC refund amount different from the original charge?\nRefund/reversal amounts may differ from the original amount charge due to the following reasons:\nExchange rate fluctuations between purchase and refund/reversal processing dates;\nExchange rates set by the overseas merchant or their DCC service provider; or\nApplicable DCC fees charged on both transactions at time of processing"
+   "text": "Dynamic Currency Conversion (DCC) Transaction Fees | Credit Cards (Mastercard/Visa) | Debit Cards (Mastercard/Visa)\nTotal administrative fee on top of the prevailing foreign exchange rate determined by respective card associations | 1.00% | 2.80%\nThese fees apply to all DCC transactions (including purchases, refunds and reversals). As refunds/reversals are processed as separate transactions, fees apply to both the original transaction and the refunded/reversed transaction.\nWhat exchange rate is used?\nThe exchange rate is determined by the overseas merchant or their DCC service provider, and not by the Bank or the respective card association.\nAre fees charged for both the purchase and the refund?"
   },
   {
    "id": "3cb6215acb-11",
@@ -3512,10 +3524,22 @@
     "credit_card"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Exchange rates set by the overseas merchant or their DCC service provider; or\nApplicable DCC fees charged on both transactions at time of processing\nAs processing dates and rates may differ, the refunded/reversed amount may be higher or lower than the original charge.\nHow do I select to perform the transaction in DCC or local currency?\nYou will usually be given a choice at the point of payment at overseas merchants with DCC service.\nWhat will I see for DCC transactions on my statement?\nFor DCC transactions, your statement will show the final SGD amount charged, inclusive of the total DCC administrative fee.\nDoes DCC apply to online transactions as well?\nYes. DCC may be offered on overseas websites that provide SGD as a payment option at checkout. Remember to always check the selected currency before confirming your payment."
+   "text": "Are fees charged for both the purchase and the refund?\nYes. Each transaction (purchase, refund or reversal) is processed separately. This means that the applicable DCC transaction fees are charged both when the sales transaction is made and when it is refunded/reversed.\nWhy is the DCC refund amount different from the original charge?\nRefund/reversal amounts may differ from the original amount charge due to the following reasons:\nExchange rate fluctuations between purchase and refund/reversal processing dates;\nExchange rates set by the overseas merchant or their DCC service provider; or\nApplicable DCC fees charged on both transactions at time of processing\nAs processing dates and rates may differ, the refunded/reversed amount may be higher or lower than the original charge.\nHow do I select to perform the transaction in DCC or local currency?"
   },
   {
    "id": "3cb6215acb-12",
+   "doc_id": "dbs-credit-card-foreign-transaction-fees",
+   "url": "https://www.dbs.com.sg/personal/support/card-charges-and-fees-overseas-transaction-fees.html",
+   "title": "Credit Card Foreign Transaction Fees",
+   "publisher": "DBS",
+   "products": [
+    "credit_card"
+   ],
+   "fetched_at": "2026-10-27T17:56:54",
+   "text": "How do I select to perform the transaction in DCC or local currency?\nYou will usually be given a choice at the point of payment at overseas merchants with DCC service.\nWhat will I see for DCC transactions on my statement?\nFor DCC transactions, your statement will show the final SGD amount charged, inclusive of the total DCC administrative fee.\nDoes DCC apply to online transactions as well?\nYes. DCC may be offered on overseas websites that provide SGD as a payment option at checkout. Remember to always check the selected currency before confirming your payment."
+  },
+  {
+   "id": "3cb6215acb-13",
    "doc_id": "dbs-credit-card-foreign-transaction-fees",
    "url": "https://www.dbs.com.sg/personal/support/card-charges-and-fees-overseas-transaction-fees.html",
    "title": "Credit Card Foreign Transaction Fees",
@@ -4196,7 +4220,7 @@
     "credit_card"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Additional Savings with Smiles Points | Synergy Supreme+ 1.2% | All other Synergy Fuels 1.2%\nTerms and conditions apply.\n## Esso Smiles Rewards Programme\nAuto-enrolment into the Esso Smiles Driver Rewards Programme:\nThis loyalty programme for Esso customers in Singapore gives you equivalent of up to 1.2% in additional fuel savings.\nEarn 1 Smiles for every litre of Synergy fuel purchased at any Esso station.\nEnjoy $10 instant fuel redemption with as low as 300 Smiles Points earned or S$30 instant fuel redemption with 750 Smiles Points earned.\nEsso’s General Notification on Personal Data Collection, Use & Disclosure for Smiles Members apply. Visit www.essosmiles.com.sg for full details."
+   "text": "Synergy Supreme+ | All other Synergy Fuels\nAdditional Savings with Smiles Points | Synergy Supreme+ 1.2% | All other Synergy Fuels 1.2%\nTerms and conditions apply.\n## Esso Smiles Rewards Programme\nAuto-enrolment into the Esso Smiles Driver Rewards Programme:\nThis loyalty programme for Esso customers in Singapore gives you equivalent of up to 1.2% in additional fuel savings.\nEarn 1 Smiles for every litre of Synergy fuel purchased at any Esso station.\nEnjoy $10 instant fuel redemption with as low as 300 Smiles Points earned or S$30 instant fuel redemption with 750 Smiles Points earned.\nEsso’s General Notification on Personal Data Collection, Use & Disclosure for Smiles Members apply. Visit www.essosmiles.com.sg for full details."
   },
   {
    "id": "bb0cfc1ca8-4",
@@ -4412,7 +4436,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Type of interest rate | FHR6 Floating rate changes are based on the discretion of the bank, in response to market conditions. | 3M SORA Floating based on overnight interbank borrowing rates and fluctuations are in response to central bank policies and economic factors.\nWhen and where is it published? | FHR6 S$ Fixed Deposit rates are published on our website here . | 3M SORA SORA rates are published daily on the (MAS) website at 9am.\n## Eligibility Requirements\nProperty type | A) Private Building Under Construction (BUC) properties certified under the Building and Construction Authority (BCA) Green Mark scheme; or B) Selected private BUC properties earmarked for Green Mark certification"
+   "text": "What’s the difference? | FHR6 | 3M SORA\nType of interest rate | FHR6 Floating rate changes are based on the discretion of the bank, in response to market conditions. | 3M SORA Floating based on overnight interbank borrowing rates and fluctuations are in response to central bank policies and economic factors.\nWhen and where is it published? | FHR6 S$ Fixed Deposit rates are published on our website here . | 3M SORA SORA rates are published daily on the (MAS) website at 9am."
   },
   {
    "id": "87a7ff7b31-6",
@@ -4424,7 +4448,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "BCA Green Mark rating requirement for certified properties | For properties certified under the BCA Green Mark scheme, the property must have attained a BCA Green Mark rating as reflected on the SLEB Green Mark Building Directory at point of loan application: Platinum Positive Energy Platinum Zero Energy Platinum Super Low Energy GoldPLUS Positive Energy GoldPLUS Zero Energy GoldPLUS Super Low Energy Positive Energy Zero Energy Super Low Energy Platinum GoldPLUS\nSelected properties earmarked for Green Mark certification | The selection of private BUC properties earmarked for Green Mark certification is determined by DBS’ internal assessment of projects earmarked for Green Mark certification. Please connect with our Home Advice Specialists to find out more."
+   "text": "## Eligibility Requirements\nProperty type | A) Private Building Under Construction (BUC) properties certified under the Building and Construction Authority (BCA) Green Mark scheme; or B) Selected private BUC properties earmarked for Green Mark certification\nBCA Green Mark rating requirement for certified properties | For properties certified under the BCA Green Mark scheme, the property must have attained a BCA Green Mark rating as reflected on the SLEB Green Mark Building Directory at point of loan application: Platinum Positive Energy Platinum Zero Energy Platinum Super Low Energy GoldPLUS Positive Energy GoldPLUS Zero Energy GoldPLUS Super Low Energy Positive Energy Zero Energy Super Low Energy Platinum GoldPLUS"
   },
   {
    "id": "87a7ff7b31-7",
@@ -4436,7 +4460,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "## Get your DBS Green Home Loan in 4 easy steps\nNot sure where to start? Every property and its purchasing journey is unique, that's why we've crafted a simple step-by-step guide to streamline the process, whether you're a first-time buyer or a seasoned homeowner.\n1. Ensure you have DBS digibank accessBefore you kickstart your home loan application, ensure that you have digibank access for a seamless application journey. Whether you are new to DBS or POSB or have an existing account, getting your digibank access is as easy as 1-2-3! Simply refer to this guide to get started.\n2. Submit your applicationComplete your home loan application and submit all required documents Refer to this list of documents you’ll need to prepare and ensure you have a DBS/POSB savings account for loan disbursement.."
+   "text": "Selected properties earmarked for Green Mark certification | The selection of private BUC properties earmarked for Green Mark certification is determined by DBS’ internal assessment of projects earmarked for Green Mark certification. Please connect with our Home Advice Specialists to find out more.\n## Get your DBS Green Home Loan in 4 easy steps\nNot sure where to start? Every property and its purchasing journey is unique, that's why we've crafted a simple step-by-step guide to streamline the process, whether you're a first-time buyer or a seasoned homeowner.\n1. Ensure you have DBS digibank accessBefore you kickstart your home loan application, ensure that you have digibank access for a seamless application journey. Whether you are new to DBS or POSB or have an existing account, getting your digibank access is as easy as 1-2-3! Simply refer to this guide to get started."
   },
   {
    "id": "87a7ff7b31-8",
@@ -4448,7 +4472,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "3. Receive letter of offerOnce your loan is approved, you will receive a letter of offer via email. In instances where we require more information, our Home Advice Specialist will reach out to you.\n4. Accept loan offerOnce you’ve accepted the loan offer, a letter of acceptance will be generated and emailed to you. Congratulations on your approved loan!\n## Frequently Asked Questions\nThe DBS Green Home Loan is available for:\nPrivate Building Under Construction (BUC) properties certified under the Building and Construction Authority (BCA) Green Mark scheme, or\nSelected private BUC properties earmarked for Green Mark certification\nPlatinum Positive Energy\nPlatinum Zero Energy\nPlatinum Super Low Energy\nGoldPLUS Positive Energy\nGoldPLUS Zero Energy\nGoldPLUS Super Low Energy\nPositive Energy\nZero Energy\nSuper Low Energy\nPlatinum\nGoldPLUS"
+   "text": "2. Submit your applicationComplete your home loan application and submit all required documents Refer to this list of documents you’ll need to prepare and ensure you have a DBS/POSB savings account for loan disbursement..\n3. Receive letter of offerOnce your loan is approved, you will receive a letter of offer via email. In instances where we require more information, our Home Advice Specialist will reach out to you.\n4. Accept loan offerOnce you’ve accepted the loan offer, a letter of acceptance will be generated and emailed to you. Congratulations on your approved loan!"
   },
   {
    "id": "87a7ff7b31-9",
@@ -4460,7 +4484,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "GoldPLUS Positive Energy\nGoldPLUS Zero Energy\nGoldPLUS Super Low Energy\nPositive Energy\nZero Energy\nSuper Low Energy\nPlatinum\nGoldPLUS\nPlease connect with our Home Advice Specialists to find out more\nFor all other details, please refer to our full Terms and Conditions here."
+   "text": "## Frequently Asked Questions\nThe DBS Green Home Loan is available for:\nPrivate Building Under Construction (BUC) properties certified under the Building and Construction Authority (BCA) Green Mark scheme, or\nSelected private BUC properties earmarked for Green Mark certification\nPlatinum Positive Energy\nPlatinum Zero Energy\nPlatinum Super Low Energy\nGoldPLUS Positive Energy\nGoldPLUS Zero Energy\nGoldPLUS Super Low Energy\nPositive Energy\nZero Energy\nSuper Low Energy\nPlatinum\nGoldPLUS\nPlease connect with our Home Advice Specialists to find out more\nFor all other details, please refer to our full Terms and Conditions here."
   },
   {
    "id": "4d43152734-0",
@@ -4844,7 +4868,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Amortisation | The gradual reduction in the principal amount owed on a debt as it is being repaid. During the earlier years of the loan, loan repayments mostly go towards the interest owed. During the final years of the loan, loan repayments are almost exclusively used to repay the remaining principal.\nAnnual Value (AV) | The AV of a property is based on the estimated annual rent of a property if it were to be rented out. excluding the rent for furniture, fittings and service charge. You can find the AV on your property tax bill. The IRAS (Inland Revenue Authority of Singapore) determines the AV of your property by analysing rents of comparable properties."
+   "text": "Term | Description\nAmortisation | The gradual reduction in the principal amount owed on a debt as it is being repaid. During the earlier years of the loan, loan repayments mostly go towards the interest owed. During the final years of the loan, loan repayments are almost exclusively used to repay the remaining principal.\nAnnual Value (AV) | The AV of a property is based on the estimated annual rent of a property if it were to be rented out. excluding the rent for furniture, fittings and service charge. You can find the AV on your property tax bill. The IRAS (Inland Revenue Authority of Singapore) determines the AV of your property by analysing rents of comparable properties."
   },
   {
    "id": "33cdec9225-3",
@@ -4856,7 +4880,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Asset Line | A secured short-term loan facility that allows the customer to access cash using his property as collateral. It provides flexibility as there are no restrictions on how the funds may be used and no fee for early repayment.\nBankruptcy Search | A search conducted to determine if any bankruptcy proceedings and other legal proceedings have been filed against the borrower. A bankrupt may not transfer his interest to a purchaser or mortgage his property to a bank, without the Official Assignee’s consent.\nBoard Rate | A mortgage interest rate that is determined internally by banks and not based on a public benchmark such as SORA.\nBorrower | The person who is taking out a home loan from the bank."
+   "text": "Term | Description\nAsset Line | A secured short-term loan facility that allows the customer to access cash using his property as collateral. It provides flexibility as there are no restrictions on how the funds may be used and no fee for early repayment.\nBankruptcy Search | A search conducted to determine if any bankruptcy proceedings and other legal proceedings have been filed against the borrower. A bankrupt may not transfer his interest to a purchaser or mortgage his property to a bank, without the Official Assignee’s consent.\nBoard Rate | A mortgage interest rate that is determined internally by banks and not based on a public benchmark such as SORA.\nBorrower | The person who is taking out a home loan from the bank."
   },
   {
    "id": "33cdec9225-4",
@@ -4868,7 +4892,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Borrower | The person who is taking out a home loan from the bank.\nBridging Loan | A short-term loan that is granted to homeowners who are selling their existing residential property and purchasing another one. It can be used in the purchase of all types of residential property. It is typically used to help with the down payment of the new property, while waiting to receive the sale proceeds from an existing residential property. Bridging loans will only be disbursed after the person who is buying your existing property has done one of these: i) Signed an Option to Purchase (OTP), or ii) Executed a Sale and Purchase (S&P) Agreement, or iii) Received confirmation of their first appointment with HDB. During the loan period, the borrower need only repay the interest. The loan has to be repaid to the Bank in full within 6 months after it is disbursed."
+   "text": "Term | Description\nBorrower | The person who is taking out a home loan from the bank.\nBridging Loan | A short-term loan that is granted to homeowners who are selling their existing residential property and purchasing another one. It can be used in the purchase of all types of residential property. It is typically used to help with the down payment of the new property, while waiting to receive the sale proceeds from an existing residential property. Bridging loans will only be disbursed after the person who is buying your existing property has done one of these: i) Signed an Option to Purchase (OTP), or ii) Executed a Sale and Purchase (S&P) Agreement, or iii) Received confirmation of their first appointment with HDB. During the loan period, the borrower need only repay the interest. The loan has to be repaid to the Bank in full within 6 months after it is disbursed."
   },
   {
    "id": "33cdec9225-5",
@@ -4880,7 +4904,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Cancellation Fee | A cancellation fee is charged if you reject the loan after accepting the letter of offer (LO), usually a small percentage of the undisbursed loan amount.\nCash Over Valuation (COV) | The difference between the agreed price of a HDB resale flat and its actual valuation by HDB. COV is payable if the flat is sold above HDB valuation and can only be paid with cash.\nCaveat | A caveat serves as a public notice that the person lodging it is claiming an interest in the property and lapses in 5 years from the date of lodgement unless it is discharged or renewed.\nCentral Provident Fund (CPF) | Singapore’s mandatory social security savings scheme funded by contributions from employers and employees, to serve retirement, housing and healthcare needs."
+   "text": "Term | Description\nCancellation Fee | A cancellation fee is charged if you reject the loan after accepting the letter of offer (LO), usually a small percentage of the undisbursed loan amount.\nCash Over Valuation (COV) | The difference between the agreed price of a HDB resale flat and its actual valuation by HDB. COV is payable if the flat is sold above HDB valuation and can only be paid with cash.\nCaveat | A caveat serves as a public notice that the person lodging it is claiming an interest in the property and lapses in 5 years from the date of lodgement unless it is discharged or renewed.\nCentral Provident Fund (CPF) | Singapore’s mandatory social security savings scheme funded by contributions from employers and employees, to serve retirement, housing and healthcare needs."
   },
   {
    "id": "33cdec9225-6",
@@ -4892,7 +4916,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Certificate of Statutory Completion (CSC) / Temporary Occupancy Permit (TOP) | Certificate of Statutory Completion (CSC) / Temporary Occupancy Permit (TOP) is issued by the Commissioner of Building Control to a building project when the building works are completed. The building can only be occupied after a CSC or TOP has been granted. Application may be made directly for a CSC when all the requirements have been complied with. Otherwise, if only certain requisites have been complied with, application for a TOP may be made first before finally complying with all requirements and obtaining CSC. CSC is usually issued one year after TOP."
+   "text": "Term | Description\nCertificate of Statutory Completion (CSC) / Temporary Occupancy Permit (TOP) | Certificate of Statutory Completion (CSC) / Temporary Occupancy Permit (TOP) is issued by the Commissioner of Building Control to a building project when the building works are completed. The building can only be occupied after a CSC or TOP has been granted. Application may be made directly for a CSC when all the requirements have been complied with. Otherwise, if only certain requisites have been complied with, application for a TOP may be made first before finally complying with all requirements and obtaining CSC. CSC is usually issued one year after TOP."
   },
   {
    "id": "33cdec9225-7",
@@ -4904,7 +4928,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Claw-back Period | The period during which, if you fully redeem your mortgage, the bank will reclaim the cost of \"freebies\" issued to you when you took on a loan with them. These typically include the legal subsidy and in some cases, valuation fees and fire insurance premiums.\nCollateral | An asset or security pledged for the payment of a loan.\nComparative Market Analysis (CMA) | A report of similar properties in the area that were recently sold or pending sale. This is usually provided by a property agent to a buyer, as a basis for comparison for the property that the buyer is keen on. The CMA helps the buyer determine if he or she is paying a fair price for the property and how much he should offer. Similar properties are determined by factors such as their age, amenities, square footage, condition and location."
+   "text": "Term | Description\nClaw-back Period | The period during which, if you fully redeem your mortgage, the bank will reclaim the cost of \"freebies\" issued to you when you took on a loan with them. These typically include the legal subsidy and in some cases, valuation fees and fire insurance premiums.\nCollateral | An asset or security pledged for the payment of a loan.\nComparative Market Analysis (CMA) | A report of similar properties in the area that were recently sold or pending sale. This is usually provided by a property agent to a buyer, as a basis for comparison for the property that the buyer is keen on. The CMA helps the buyer determine if he or she is paying a fair price for the property and how much he should offer. Similar properties are determined by factors such as their age, amenities, square footage, condition and location."
   },
   {
    "id": "33cdec9225-8",
@@ -4916,7 +4940,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Conservancy / Maintenance Fees | Fees collected for the purpose of maintenance and use of common property.\nConcessionary Loan | Refers to HDB’s housing loan, in which the concessionary interest rate is pegged at 0.1% above the prevailing CPF Ordinary Account interest rate. It is reviewed quarterly, in line with the CPF interest rate revisions.\nConstruction Loan | Construction Loan is a short-term loan for financing the construction of a new property, or the reconstruction, addition or alteration of your existing property.\nConversion | An option provided by the Bank to reprice your existing home loan at no cost, after an agreed period from the date of the first disbursement."
+   "text": "Term | Description\nConservancy / Maintenance Fees | Fees collected for the purpose of maintenance and use of common property.\nConcessionary Loan | Refers to HDB’s housing loan, in which the concessionary interest rate is pegged at 0.1% above the prevailing CPF Ordinary Account interest rate. It is reviewed quarterly, in line with the CPF interest rate revisions.\nConstruction Loan | Construction Loan is a short-term loan for financing the construction of a new property, or the reconstruction, addition or alteration of your existing property.\nConversion | An option provided by the Bank to reprice your existing home loan at no cost, after an agreed period from the date of the first disbursement."
   },
   {
    "id": "33cdec9225-9",
@@ -4928,7 +4952,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Conveyance | The legal process of transferring the ownership of a property (or land title) from one person to another. While it’s not compulsory for a lawyer to handle this process, it’s recommended to hire one, especially if the property price goes well into the millions."
+   "text": "Term | Description\nConveyance | The legal process of transferring the ownership of a property (or land title) from one person to another. While it’s not compulsory for a lawyer to handle this process, it’s recommended to hire one, especially if the property price goes well into the millions."
   },
   {
    "id": "33cdec9225-10",
@@ -4940,7 +4964,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "CPF Housing Withdrawal Limit | To find out your CPF Housing Withdrawal Limit, you will need to know the valuation of your property and how much CPF you can withdraw. Valuation of your property Find out the lower of the following: 1. The purchase price of the property, and 2. The value of the property at the time of purchase. Owner(s) can use their Ordinary Account (OA) savings up to this valuation to buy the property and/or pay the monthly instalments of the home loan, without having to meet any condition on the CPF balances. It is possible for your housing loan to be outstanding when your CPF withdrawal has reached 100% of your property’s valuation. This is largely because you are using CPF to pay both the home loan's principal amount as well as the interest charges. The higher the interest on the home loan, the faster 100% of your property’s valuation will be reached. How much CPF you "
+   "text": "Term | Description\nCPF Housing Withdrawal Limit | To find out your CPF Housing Withdrawal Limit, you will need to know the valuation of your property and how much CPF you can withdraw. Valuation of your property Find out the lower of the following: 1. The purchase price of the property, and 2. The value of the property at the time of purchase. Owner(s) can use their Ordinary Account (OA) savings up to this valuation to buy the property and/or pay the monthly instalments of the home loan, without having to meet any condition on the CPF balances. It is possible for your housing loan to be outstanding when your CPF withdrawal has reached 100% of your property’s valuation. This is largely because you are using CPF to pay both the home loan's principal amount as well as the interest charges. The higher the interest on the home loan, the faster 100% of your property’s valuation will be reached. How much CPF you "
   },
   {
    "id": "33cdec9225-11",
@@ -4952,7 +4976,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "ell as the interest charges. The higher the interest on the home loan, the faster 100% of your property’s valuation will be reached. How much CPF you can withdraw This is the maximum amount of CPF beyond the valuation of your property that the owner(s) can use for the property. Once this is reached, no further withdrawal of CPF is allowed. From 2008 onwards, the maximum amount of CPF you can withdraw is 120% of your property’s valuation. The maximum amount of CPF you can withdraw is the available CPF OA balances less the prevailing Minimum Sum cash component.\nCredit Report | A credit report records an individual's credit history and is used by banks to determine a loan applicant's creditworthiness.\nCreditworthiness | How suitable someone is deemed to receive new financial credit, based on how reliable they have been in terms of making timely repayments."
+   "text": "Term | Description\nell as the interest charges. The higher the interest on the home loan, the faster 100% of your property’s valuation will be reached. How much CPF you can withdraw This is the maximum amount of CPF beyond the valuation of your property that the owner(s) can use for the property. Once this is reached, no further withdrawal of CPF is allowed. From 2008 onwards, the maximum amount of CPF you can withdraw is 120% of your property’s valuation. The maximum amount of CPF you can withdraw is the available CPF OA balances less the prevailing Minimum Sum cash component.\nCredit Report | A credit report records an individual's credit history and is used by banks to determine a loan applicant's creditworthiness.\nCreditworthiness | How suitable someone is deemed to receive new financial credit, based on how reliable they have been in terms of making timely repayments."
   },
   {
    "id": "33cdec9225-12",
@@ -4964,7 +4988,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Default | A breach of your obligations to the bank, which may allow the bank to recall your loan, such as failure to make mortgage payments on time.\nDeferred Payment Scheme (DPS) | A scheme whereby the usual progress payments are deferred to a later date. For example, the scheme may allow you to make an initial payment of 20% to the property developer, with the balance due only upon TOP being obtained from the relevant authorities.\nDelinquent | Late payment on a home loan. Not only does it drag down your credit score and result in late payment penalties, the lending Bank may initiate legal proceedings or even foreclose on your home. However, those extreme cases are usually for delinquent payments that stretch beyond a long period without the Borrower informing the Bank of any financial difficulty."
+   "text": "Term | Description\nDefault | A breach of your obligations to the bank, which may allow the bank to recall your loan, such as failure to make mortgage payments on time.\nDeferred Payment Scheme (DPS) | A scheme whereby the usual progress payments are deferred to a later date. For example, the scheme may allow you to make an initial payment of 20% to the property developer, with the balance due only upon TOP being obtained from the relevant authorities.\nDelinquent | Late payment on a home loan. Not only does it drag down your credit score and result in late payment penalties, the lending Bank may initiate legal proceedings or even foreclose on your home. However, those extreme cases are usually for delinquent payments that stretch beyond a long period without the Borrower informing the Bank of any financial difficulty."
   },
   {
    "id": "33cdec9225-13",
@@ -4976,7 +5000,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Down Payment | A portion of the purchase price that a buyer is required to pay in cash and CPF savings to secure the purchase of a property.\nEarly Redemption | Early redemption refers to the repayment of the loan (principal and interest) before the maturity of the loan. There are two main types of loan redemption, partial redemption and full redemption. If you plan to repay your loan early, do seek clarification on any fees and charges that may be imposed.\nEffective Interest Rate (EIR) | The true cost of taking up the home loan. EIR factors in the loan interest rate and any other costs, such as fees and charges, compounding and so on. Thus, EIR is higher than the advertised interest rate.\nEncumbrance | Any lien against a property or any restriction in its use, such as an easement; a right or interest in a property held by one who is not the legal owner."
+   "text": "Term | Description\nDown Payment | A portion of the purchase price that a buyer is required to pay in cash and CPF savings to secure the purchase of a property.\nEarly Redemption | Early redemption refers to the repayment of the loan (principal and interest) before the maturity of the loan. There are two main types of loan redemption, partial redemption and full redemption. If you plan to repay your loan early, do seek clarification on any fees and charges that may be imposed.\nEffective Interest Rate (EIR) | The true cost of taking up the home loan. EIR factors in the loan interest rate and any other costs, such as fees and charges, compounding and so on. Thus, EIR is higher than the advertised interest rate.\nEncumbrance | Any lien against a property or any restriction in its use, such as an easement; a right or interest in a property held by one who is not the legal owner."
   },
   {
    "id": "33cdec9225-14",
@@ -4988,7 +5012,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Equity | The difference between the current market value of your home and your outstanding mortgage balances and other liens.\nFair Market Value | The likely selling price of a property between a willing buyer and a willing seller in the open market. In a mortgage or a home equity loan, the fair market value is usually determined by a valuation done by a certified valuer."
+   "text": "Term | Description\nEquity | The difference between the current market value of your home and your outstanding mortgage balances and other liens.\nFair Market Value | The likely selling price of a property between a willing buyer and a willing seller in the open market. In a mortgage or a home equity loan, the fair market value is usually determined by a valuation done by a certified valuer."
   },
   {
    "id": "33cdec9225-15",
@@ -5000,7 +5024,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Fire Insurance | Covers any damage to the building structure such as walls and electrical wiring in the event of a fire. While not compulsory, the Mortgagee or lender, such as the Bank or HDB, will require those to take a home loan to buy fire insurance. While those who live in a private property may be covered under the Management Corporation Strata Title (entity that manages the entire block or development), any improvements they make may not be covered in the blanket policy. Fire insurance is different from home contents insurance, which insures the contents of your home.\nFixed Deposit Home Rate (FHR) | A home loan in which the interest rate is pegged to the fixed deposit rate of the Bank."
+   "text": "Term | Description\nFire Insurance | Covers any damage to the building structure such as walls and electrical wiring in the event of a fire. While not compulsory, the Mortgagee or lender, such as the Bank or HDB, will require those to take a home loan to buy fire insurance. While those who live in a private property may be covered under the Management Corporation Strata Title (entity that manages the entire block or development), any improvements they make may not be covered in the blanket policy. Fire insurance is different from home contents insurance, which insures the contents of your home.\nFixed Deposit Home Rate (FHR) | A home loan in which the interest rate is pegged to the fixed deposit rate of the Bank."
   },
   {
    "id": "33cdec9225-16",
@@ -5012,7 +5036,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Fixed Deposit Home Rate (FHR) | A home loan in which the interest rate is pegged to the fixed deposit rate of the Bank.\nFixed Rate Housing Loans | The interest rate on such loans is fixed for a set period, during which charges are often imposed for early redemption. Being protected against interest rate increases allows for easy monthly budgeting. However, if market rates were to fall during the fixed interest period, you may be left paying a comparatively higher rate.\nFloating or Variable Rate Housing Loans | The interest rate on such loans may fluctuate or change periodically, often in relation to a reference rate. When the reference rate changes, payments may increase or decrease accordingly. Examples of reference rates are the Banks’ prime lending rate, SORA (Singapore Overnight Rate Average) or rates offered by the CPF Board."
+   "text": "Term | Description\nFixed Deposit Home Rate (FHR) | A home loan in which the interest rate is pegged to the fixed deposit rate of the Bank.\nFixed Rate Housing Loans | The interest rate on such loans is fixed for a set period, during which charges are often imposed for early redemption. Being protected against interest rate increases allows for easy monthly budgeting. However, if market rates were to fall during the fixed interest period, you may be left paying a comparatively higher rate.\nFloating or Variable Rate Housing Loans | The interest rate on such loans may fluctuate or change periodically, often in relation to a reference rate. When the reference rate changes, payments may increase or decrease accordingly. Examples of reference rates are the Banks’ prime lending rate, SORA (Singapore Overnight Rate Average) or rates offered by the CPF Board."
   },
   {
    "id": "33cdec9225-17",
@@ -5024,7 +5048,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Foreclosure | The lender takes legal possession of a mortgaged property when the mortgagor (borrower) defaults on their mortgage payments. After which, the lender attempts to sell the mortgaged property in order to recover the amount owed.\nGuarantor | Guarantor refers to the person who agrees to be responsible for another person's liabilities in the event of the borrower's default.\nHome Loan | A loan that enables the borrower to buy a property. The loan is secured by the borrower's property, which serves as collateral.\nHousing & Development Board (HDB) | Singapore's public housing authority.\nHousing Agent Commission | A fee paid to the housing agent engaged to buy/sell the property. The quantum or amount of the commission is usually a percentage of the sale price."
+   "text": "Term | Description\nForeclosure | The lender takes legal possession of a mortgaged property when the mortgagor (borrower) defaults on their mortgage payments. After which, the lender attempts to sell the mortgaged property in order to recover the amount owed.\nGuarantor | Guarantor refers to the person who agrees to be responsible for another person's liabilities in the event of the borrower's default.\nHome Loan | A loan that enables the borrower to buy a property. The loan is secured by the borrower's property, which serves as collateral.\nHousing & Development Board (HDB) | Singapore's public housing authority.\nHousing Agent Commission | A fee paid to the housing agent engaged to buy/sell the property. The quantum or amount of the commission is usually a percentage of the sale price."
   },
   {
    "id": "33cdec9225-18",
@@ -5036,7 +5060,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "In-principle Approval (IPA) | Also known as Approval In-principle, this is an indication by the Bank of the amount of home loan that a prospective purchaser is eligible for. However, an AIP does not equate to a formal approval. The purchaser must still submit a Home Loan application, and the Bank's approval is dependent upon various factors, including property valuation, credit checks and other criteria. It is advisable to know your AIP amount before committing to a property."
+   "text": "Term | Description\nIn-principle Approval (IPA) | Also known as Approval In-principle, this is an indication by the Bank of the amount of home loan that a prospective purchaser is eligible for. However, an AIP does not equate to a formal approval. The purchaser must still submit a Home Loan application, and the Bank's approval is dependent upon various factors, including property valuation, credit checks and other criteria. It is advisable to know your AIP amount before committing to a property."
   },
   {
    "id": "33cdec9225-19",
@@ -5048,7 +5072,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Income-weighted Average Age (IWAA) | When a property has more than one borrower, the Bank uses the IWAA to calculate the LTV limit. For example, if there are two borrowers, the monthly income of Borrower A is multiplied by his age, and added to the same for Borrower B. The total is then divided by the total monthly income of both borrowers. If the older borrower earns more, IWAA is higher; if the younger borrower earns more, IWAA is lower.\nInterest Rate | Interest Rate is the rate of interest that is charged on the loan. It can be fixed, variable, or a combination of both over the loan period.\nInvestment Property | Property that is purchased to generate rental income or to be sold once it has appreciated in value."
+   "text": "Term | Description\nIncome-weighted Average Age (IWAA) | When a property has more than one borrower, the Bank uses the IWAA to calculate the LTV limit. For example, if there are two borrowers, the monthly income of Borrower A is multiplied by his age, and added to the same for Borrower B. The total is then divided by the total monthly income of both borrowers. If the older borrower earns more, IWAA is higher; if the younger borrower earns more, IWAA is lower.\nInterest Rate | Interest Rate is the rate of interest that is charged on the loan. It can be fixed, variable, or a combination of both over the loan period.\nInvestment Property | Property that is purchased to generate rental income or to be sold once it has appreciated in value."
   },
   {
    "id": "33cdec9225-20",
@@ -5060,7 +5084,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Investment Property | Property that is purchased to generate rental income or to be sold once it has appreciated in value.\nJoint-tenancy Ownership | This is a term that describes joint ownership of a property by two or more owners, without division of the shares. Upon the death of any joint holder, his interest becomes vested in the survivor(s).\nLand Title Search | A search which shows whether a property has any prior encumbrance or lodgement; details of owners; area of the property, and whether the owner has used CPF savings or taken a bank loan."
+   "text": "Term | Description\nInvestment Property | Property that is purchased to generate rental income or to be sold once it has appreciated in value.\nJoint-tenancy Ownership | This is a term that describes joint ownership of a property by two or more owners, without division of the shares. Upon the death of any joint holder, his interest becomes vested in the survivor(s).\nLand Title Search | A search which shows whether a property has any prior encumbrance or lodgement; details of owners; area of the property, and whether the owner has used CPF savings or taken a bank loan."
   },
   {
    "id": "33cdec9225-21",
@@ -5072,7 +5096,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Legal Fees | The costs for legal services rendered in the purchase, sale, mortgage and/or redemption of a property, including with respect to withdrawal of CPF funds. Costs often include disbursements such as registration fees on transfers; lodgement fees for caveat; legal requisitions; search fees etc. You may use cash or CPF savings to pay legal fees.\nLegal Requisitions | Searches conducted at various government departments inquiring into the status of a property, for example, encumbrances, whether the property is affected by any works or if notices have been issued in respect of the property.\nLegal Fee Subsidy | When a home loan is taken from a Bank, the Bank may offer a subsidy on charges such as the legal fee and valuation fee. This is usually offered to those who are refinancing their home loan of a certain amount."
+   "text": "Term | Description\nLegal Fees | The costs for legal services rendered in the purchase, sale, mortgage and/or redemption of a property, including with respect to withdrawal of CPF funds. Costs often include disbursements such as registration fees on transfers; lodgement fees for caveat; legal requisitions; search fees etc. You may use cash or CPF savings to pay legal fees.\nLegal Requisitions | Searches conducted at various government departments inquiring into the status of a property, for example, encumbrances, whether the property is affected by any works or if notices have been issued in respect of the property.\nLegal Fee Subsidy | When a home loan is taken from a Bank, the Bank may offer a subsidy on charges such as the legal fee and valuation fee. This is usually offered to those who are refinancing their home loan of a certain amount."
   },
   {
    "id": "33cdec9225-22",
@@ -5084,7 +5108,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Letter of Offer (LO) | A letter issued by the Bank stating the terms and conditions upon which the Bank makes a formal offer of loan to the borrower.\nLien | A claim by one party against the property of another as security for a debt. This must be discharged when the property is sold. A mortgage is a form of lien.\nLoan Quantum | The loan quantum or principal is the amount of money that you borrow.\nLoan Tenure | The period of time that you may take to fully repay your loan."
+   "text": "Term | Description\nLetter of Offer (LO) | A letter issued by the Bank stating the terms and conditions upon which the Bank makes a formal offer of loan to the borrower.\nLien | A claim by one party against the property of another as security for a debt. This must be discharged when the property is sold. A mortgage is a form of lien.\nLoan Quantum | The loan quantum or principal is the amount of money that you borrow.\nLoan Tenure | The period of time that you may take to fully repay your loan."
   },
   {
    "id": "33cdec9225-23",
@@ -5096,7 +5120,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Loan Tenure | The period of time that you may take to fully repay your loan.\nLoan-to-value (LTV) Ratio or Limit | The housing loan amount represented as a percentage of the property's value. Thus, a property worth S$500,000 with a mortgage of S$250,000 would have an LTV ratio or limit of 50%. Here's a guide for the current maximum LTV limits as regulated by the Monetary Authority of Singapore (MAS): · Up to 75% for borrowers who do not have any outstanding housing loans. · Up to 45% for borrowers who have one outstanding housing loan (whether from HDB or a financial institution regulated by MAS) at the time of applying for a housing loan for the new property purchase. · Up to 35% for borrowers who have two or more outstanding housing loans (whether from HDB or a financial institution regulated by MAS) at the time of applying for a housing loan for the new property purchase."
+   "text": "Term | Description\nLoan Tenure | The period of time that you may take to fully repay your loan.\nLoan-to-value (LTV) Ratio or Limit | The housing loan amount represented as a percentage of the property's value. Thus, a property worth S$500,000 with a mortgage of S$250,000 would have an LTV ratio or limit of 50%. Here's a guide for the current maximum LTV limits as regulated by the Monetary Authority of Singapore (MAS): · Up to 75% for borrowers who do not have any outstanding housing loans. · Up to 45% for borrowers who have one outstanding housing loan (whether from HDB or a financial institution regulated by MAS) at the time of applying for a housing loan for the new property purchase. · Up to 35% for borrowers who have two or more outstanding housing loans (whether from HDB or a financial institution regulated by MAS) at the time of applying for a housing loan for the new property purchase."
   },
   {
    "id": "33cdec9225-24",
@@ -5108,7 +5132,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Loan Servicing Account | The bank account from which the loan repayments will be deducted from. Insurance premiums are also serviced from the Loan Servicing Account.\nLock-in Period / Commitment Period | The time period during which you will have to pay an early redemption charge (usually expressed as a percentage of the loan quantum) if you repay your loan in full. Banks may also impose a charge for partial payments beyond your monthly instalments within this period.\nMaturity Date | The day on which all outstanding principal, interest and fees must be repaid.\nMortgage | Transfer of an interest in your property to a lender (bank) as security for the loan granted to you for the purchase."
+   "text": "Term | Description\nLoan Servicing Account | The bank account from which the loan repayments will be deducted from. Insurance premiums are also serviced from the Loan Servicing Account.\nLock-in Period / Commitment Period | The time period during which you will have to pay an early redemption charge (usually expressed as a percentage of the loan quantum) if you repay your loan in full. Banks may also impose a charge for partial payments beyond your monthly instalments within this period.\nMaturity Date | The day on which all outstanding principal, interest and fees must be repaid.\nMortgage | Transfer of an interest in your property to a lender (bank) as security for the loan granted to you for the purchase."
   },
   {
    "id": "33cdec9225-25",
@@ -5120,7 +5144,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Mortgage | Transfer of an interest in your property to a lender (bank) as security for the loan granted to you for the purchase.\nMortgage Insurance / Mortgage Reducing Term Assurance (MRTA) | A reducing premium term life insurance that protects the insured's (borrower) family against liability under the housing loan in the event of his death, total or permanent disability, or terminal illness. The Central Provident Fund Board (CPF) Home Protection Scheme is compulsory for all HDB flat owners who are using their CPF to repay their housing loans. Although it is not compulsory for private property owners to purchase mortgage insurance, it is advisable that they do so to prepare for unfortunate events and provide financial protection for themselves and their families.\nMortgagee | Lender (bank)."
+   "text": "Term | Description\nMortgage | Transfer of an interest in your property to a lender (bank) as security for the loan granted to you for the purchase.\nMortgage Insurance / Mortgage Reducing Term Assurance (MRTA) | A reducing premium term life insurance that protects the insured's (borrower) family against liability under the housing loan in the event of his death, total or permanent disability, or terminal illness. The Central Provident Fund Board (CPF) Home Protection Scheme is compulsory for all HDB flat owners who are using their CPF to repay their housing loans. Although it is not compulsory for private property owners to purchase mortgage insurance, it is advisable that they do so to prepare for unfortunate events and provide financial protection for themselves and their families.\nMortgagee | Lender (bank)."
   },
   {
    "id": "33cdec9225-26",
@@ -5132,7 +5156,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Mortgagee | Lender (bank).\nMortgage Servicing Ratio (MSR) | Only applicable to housing loans for HDB flats and Executive Condominiums. MSR limits monthly repayments to 30% of the Borrower's gross monthly income. If you earn $5,000 a month, your monthly repayment amount cannot exceed $1,500.\nMortgagor | Borrower or homeowner.\nOption Fee | A fee paid to the seller as consideration for the option to purchase a property. The Option to Purchase will be granted upon the payment of this fee.\nOption to Purchase (OTP) | A right granted by the seller to the purchaser, to buy the property within a time frame upon payment of an Option Fee (usually 1% of the purchase price).\nPrepayment | Lump sum payments made in addition to your monthly instalments."
+   "text": "Term | Description\nMortgagee | Lender (bank).\nMortgage Servicing Ratio (MSR) | Only applicable to housing loans for HDB flats and Executive Condominiums. MSR limits monthly repayments to 30% of the Borrower's gross monthly income. If you earn $5,000 a month, your monthly repayment amount cannot exceed $1,500.\nMortgagor | Borrower or homeowner.\nOption Fee | A fee paid to the seller as consideration for the option to purchase a property. The Option to Purchase will be granted upon the payment of this fee.\nOption to Purchase (OTP) | A right granted by the seller to the purchaser, to buy the property within a time frame upon payment of an Option Fee (usually 1% of the purchase price).\nPrepayment | Lump sum payments made in addition to your monthly instalments."
   },
   {
    "id": "33cdec9225-27",
@@ -5144,7 +5168,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Prepayment | Lump sum payments made in addition to your monthly instalments.\nPrepayment Penalty | A fee charged to a borrower who partially or fully repays the loan in full within the loan's lock-in period (sometimes also referred to as a redemption penalty).\nPrincipal | The amount of money borrowed from the lender (Bank), less whatever the Borrower has already repaid. Mortgage repayments comprise the principal amount and the interest owed.\nPrime Lending Rate / Prime Rate | The lowest lending rate that a Bank is prepared to lend in Singapore Dollars to its best customers (i.e. most creditworthy) on an overdraft (drawing more money than the bank account holds) or demand basis."
+   "text": "Term | Description\nPrepayment | Lump sum payments made in addition to your monthly instalments.\nPrepayment Penalty | A fee charged to a borrower who partially or fully repays the loan in full within the loan's lock-in period (sometimes also referred to as a redemption penalty).\nPrincipal | The amount of money borrowed from the lender (Bank), less whatever the Borrower has already repaid. Mortgage repayments comprise the principal amount and the interest owed.\nPrime Lending Rate / Prime Rate | The lowest lending rate that a Bank is prepared to lend in Singapore Dollars to its best customers (i.e. most creditworthy) on an overdraft (drawing more money than the bank account holds) or demand basis."
   },
   {
    "id": "33cdec9225-28",
@@ -5156,7 +5180,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Progress Payment | Payment amount(s) predetermined and scheduled by the developer to correspond with the property’s different stages of development. Upon completion of each stage of construction, the developer will call for the required payment.\nProperty Tax | A tax levied on residential properties based on its Annual Value. All property owners are liable to pay property tax. The property tax rate for owner-occupied residential premises is lower than that levied on non-owner-occupied residential premises.\nReference Rate | Can be based on the following: CPF Ordinary Account, SIBOR, SOR or the Bank’s internal board rate. The reference rate can change at any time, and the Bank must inform you in advance before changing the interest rate on your housing loan."
+   "text": "Term | Description\nProgress Payment | Payment amount(s) predetermined and scheduled by the developer to correspond with the property’s different stages of development. Upon completion of each stage of construction, the developer will call for the required payment.\nProperty Tax | A tax levied on residential properties based on its Annual Value. All property owners are liable to pay property tax. The property tax rate for owner-occupied residential premises is lower than that levied on non-owner-occupied residential premises.\nReference Rate | Can be based on the following: CPF Ordinary Account, SIBOR, SOR or the Bank’s internal board rate. The reference rate can change at any time, and the Bank must inform you in advance before changing the interest rate on your housing loan."
   },
   {
    "id": "33cdec9225-29",
@@ -5168,7 +5192,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Refinancing | Moving a loan (including any undisbursed amount) from one bank to another bank. Before refinancing your loan, you should check on the charges you may incur (e.g. lock-in period, claw-back period) upon cancellation of your existing loan.\nRepayment Schedule | Specific details of the Borrower’s loan, such as the monthly repayment amounts, interest rate and repayment due dates.\nRepricing | This commonly refers to the switch from one interest rate package to another with the same bank."
+   "text": "Term | Description\nRefinancing | Moving a loan (including any undisbursed amount) from one bank to another bank. Before refinancing your loan, you should check on the charges you may incur (e.g. lock-in period, claw-back period) upon cancellation of your existing loan.\nRepayment Schedule | Specific details of the Borrower’s loan, such as the monthly repayment amounts, interest rate and repayment due dates.\nRepricing | This commonly refers to the switch from one interest rate package to another with the same bank."
   },
   {
    "id": "33cdec9225-30",
@@ -5180,7 +5204,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Repricing | This commonly refers to the switch from one interest rate package to another with the same bank.\nReverse Mortgage Loan | A type of loan for seniors to borrow against the value of their fully-paid home and receive funds. They won’t need to make any loan payments until loan maturity. Seniors (Singaporeans and Permanent Residents aged 65 to 79) who own private property can borrow against their fully-paid private residential property via the DBS Home Equity Income Loan. The funds will go towards topping up their CPF Retirement Sums, allowing them to receive monthly payouts to supplement their retirement funds for as long as they live. The loan amount and accrued interest is payable only at loan maturity, and the long loan period means that customers retain the flexibility to sell their property anytime if they so wish, and to repay the loan without penalty fee."
+   "text": "Term | Description\nRepricing | This commonly refers to the switch from one interest rate package to another with the same bank.\nReverse Mortgage Loan | A type of loan for seniors to borrow against the value of their fully-paid home and receive funds. They won’t need to make any loan payments until loan maturity. Seniors (Singaporeans and Permanent Residents aged 65 to 79) who own private property can borrow against their fully-paid private residential property via the DBS Home Equity Income Loan. The funds will go towards topping up their CPF Retirement Sums, allowing them to receive monthly payouts to supplement their retirement funds for as long as they live. The loan amount and accrued interest is payable only at loan maturity, and the long loan period means that customers retain the flexibility to sell their property anytime if they so wish, and to repay the loan without penalty fee."
   },
   {
    "id": "33cdec9225-31",
@@ -5192,7 +5216,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Sale & Purchase (S&P) Agreement | A formal contract for sale and purchase of a property.\nSingapore Interbank Offered Rates (SIBOR) | Singapore Interbank Offered Rates — the interest rate at which Banks borrow from one another.\nSwap Offer Rate (SOR) | SOR is based on the exchange rate between the Singapore dollar and the US dollar (USD), it’s greatly dependent on the USD London Interbank Offered Rate (LIBOR). However, given that LIBOR will cease to exist after 2021, SOR will be phased out."
+   "text": "Term | Description\nSale & Purchase (S&P) Agreement | A formal contract for sale and purchase of a property.\nSingapore Interbank Offered Rates (SIBOR) | Singapore Interbank Offered Rates — the interest rate at which Banks borrow from one another.\nSwap Offer Rate (SOR) | SOR is based on the exchange rate between the Singapore dollar and the US dollar (USD), it’s greatly dependent on the USD London Interbank Offered Rate (LIBOR). However, given that LIBOR will cease to exist after 2021, SOR will be phased out."
   },
   {
    "id": "33cdec9225-32",
@@ -5204,7 +5228,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Singapore Overnight Rate Average (SORA) | The volume-weighted average rate of borrowing transactions in the unsecured overnight interbank SGD cash market in Singapore between 8am and 6.15pm local time (both timings inclusive). It is administered by the Monetary Authority of Singapore (MAS), and published at 9am on the next business day in Singapore. SORA is the new benchmark interest rate introduced by the MAS that will replace SIBOR and SOR when they are phased out by 2024. The version most used by Banks for their floating home loans packages is the 3M Compounded SORA. This is the average of SORA rates published in the last three months."
+   "text": "Term | Description\nSingapore Overnight Rate Average (SORA) | The volume-weighted average rate of borrowing transactions in the unsecured overnight interbank SGD cash market in Singapore between 8am and 6.15pm local time (both timings inclusive). It is administered by the Monetary Authority of Singapore (MAS), and published at 9am on the next business day in Singapore. SORA is the new benchmark interest rate introduced by the MAS that will replace SIBOR and SOR when they are phased out by 2024. The version most used by Banks for their floating home loans packages is the 3M Compounded SORA. This is the average of SORA rates published in the last three months."
   },
   {
    "id": "33cdec9225-33",
@@ -5216,7 +5240,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Stamp Duty | A tax payable upon the purchase of a property. For completed properties, Stamp Duty must be paid within 14 days from the date of signing the Sale and Purchase Agreement if the document is executed in Singapore. For uncompleted properties, Stamp Duty must be paid within 14 days from the date of exercising the Option to Purchase.\nStamp Duty on Transfer of Property | Duty payable ad valorem on the purchase price (PP): First $180,000 1% Next $180,000 2% Beyond $360,000 3% Calculation Formula Purchase Price (PP) x 3% less $5,400 (where PP is > $360,000)\nTemporary Occupation Permit (TOP) | Only applicable to uncompleted properties. Receipt of TOP means keys can be collected and the property is ready for occupation."
+   "text": "Term | Description\nStamp Duty | A tax payable upon the purchase of a property. For completed properties, Stamp Duty must be paid within 14 days from the date of signing the Sale and Purchase Agreement if the document is executed in Singapore. For uncompleted properties, Stamp Duty must be paid within 14 days from the date of exercising the Option to Purchase.\nStamp Duty on Transfer of Property | Duty payable ad valorem on the purchase price (PP): First $180,000 1% Next $180,000 2% Beyond $360,000 3% Calculation Formula Purchase Price (PP) x 3% less $5,400 (where PP is > $360,000)\nTemporary Occupation Permit (TOP) | Only applicable to uncompleted properties. Receipt of TOP means keys can be collected and the property is ready for occupation."
   },
   {
    "id": "33cdec9225-34",
@@ -5228,7 +5252,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Tenancy-in-Common | Joint holding of a property, where each owner has a distinct share in the property. Shares owned need not be in equal portions. Upon the death of a joint owner, his interest will be disposed of according to his will or under laws of intestacy.\nTitle Deed | A legal document showing a person's ownership of a property.\nTitle Search | An examination of records used to determine the legal ownership of property and all liens and encumbrances on it. Usually performed by a lawyer.\nTotal Debt Servicing Ratio (TDSR) | A computation of total monthly debt obligations to total monthly gross income. This helps to assess the repayment ability of the borrower over a specific loan tenure. MAS stipulates that the Borrower's TDSR should be less than or equal to 55%.\nValuation | Market value of a property indicated by a licensed valuer."
+   "text": "Term | Description\nTenancy-in-Common | Joint holding of a property, where each owner has a distinct share in the property. Shares owned need not be in equal portions. Upon the death of a joint owner, his interest will be disposed of according to his will or under laws of intestacy.\nTitle Deed | A legal document showing a person's ownership of a property.\nTitle Search | An examination of records used to determine the legal ownership of property and all liens and encumbrances on it. Usually performed by a lawyer.\nTotal Debt Servicing Ratio (TDSR) | A computation of total monthly debt obligations to total monthly gross income. This helps to assess the repayment ability of the borrower over a specific loan tenure. MAS stipulates that the Borrower's TDSR should be less than or equal to 55%.\nValuation | Market value of a property indicated by a licensed valuer."
   },
   {
    "id": "33cdec9225-35",
@@ -5240,7 +5264,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Valuation | Market value of a property indicated by a licensed valuer.\n## Start Planning Now\nCheck out DBS MyHome to work out the sums and find a home that meets your budget and preferences. The best part – it cuts out the guesswork.\nStart Planning\nAlternatively, prepare yourself with an In-Principle Approval (IPA), so you have certainty on how much you could borrow for your home, allowing you to know your budget accurately.\nApply In-Principle Approval"
+   "text": "Term | Description\nValuation | Market value of a property indicated by a licensed valuer.\n## Start Planning Now\nCheck out DBS MyHome to work out the sums and find a home that meets your budget and preferences. The best part – it cuts out the guesswork.\nStart Planning\nAlternatively, prepare yourself with an In-Principle Approval (IPA), so you have certainty on how much you could borrow for your home, allowing you to know your budget accurately.\nApply In-Principle Approval"
   },
   {
    "id": "33cdec9225-36",
@@ -7251,7 +7275,7 @@
     "personal_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "11 | S$253.44 | S$1.53 | S$254.97\n12 | S$254.26 | S$0.77 | S$255.03\nNote: The above table is meant for illustration. Actual figures may vary.\nCashline is a line-of-credit facility that stays active even after your Personal Loan has expired. You can continue to use your Cashline account for everyday banking transactions such as fund transfers, bill payments, and more through DBS digibank, or withdraw cash at ATMs. You may also apply for a new Personal Loan or Balance Transfer as long as your Cashline remains active.\nClick here to find out more.\nYou can apply up to 95% of your available credit limit. You may apply for multiple Personal Loans as long as there is available credit limit."
+   "text": "Month | Principal | Interest | Monthly Instalment\n11 | S$253.44 | S$1.53 | S$254.97\n12 | S$254.26 | S$0.77 | S$255.03\nNote: The above table is meant for illustration. Actual figures may vary.\nCashline is a line-of-credit facility that stays active even after your Personal Loan has expired. You can continue to use your Cashline account for everyday banking transactions such as fund transfers, bill payments, and more through DBS digibank, or withdraw cash at ATMs. You may also apply for a new Personal Loan or Balance Transfer as long as your Cashline remains active.\nClick here to find out more.\nYou can apply up to 95% of your available credit limit. You may apply for multiple Personal Loans as long as there is available credit limit."
   },
   {
    "id": "7e295e32b9-11",
@@ -7611,7 +7635,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Approval process and notice period | Reprice with DBS About 4-5 weeks | Refinance with another financial institution About 9-13 weeks\nUnderstanding your repayment amount and potential savings is a pivotal step. Use our Repayment Calculator to calculate your potential savings and get a quick estimate effortlessly.\n## Pricing and fees\nWe have a range of fixed and floating repricing rate packages available based on your outstanding loan amount and remaining loan tenure.\nView repricing rate packages | Apply now You may view the available repricing rate packages when you apply for repricing.\nFees and charges | For the full list of associated costs, please refer to DBS Home Loan Fees and Charges ."
+   "text": "Reprice with DBS | Refinance with another financial institution\nApproval process and notice period | Reprice with DBS About 4-5 weeks | Refinance with another financial institution About 9-13 weeks\nUnderstanding your repayment amount and potential savings is a pivotal step. Use our Repayment Calculator to calculate your potential savings and get a quick estimate effortlessly.\n## Pricing and fees\nWe have a range of fixed and floating repricing rate packages available based on your outstanding loan amount and remaining loan tenure.\nView repricing rate packages | Apply now You may view the available repricing rate packages when you apply for repricing.\nFees and charges | For the full list of associated costs, please refer to DBS Home Loan Fees and Charges ."
   },
   {
    "id": "5cf9734d42-4",
@@ -8391,7 +8415,7 @@
     "credit_card"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "Bus and train rides using SimplyGo - S$80 Card spend (Contactless) | Cash rebate 3% | Cash rebate amount SAFRA$2.40\nAll other spends including non-contactless and non-online purchases - S$500 | Cash rebate 0.3% | Cash rebate amount SAFRA$1.50\nTotal - S$1,670 | Cash rebate | Cash rebate amount SAFRA$36.60 (Capped at SAFRA$50)\nSAFRA$ Cash Rebate Programme Terms and Conditions\n## SAFRA membership privileges\nSAFRA Clubhouse and facility access | Get exclusive access to all 7 SAFRA Clubhouses and facilities at: SAFRA Choa Chu Kang SAFRA Jurong SAFRA Mount Faber SAFRA Punggol SAFRA Tampines SAFRA Toa Payoh SAFRA Yishun Note: Separate charges may apply to access facilities."
+   "text": "Cash rebate | Cash rebate amount\nBus and train rides using SimplyGo - S$80 Card spend (Contactless) | Cash rebate 3% | Cash rebate amount SAFRA$2.40\nAll other spends including non-contactless and non-online purchases - S$500 | Cash rebate 0.3% | Cash rebate amount SAFRA$1.50\nTotal - S$1,670 | Cash rebate | Cash rebate amount SAFRA$36.60 (Capped at SAFRA$50)\nSAFRA$ Cash Rebate Programme Terms and Conditions\n## SAFRA membership privileges\nSAFRA Clubhouse and facility access | Get exclusive access to all 7 SAFRA Clubhouses and facilities at: SAFRA Choa Chu Kang SAFRA Jurong SAFRA Mount Faber SAFRA Punggol SAFRA Tampines SAFRA Toa Payoh SAFRA Yishun Note: Separate charges may apply to access facilities."
   },
   {
    "id": "f0ca5db5f4-4",
@@ -9656,7 +9680,7 @@
     "home_loan"
    ],
    "fetched_at": "2026-10-27T17:56:54",
-   "text": "A HDB flat that is being sold | A letter from the HDB approving the sale of the flat.\nThe monthly repayment instalment can also be excluded if the borrower has discharged the outstanding loan for the existing property.\nTDSR Formula\nTo calculate a borrower’s TDSR, use the following formula:\n(Borrower's total monthly debt obligations / Borrower's gross monthly income) x 100%\nMonthly Debt Obligations (TDSR Numerator)\nMonthly debt includes all outstanding debt obligations:\nProperty-related loans, including the loan being applied for.\nCar loans.\nStudent loans.\nRenovation loans.\nCredit card loans.\nAny other secured or unsecured loans, including revolving loans.\nFIs should calculate and confirm these obligations by:\nCollecting supporting documents from the borrower.\nChecking with the credit bureau.\nCalculating Monthly Debt Obligations"
+   "text": "Existing property | Borrower needs to provide\nA HDB flat that is being sold | A letter from the HDB approving the sale of the flat.\nThe monthly repayment instalment can also be excluded if the borrower has discharged the outstanding loan for the existing property.\nTDSR Formula\nTo calculate a borrower’s TDSR, use the following formula:\n(Borrower's total monthly debt obligations / Borrower's gross monthly income) x 100%\nMonthly Debt Obligations (TDSR Numerator)\nMonthly debt includes all outstanding debt obligations:\nProperty-related loans, including the loan being applied for.\nCar loans.\nStudent loans.\nRenovation loans.\nCredit card loans.\nAny other secured or unsecured loans, including revolving loans.\nFIs should calculate and confirm these obligations by:\nCollecting supporting documents from the borrower.\nChecking with the credit bureau.\nCalculating Monthly Debt Obligations"
   },
   {
    "id": "f8084c0c4d-3",
@@ -10497,7 +10521,7 @@
    ],
    "status": "ok",
    "chars": 4049,
-   "chunks": 5,
+   "chunks": 6,
    "fetched_at": "2026-10-27T17:56:54"
   },
   {
@@ -10562,7 +10586,7 @@
    ],
    "status": "ok",
    "chars": 9440,
-   "chunks": 13,
+   "chunks": 14,
    "fetched_at": "2026-10-27T17:56:54"
   },
   {
